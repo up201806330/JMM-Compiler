@@ -1,0 +1,48 @@
+TOKEN :
+{
+    <#Digit: ["0" - "9"] >
+
+    | <OpenBlock: "{" >
+    | <CloseBlock: "}" >
+    | <OpenParenthesis: "(" >
+    | <CloseParenthesis: ")" >
+    | <OpenArray: "[" >
+    | <CloseArray: "]" >
+    | <Semicolon: ";" >
+    | <Comma: "," >
+    | <Equals: "=" >
+    | <Dot: "." >
+
+    | <Class: "class" >
+    | <Import: "import" >
+    | <If: "if" >
+    | <Else: "else" >
+    | <While: "while" >
+    | <TypeInt: "int" >
+    | <TypeBoolean: "boolean" >
+    | <TypeString: "String" >
+    | <Extends: "extends" >
+    | <Public: "public" >
+    | <Static: "static" >
+    | <Void: "void" >
+    | <Main: "main" >
+    | <Return: "return" >
+    | <Length: "length" >
+    | <True: "true" >
+    | <False: "false" >
+    | <This: "this" >
+    | <New: "new" >
+
+    | <AndOp: "&&" >
+    | <LessThanOp: "<" >
+    | <AddOp: "+" >
+    | <SubOp: "-" >
+    | <MultOp: "*" >
+    | <DivOp: "/" >
+    | <NotOp: "!" >
+
+    | <Identifier: <Letter> (<Letter> | <Digit> | "_" )* >
+    | <#Letter: (<LowerCase> | <UpperCase>) >
+    | <#LowerCase: ["a"-"z"] >
+    | <#UpperCase: ["A"-"Z"] >
+}
