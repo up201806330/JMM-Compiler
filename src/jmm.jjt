@@ -1,3 +1,31 @@
+SKIP :
+{
+      " "
+    | "\t"
+    | "\r"
+    | "\n"
+    | < "//" (~["\r", "\n"])* >
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// From the JavaCC FAQ https://javacc.github.io/javacc/faq.html#question-3.14
+/////////////////////////////////////////////////////////////////////////////
+
+// when /* is seen in the DEFAULT state, skip it and switch to the IN_COMMENT state
+MORE : {
+  "/*": IN_COMMENT
+}
+
+// when any other character is seen in the IN_COMMENT state, skip it.
+< IN_COMMENT > MORE : {
+  < ~[] >
+}
+
+// when */ is seen in the IN_COMMENT state, skip it and switch back to the DEFAULT state
+< IN_COMMENT > SKIP : {
+  "*/": DEFAULT
+}
+
 TOKEN :
 {
     <Digit: ["0" - "9"] >
@@ -45,12 +73,11 @@ TOKEN :
     | <AddOp: "+" >
     | <SubOp: "-" >
     | <MultOp: "*" >
-    | <DivOp: "/" >
     | <NotOp: "!" >
     | <Print: "System.out.println">
 }
 
-SimpleNode Program() : {} {
+SimpleNode Program(): {} {
     ImportDeclaration()
     ClassDeclaration()
     <EOF>
@@ -58,25 +85,29 @@ SimpleNode Program() : {} {
 }
 
 void ImportDeclaration(): { Token t_name; } {
-    (<Import> <Identifier> (<Dot> <Identifier>)* <Semicolon>)*
+    (<Import> t_name = <Identifier> { jjtThis.name = t_name.image; } (<Dot> <Identifier>)* <Semicolon>)*
 }
 
 void ClassDeclaration(): { Token t_name; } {
-    <Class> <Identifier> (<Extends> <Identifier>)?
+    <Class> t_name = <Identifier> { jjtThis.name = t_name.image; } (ClassInheritance())?
     <OpenBlock>
         (VarDeclaration())*
         (MethodDeclaration())*
     <CloseBlock>
 }
 
-void VarDeclaration() : { Token t_name; } {
+void ClassInheritance(): { Token t_name; } {
+    <Extends> t_name = <Identifier> { jjtThis.name = t_name.image; }
+}
+
+void VarDeclaration(): { Token t_name; } {
     Type() t_name = <Identifier> <Semicolon> { jjtThis.identifier = t_name.image; }
 }
 
-void MethodDeclaration(): {} {
-    <Public> Type() <Identifier>
+void MethodDeclaration(): { Token t_name; } {
+    <Public> Type() t_name = <Identifier> { jjtThis.identifier = t_name.image; }
     <OpenParenthesis>
-        (Type() <Identifier> (<Comma> Type()  <Identifier>)*)?
+        Parameters()
     <CloseParenthesis>
     <OpenBlock>
         (VarDeclaration())*
@@ -84,14 +115,18 @@ void MethodDeclaration(): {} {
     <CloseBlock>
 }
 
-void Type() : { Token t_type; } {
+void Parameters(): {} {
+    (Type() <Identifier> (<Comma> Type()  <Identifier>)*)?
+}
+
+void Type(): { Token t_type; } {
     ( (t_type = <TypeInt> (<OpenArray> <CloseArray>)?)
     | t_type = <TypeBoolean>
     | t_type = <Identifier>
     ) { jjtThis.type = t_type.image; }
 }
 
-void Statement(): {} {
+void Statement() #void: {} {
     (<OpenBlock> (Statement())* <CloseBlock> )
     | (<If> <OpenParenthesis> Expression() <CloseParenthesis> Statement() <Else> Statement())
     | (<While> <OpenParenthesis> Expression() <CloseParenthesis> Statement())
@@ -100,7 +135,7 @@ void Statement(): {} {
     | (<Identifier> <OpenArray> Expression() <CloseArray> <Equals> Expression() <Semicolon>)
 }
 
-void Expression(): {} {
+void Expression() #void: {} {
     (Expression() (<AndOp> | <LessThanOp> | <AddOp> | <SubOp> | <MultOp> ) Expression())
     | (Expression() <OpenArray> Expression() <CloseArray>)
     | (Expression() <Dot> <Length>)
