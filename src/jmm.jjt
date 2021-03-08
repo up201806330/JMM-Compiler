@@ -1,6 +1,13 @@
 TOKEN :
 {
-    <#Digit: ["0" - "9"] >
+    <Digit: ["0" - "9"] >
+
+    | <Identifier: <Letter> (<Letter> | <Digit> | "_" )* >
+    | <Letter: (<LowerCase> | <UpperCase>) >
+    | <LowerCase: ["a"-"z"] >
+    | <UpperCase: ["A"-"Z"] >
+
+    | <IntegerLiteral: ["1" - "9"] (<Digit>)*>
 
     | <OpenBlock: "{" >
     | <CloseBlock: "}" >
@@ -40,9 +47,71 @@ TOKEN :
     | <MultOp: "*" >
     | <DivOp: "/" >
     | <NotOp: "!" >
+    | <Print: "System.out.println">
+}
 
-    | <Identifier: <Letter> (<Letter> | <Digit> | "_" )* >
-    | <#Letter: (<LowerCase> | <UpperCase>) >
-    | <#LowerCase: ["a"-"z"] >
-    | <#UpperCase: ["A"-"Z"] >
+SimpleNode Program() : {} {
+    ImportDeclaration()
+    ClassDeclaration()
+    <EOF>
+    { return jjtThis; }
+}
+
+void ImportDeclaration(): { Token t_name; } {
+    (<Import> <Identifier> (<Dot> <Identifier>)* <Semicolon>)*
+}
+
+void ClassDeclaration(): { Token t_name; } {
+    <Class> <Identifier> (<Extends> <Identifier>)?
+    <OpenBlock>
+        (VarDeclaration())*
+        (MethodDeclaration())*
+    <CloseBlock>
+}
+
+void VarDeclaration() : { Token t_name; } {
+    Type() t_name = <Identifier> <Semicolon> { jjtThis.identifier = t_name.image; }
+}
+
+void MethodDeclaration(): {} {
+    <Public> Type() <Identifier>
+    <OpenParenthesis>
+        (Type() <Identifier> (<Comma> Type()  <Identifier>)*)?
+    <CloseParenthesis>
+    <OpenBlock>
+        (VarDeclaration())*
+        (Statement())*
+    <CloseBlock>
+}
+
+void Type() : { Token t_type; } {
+    ( (t_type = <TypeInt> (<OpenArray> <CloseArray>)?)
+    | t_type = <TypeBoolean>
+    | t_type = <Identifier>
+    ) { jjtThis.type = t_type.image; }
+}
+
+void Statement(): {} {
+    (<OpenBlock> (Statement())* <CloseBlock> )
+    | (<If> <OpenParenthesis> Expression() <CloseParenthesis> Statement() <Else> Statement())
+    | (<While> <OpenParenthesis> Expression() <CloseParenthesis> Statement())
+    | (<Print> <OpenParenthesis> Expression() <CloseParenthesis> <Semicolon> )
+    | (<Identifier> <Equals> Expression() <Semicolon>)
+    | (<Identifier> <OpenArray> Expression() <CloseArray> <Equals> Expression() <Semicolon>)
+}
+
+void Expression(): {} {
+    (Expression() (<AndOp> | <LessThanOp> | <AddOp> | <SubOp> | <MultOp> ) Expression())
+    | (Expression() <OpenArray> Expression() <CloseArray>)
+    | (Expression() <Dot> <Length>)
+    | (Expression() <Dot> <Identifier> <OpenParenthesis> (Expression() (<Comma> Expression())*)? <CloseParenthesis> )
+    | <IntegerLiteral>
+    | <True>
+    | <False>
+    | <Identifier>
+    | <This>
+    | (<New> <TypeInt> <OpenArray> Expression() <CloseArray>)
+    | (<New> <Identifier> <OpenParenthesis> <CloseParenthesis>)
+    | (<NotOp> Expression())
+    | (<OpenParenthesis> Expression() <CloseParenthesis>)
 }
