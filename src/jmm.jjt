@@ -113,14 +113,24 @@ void VarDeclaration(): { Token t_name; } {
 }
 
 void MethodDeclaration(): { Token t_name; } {
-    <Public> Type() t_name = <Identifier> { jjtThis.identifier = t_name.image; }
+    <Public>
+    (
+    Type() t_name = <Identifier> { jjtThis.identifier = t_name.image; }
     <OpenParenthesis>
         Parameters()
     <CloseParenthesis>
     <OpenBlock>
         (VarDeclaration())*
         (Statement())*
+        Return()
     <CloseBlock>
+    |
+    <Static> <Void> <Main> <OpenParenthesis> <TypeString> <OpenArray> <CloseArray>
+    <Identifier> <CloseParenthesis> <OpenBlock>
+        (VarDeclaration())*
+        (Statement())*
+    <CloseBlock>
+    )
 }
 
 void Parameters(): {} {
@@ -139,8 +149,13 @@ void Statement() #void: {} {
     | (<If> <OpenParenthesis> Expression() <CloseParenthesis> Statement() <Else> Statement())
     | (<While> <OpenParenthesis> Expression() <CloseParenthesis> Statement())
     | (<Print> <OpenParenthesis> Expression() <CloseParenthesis> <Semicolon> )
+    | (Expression() <Semicolon>)
     | (<Identifier> <Equals> Expression() <Semicolon>)
     | (<Identifier> <OpenArray> Expression() <CloseArray> <Equals> Expression() <Semicolon>)
+}
+
+void Return() #void: {} {
+    <Return> Expression() <Semicolon>
 }
 
 /*
