@@ -97,7 +97,7 @@ void ImportDeclaration(): { Token t_name; } {
 }
 
 void ClassDeclaration(): { Token t_name; } {
-    <Class> t_name = <Identifier> { jjtThis.name = t_name.image; } (ClassInheritance())?
+    <Class> t_name = <Identifier> { jjtThis.name = t_name.image; } [ClassInheritance()]
     <OpenBlock>
         (VarDeclaration())*
         (MethodDeclaration())*
@@ -109,7 +109,7 @@ void ClassInheritance(): { Token t_name; } {
 }
 
 void VarDeclaration(): { Token t_name; } {
-    Type() t_name = <Identifier> <Semicolon> { jjtThis.identifier = t_name.image; }
+    Type() t_name = <Identifier> { jjtThis.identifier = t_name.image; } <Semicolon>
 }
 
 void MethodDeclaration(): { Token t_name; } {
@@ -124,11 +124,11 @@ void MethodDeclaration(): { Token t_name; } {
 }
 
 void Parameters(): {} {
-    (Type() <Identifier> (<Comma> Type()  <Identifier>)*)?
+    [Type() <Identifier> (<Comma> Type()  <Identifier>)*]
 }
 
 void Type(): { Token t_type; } {
-    ( (t_type = <TypeInt> (<OpenArray> <CloseArray>)?)
+    ( (t_type = <TypeInt> [<OpenArray> <CloseArray>])
     | t_type = <TypeBoolean>
     | t_type = <Identifier>
     ) { jjtThis.type = t_type.image; }
@@ -143,11 +143,12 @@ void Statement() #void: {} {
     | (<Identifier> <OpenArray> Expression() <CloseArray> <Equals> Expression() <Semicolon>)
 }
 
+/*
 void Expression() #void: {} {
     (Expression() (<AndOp> | <LessThanOp> | <AddOp> | <SubOp> | <MultOp> ) Expression())
     | (Expression() <OpenArray> Expression() <CloseArray>)
     | (Expression() <Dot> <Length>)
-    | (Expression() <Dot> <Identifier> <OpenParenthesis> (Expression() (<Comma> Expression())*)? <CloseParenthesis> )
+    | (Expression() <Dot> <Identifier> <OpenParenthesis> [Expression() (<Comma> Expression())*] <CloseParenthesis> )
     | <IntegerLiteral>
     | <True>
     | <False>
@@ -157,4 +158,63 @@ void Expression() #void: {} {
     | (<New> <Identifier> <OpenParenthesis> <CloseParenthesis>)
     | (<NotOp> Expression())
     | (<OpenParenthesis> Expression() <CloseParenthesis>)
+}
+*/
+
+void Expression() #void: {} {
+    And()
+}
+
+void And() #void: {} {
+    LessThan() [<AndOp> LessThan() ] #AndExpression
+}
+
+void LessThan() #void: {} {
+    Add() [<LessThanOp> Add() ] #LessThanExpression
+}
+
+void Add() #void: {} {
+    Sub() [<AddOp> Sub() ] #AddExpression
+}
+
+void Sub() #void: {} {
+    Mult() [<SubOp> Mult() ] #SubExpression
+}
+
+void Mult() #void: {} {
+    Not() [<MultOp> Not() ] #MultExpression
+}
+
+void Not() #void: {} {
+    Dot() [<NotOp> Dot() ] #NotExpression
+}
+
+void Dot() #void: {} {
+    Array() [DotStuff() Array() ] #DotExpression
+}
+
+void Array() #void: {} {
+    Terminal() [<OpenArray> Expression() <CloseArray> Terminal() ] #ArrayExpression
+}
+
+void DotStuff() #void: {} {
+    <Length> #Length
+    | (<Identifier> <OpenParenthesis> [Expression() (<Comma> Expression())*] <CloseParenthesis> ) #CallExpression
+}
+
+void Terminal() #void: { Token t_value; } {
+    ( t_value = <IntegerLiteral> { jjtThis.value = t_value; } ) #IntegerLiteral
+    | ( t_value = <True> { jjtThis.value = t_value; } ) #True
+    | ( t_value = <False> { jjtThis.value = t_value; } ) #False
+    | ( t_value = <Identifier> { jjtThis.value = t_value; } ) #Identifier
+    | ( t_value = <This> { jjtThis.value = t_value; } ) #This
+    | (<OpenParenthesis> Expression() <CloseParenthesis> ) #ParenthesisExpression
+    | New()
+}
+
+void New() #void: { Token t_type; } {
+    <New> (
+      ( t_type = <TypeInt> { jjThis.type = t_type.image + " array"; } <OpenArray> Expression() <CloseArray> ) #NewIntArray
+    | ( t_type = <Identifier> { jjThis.type = t_type.image; } <OpenParenthesis> <CloseParenthesis> ) #NewClass
+    )
 }
