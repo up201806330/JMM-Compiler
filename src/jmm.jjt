@@ -120,8 +120,7 @@ void MethodDeclaration(): { Token t_name; } {
         Parameters()
     <CloseParenthesis>
     <OpenBlock>
-        (VarDeclaration())*
-        (Statement())*
+        (VarDeclaration() | Statement())* // Allowed for now
         Return()
     <CloseBlock>
     |
@@ -181,40 +180,40 @@ void Expression() #void: {} {
 }
 
 void And() #void: {} {
-    LessThan() [<AndOp> LessThan() ] #AndExpression
+    LessThan() (<AndOp> LessThan() )* #AndExpression
 }
 
 void LessThan() #void: {} {
-    Add() [<LessThanOp> Add() ] #LessThanExpression
+    Add() (<LessThanOp> Add() )* #LessThanExpression
 }
 
 void Add() #void: {} {
-    Sub() [<AddOp> Sub() ] #AddExpression
+    Sub() (<AddOp> Sub() )* #AddExpression
 }
 
 void Sub() #void: {} {
-    Mult() [<SubOp> Mult() ] #SubExpression
+    Mult() (<SubOp> Mult() )* #SubExpression
 }
 
 void Mult() #void: {} {
-    Not() [<MultOp> Not() ] #MultExpression
+    Not() (<MultOp> Not() )* #MultExpression
 }
 
 void Not() #void: {} {
-    Dot() [<NotOp> Dot() ] #NotExpression
+    Dot() (<NotOp> Dot() )* #NotExpression
 }
 
 void Dot() #void: {} {
-    Array() [DotStuff() Array() ] #DotExpression
+    Array() (DotStuff() Array() )* #DotExpression
 }
 
 void Array() #void: {} {
-    Terminal() [<OpenArray> Expression() <CloseArray> Terminal() ] #ArrayExpression
+    Terminal() (<OpenArray> Expression() <CloseArray> Terminal() )* #ArrayExpression
 }
 
 void DotStuff() #void: {} {
     <Length> #Length
-    | (<Identifier> <OpenParenthesis> [Expression() (<Comma> Expression())*] <CloseParenthesis> ) #CallExpression
+    | (<Identifier> <OpenParenthesis> [Expression() (<Comma> Expression())*] <CloseParenthesis> )* #CallExpression
 }
 
 void Terminal() #void: { Token t_value; } {
