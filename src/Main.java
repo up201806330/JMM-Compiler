@@ -3,9 +3,12 @@ import pt.up.fe.comp.jmm.JmmParser;
 import pt.up.fe.comp.jmm.JmmParserResult;
 import pt.up.fe.comp.jmm.report.Report;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.io.StringReader;
+import java.util.Scanner;
 
 public class Main implements JmmParser {
 
@@ -13,8 +16,8 @@ public class Main implements JmmParser {
 	public JmmParserResult parse(String jmmCode) {
 		
 		try {
-		    Calculator myCalc = new Calculator(new StringReader(jmmCode));
-    		SimpleNode root = myCalc.Expression(); // returns reference to root node
+		    Jmm jmm = new Jmm(new StringReader(jmmCode));
+    		SimpleNode root = jmm.Program(); // returns reference to root node
             	
     		root.dump(""); // prints the tree on the screen
     	
@@ -24,11 +27,17 @@ public class Main implements JmmParser {
 		}
 	}
 
-    public static void main(String[] args) {
-        System.out.println("Executing with args: " + Arrays.toString(args));
-        if (args[0].contains("fail")) {
-            throw new RuntimeException("It's supposed to fail");
-        }
+    public static void main(String[] args) throws FileNotFoundException {
+		File testFile = new File("./src/Test.java");
+		Scanner myReader = new Scanner(testFile);
+		StringBuilder data = new StringBuilder();
+		while (myReader.hasNextLine()) {
+			data.append(myReader.nextLine());
+			data.append('\n');
+		}
+		myReader.close();
+		Main temp = new Main();
+		temp.parse(data.toString());
     }
 
 
