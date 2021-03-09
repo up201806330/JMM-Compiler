@@ -59,11 +59,6 @@ TOKEN :
 {
     <Digit: ["0" - "9"] >
 
-    | <Identifier: <Letter> (<Letter> | <Digit> | "_" )* >
-    | <Letter: (<LowerCase> | <UpperCase>) >
-    | <LowerCase: ["a"-"z"] >
-    | <UpperCase: ["A"-"Z"] >
-
     | <IntegerLiteral: ["1" - "9"] (<Digit>)*>
 
     | <OpenBlock: "{" >
@@ -104,6 +99,11 @@ TOKEN :
     | <MultOp: "*" >
     | <NotOp: "!" >
     | <Print: "System.out.println">
+
+    | <Identifier: <Letter> (<Letter> | <Digit> | "_" )* >
+    | <Letter: (<LowerCase> | <UpperCase>) >
+    | <LowerCase: ["a"-"z"] >
+    | <UpperCase: ["A"-"Z"] >
 }
 
 SimpleNode Program(): {} {
@@ -141,14 +141,13 @@ void MethodDeclaration(): { Token t_name; } {
         Parameters()
     <CloseParenthesis>
     <OpenBlock>
-        (VarDeclaration() | Statement())* // Allowed for now
+        (LOOKAHEAD(3) VarDeclaration() | Statement())* // Allowed for now
         Return()
     <CloseBlock>
     |
     <Static> <Void> <Main> <OpenParenthesis> <TypeString> <OpenArray> <CloseArray>
     <Identifier> <CloseParenthesis> <OpenBlock>
-        (VarDeclaration())*
-        (Statement())*
+        (LOOKAHEAD(3) VarDeclaration() | Statement())* // Allowed for now
     <CloseBlock>
     )
 }
@@ -169,10 +168,13 @@ void Statement() #void: {} {
     | (<If> <OpenParenthesis> Expression() <CloseParenthesis> Statement() <Else> Statement())
     | (<While> <OpenParenthesis> Expression() <CloseParenthesis> Statement())
     | (<Print> <OpenParenthesis> Expression() <CloseParenthesis> <Semicolon> )
-    | (Expression() <Semicolon>)
-    | (<Identifier> <Equals> Expression() <Semicolon>)
-    | (<Identifier> <OpenArray> Expression() <CloseArray> <Equals> Expression() <Semicolon>)
+    | (Expression() [Assignment()] <Semicolon>)
 }
+
+void Assignment(): {} {
+    <Equals> Expression()
+}
+
 
 void Return() #void: {} {
     <Return> Expression() <Semicolon>
@@ -225,16 +227,16 @@ void Not() #void: {} {
 }
 
 void Dot() #void: {} {
-    Array() (DotStuff() Array() )* #DotExpression
+    Array() (DotStatement() Array() )* #DotExpression
 }
 
 void Array() #void: {} {
     Terminal() (<OpenArray> Expression() <CloseArray> Terminal() )* #ArrayExpression
 }
 
-void DotStuff() #void: {} {
+void DotStatement() #void: {} {
     <Length> #Length
-    | (<Identifier> <OpenParenthesis> [Expression() (<Comma> Expression())*] <CloseParenthesis> )* #CallExpression
+    | (LOOKAHEAD(2) <Identifier> <OpenParenthesis> [Expression() (<Comma> Expression())*] <CloseParenthesis> )* #CallExpression
 }
 
 void Terminal() #void: { Token t_value; } {
