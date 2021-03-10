@@ -2,6 +2,13 @@
 
 class Test {
     public int testMethod() {
-        return 1;
+        int i;
+        i = 1;
+        return i;
+    }
+
+    public static void main(String[] args) {
+        boolean a;
+        a = false;
     }
 }

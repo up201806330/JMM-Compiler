@@ -141,7 +141,7 @@ void MethodDeclaration(): { Token t_name; } {
         Parameters()
     <CloseParenthesis>
     <OpenBlock>
-        (LOOKAHEAD(3) VarDeclaration() | Statement())* // Allowed for now
+        (LOOKAHEAD(2) VarDeclaration() | Statement())* // Allowed for now
         Return()
     <CloseBlock>
     |
@@ -165,10 +165,10 @@ void Type(): { Token t_type; } {
 
 void Statement() #void: {} {
     (<OpenBlock> (Statement())* <CloseBlock> )
-    | (<If> <OpenParenthesis> Expression() <CloseParenthesis> Statement() <Else> Statement())
-    | (<While> <OpenParenthesis> Expression() <CloseParenthesis> Statement())
-    | (<Print> <OpenParenthesis> Expression() <CloseParenthesis> <Semicolon> )
-    | (Expression() [Assignment()] <Semicolon>)
+    | (<If> <OpenParenthesis> Expression() <CloseParenthesis> Statement() <Else> Statement()) #IfStatement
+    | (<While> <OpenParenthesis> Expression() <CloseParenthesis> Statement()) #WhileStatement
+    | (<Print> <OpenParenthesis> Expression() <CloseParenthesis> <Semicolon> ) #PrintStatement
+    | (Expression() [Assignment()] <Semicolon>) #OtherStatement
 }
 
 void Assignment(): {} {
@@ -176,7 +176,7 @@ void Assignment(): {} {
 }
 
 
-void Return() #void: {} {
+void Return(): {} {
     <Return> Expression() <Semicolon>
 }
 
@@ -203,35 +203,35 @@ void Expression() #void: {} {
 }
 
 void And() #void: {} {
-    LessThan() (<AndOp> LessThan() )* #AndExpression
+    LessThan() (<AndOp> #AndExpression LessThan() )*
 }
 
 void LessThan() #void: {} {
-    Add() (<LessThanOp> Add() )* #LessThanExpression
+    Add() (<LessThanOp> #LessThanExpression Add() )*
 }
 
 void Add() #void: {} {
-    Sub() (<AddOp> Sub() )* #AddExpression
+    Sub() (<AddOp> #AddExpression Sub() )*
 }
 
 void Sub() #void: {} {
-    Mult() (<SubOp> Mult() )* #SubExpression
+    Mult() (<SubOp> #SubExpression Mult() )*
 }
 
 void Mult() #void: {} {
-    Not() (<MultOp> Not() )* #MultExpression
+    Not() (<MultOp> #MultExpression Not() )*
 }
 
 void Not() #void: {} {
-    Dot() (<NotOp> Dot() )* #NotExpression
+    Dot() (<NotOp> #NotExpression Dot() )*
 }
 
 void Dot() #void: {} {
-    Array() (DotStatement() Array() )* #DotExpression
+    Array() (DotStatement() #DotExpression Array() )*
 }
 
 void Array() #void: {} {
-    Terminal() (<OpenArray> Expression() <CloseArray> Terminal() )* #ArrayExpression
+    Terminal() (<OpenArray> Expression() <CloseArray> #ArrayExpression Terminal() )*
 }
 
 void DotStatement() #void: {} {
