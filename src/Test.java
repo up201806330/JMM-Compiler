@@ -9,6 +9,9 @@ class Test {
 
     public static void main(String[] args) {
         boolean a;
-        a = false;
+        a = true;
+        while(a) {
+            a = false;
+        }
     }
 }

@@ -107,14 +107,14 @@ TOKEN :
 }
 
 SimpleNode Program(): {} {
-    ImportDeclaration()
+    (ImportDeclaration())*
     ClassDeclaration()
     <EOF>
     { return jjtThis; }
 }
 
 void ImportDeclaration(): { Token t_name; } {
-    (<Import> t_name = <Identifier> { jjtThis.name = t_name.image; } (<Dot> <Identifier>)* <Semicolon>)*
+    <Import> t_name = <Identifier> { jjtThis.name = t_name.image; } (<Dot> <Identifier>)* <Semicolon>
 }
 
 void ClassDeclaration(): { Token t_name; } {
