@@ -58,7 +58,7 @@ MORE : {
 TOKEN :
 {
 
-    <IntegerLiteral: ["1" - "9"] (<Digit>)*>
+    <IntegerLiteral: <Digit> (<Digit>)*>
     | <Digit: ["0" - "9"] >
 
     | <OpenBlock: "{" >
@@ -114,11 +114,11 @@ SimpleNode Program(): {} {
 }
 
 void ImportDeclaration(): { Token t_name; } {
-    <Import> t_name = <Identifier> { jjtThis.name = t_name.image; } (<Dot> <Identifier>)* <Semicolon>
+    <Import> t_name = <Identifier> { jjtThis.value = t_name.image; } (<Dot> <Identifier>)* <Semicolon>
 }
 
 void ClassDeclaration(): { Token t_name; } {
-    <Class> t_name = <Identifier> { jjtThis.name = t_name.image; } [ClassInheritance()]
+    <Class> t_name = <Identifier> { jjtThis.value = t_name.image; } [ClassInheritance()]
     <OpenBlock>
         (VarDeclaration())*
         (MethodDeclaration())*
@@ -130,13 +130,13 @@ void ClassInheritance(): { Token t_name; } {
 }
 
 void VarDeclaration(): { Token t_name; } {
-    Type() t_name = <Identifier> { jjtThis.identifier = t_name.image; } <Semicolon>
+    Type() t_name = <Identifier> { jjtThis.value = t_name.image; } <Semicolon>
 }
 
 void MethodDeclaration(): { Token t_name; } {
     <Public>
     (
-    Type() t_name = <Identifier> { jjtThis.identifier = t_name.image; }
+    Type() t_name = <Identifier> { jjtThis.value = t_name.image; }
     <OpenParenthesis>
         Parameters()
     <CloseParenthesis>
@@ -160,19 +160,19 @@ void Type(): { Token t_type; } {
     ( (t_type = <TypeInt> [<OpenArray> <CloseArray>])
     | t_type = <TypeBoolean>
     | t_type = <Identifier>
-    ) { jjtThis.type = t_type.image; }
+    ) { jjtThis.value = t_type.image; }
 }
 
 void Statement() #void: {} {
     (<OpenBlock> (Statement())* <CloseBlock> )
-    | (<If> <OpenParenthesis> Expression() <CloseParenthesis> Statement() <Else> Statement()) #IfStatement
-    | (<While> <OpenParenthesis> Expression() <CloseParenthesis> Statement()) #WhileStatement
+    | (<If> <OpenParenthesis> Expression() #IfCondition <CloseParenthesis> Statement() <Else> Statement() #Else) #IfStatement
+    | (<While> <OpenParenthesis> Expression() #WhileCondition <CloseParenthesis> Statement()) #WhileStatement
     | (<Print> <OpenParenthesis> Expression() <CloseParenthesis> <Semicolon> ) #PrintStatement
-    | (Expression() [Assignment()] <Semicolon>) #OtherStatement
+    | (Expression() [Assignment()] <Semicolon>)
 }
 
-void Assignment(): {} {
-    <Equals> Expression()
+void Assignment() #void: {} {
+    <Equals> Expression() #Assignment(2)
 }
 
 
@@ -203,27 +203,27 @@ void Expression() #void: {} {
 }
 
 void And() #void: {} {
-    LessThan() (<AndOp> #AndExpression LessThan() )*
+    LessThan() (<AndOp> LessThan() #AndExpression(2) )*
 }
 
 void LessThan() #void: {} {
-    Add() (<LessThanOp> #LessThanExpression Add() )*
+    Add() (<LessThanOp> Add() #LessThanExpression(2) )*
 }
 
 void Add() #void: {} {
-    Sub() (<AddOp> #AddExpression Sub() )*
+    Sub() (<AddOp> Sub() #AddExpression(2) )*
 }
 
 void Sub() #void: {} {
-    Mult() (<SubOp> #SubExpression Mult() )*
+    Mult() (<SubOp> Mult()  #SubExpression(2) )*
 }
 
 void Mult() #void: {} {
-    Not() (<MultOp> #MultExpression Not() )*
+    Not() (<MultOp> Not()  #MultExpression(2) )*
 }
 
 void Not() #void: {} {
-    Dot() (<NotOp> #NotExpression Dot() )*
+    Dot() (<NotOp> #NotExpression Dot() )* //Não sei como corrigir mas o not não pode ter expressões do lado esquerdo
 }
 
 void Dot() #void: {} {
@@ -231,7 +231,7 @@ void Dot() #void: {} {
 }
 
 void Array() #void: {} {
-    Terminal() (<OpenArray> Expression() <CloseArray> #ArrayExpression Terminal() )*
+    Terminal() (<OpenArray> Expression() <CloseArray> #ArrayExpression(2) [Terminal()] )*
 }
 
 void DotStatement() #void: {} {
@@ -251,7 +251,7 @@ void Terminal() #void: { Token t_value; } {
 
 void New() #void: { Token t_type; } {
     <New> (
-      ( t_type = <TypeInt> { jjtThis.type = t_type.image + " array"; } <OpenArray> Expression() <CloseArray> ) #NewIntArray
-    | ( t_type = <Identifier> { jjtThis.type = t_type.image; } <OpenParenthesis> <CloseParenthesis> ) #NewClass
+      ( t_type = <TypeInt> { jjtThis.value = t_type.image + " array"; } <OpenArray> Expression() <CloseArray> ) #NewIntArray
+    | ( t_type = <Identifier> { jjtThis.value = t_type.image; } <OpenParenthesis> <CloseParenthesis> ) #NewClass
     )
 }
