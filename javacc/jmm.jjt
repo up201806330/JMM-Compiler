@@ -152,8 +152,12 @@ void MethodDeclaration(): { Token t_name; } {
     )
 }
 
-void Parameters(): {} {
-    [Type() <Identifier> (<Comma> Type()  <Identifier>)*]
+void Parameters() #void: {} {
+    [Parameter() (<Comma> Parameter())* ]
+}
+
+void Parameter(): { Token t_name; } {
+    Type() t_name = <Identifier> { jjtThis.value = t_name.image; }
 }
 
 void Type(): { Token t_type; } {
@@ -241,8 +245,8 @@ void DotStatement() #void: {} {
 
 void Terminal() #void: { Token t_value; } {
     ( t_value = <IntegerLiteral> { jjtThis.value = t_value; } ) #IntegerLiteral
-    | ( t_value = <True> { jjtThis.value = t_value; } ) #True
-    | ( t_value = <False> { jjtThis.value = t_value; } ) #False
+    | ( t_value = <True> { jjtThis.value = t_value; } ) #Bool
+    | ( t_value = <False> { jjtThis.value = t_value; } ) #Bool
     | ( t_value = <Identifier> { jjtThis.value = t_value; } ) #Identifier
     | ( t_value = <This> { jjtThis.value = t_value; } ) #This
     | (<OpenParenthesis> Expression() <CloseParenthesis> ) #ParenthesisExpression
