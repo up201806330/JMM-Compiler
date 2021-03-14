@@ -20,6 +20,7 @@ public class Main implements JmmParser {
     		SimpleNode root = jmm.Program(); // returns reference to root node
             	
     		root.dump(""); // prints the tree on the screen
+			System.out.println(root.toJson());
     	
     		return new JmmParserResult(root, new ArrayList<Report>());
 		} catch(ParseException e) {

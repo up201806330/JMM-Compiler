@@ -19,7 +19,7 @@ public class Jmm {
 PARSER_END(Jmm)
 
 JAVACODE
-void error_skipto(int kind) {
+void error_skipto(int kind) { // Currently skiping until ")", skipping until "{" doesnt work
   ParseException e = generateParseException();  // generate the exception object
   System.out.println(e.toString());  // print the error message
   Token t;
