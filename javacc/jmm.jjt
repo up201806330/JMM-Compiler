@@ -227,11 +227,11 @@ void Mult() #void: {} {
 }
 
 void Not() #void: {} {
-    Dot() (<NotOp> #NotExpression Dot() )* //Não sei como corrigir mas o not não pode ter expressões do lado esquerdo
+    (<NotOp> Not() #NotExpression() ) | Dot() //Não sei como corrigir mas o not não pode ter expressões do lado esquerdo
 }
 
 void Dot() #void: {} {
-    Array() (DotStatement() #DotExpression Array() )*
+    Array() (<Dot> DotStatement() #DotExpression Array() )*
 }
 
 void Array() #void: {} {
