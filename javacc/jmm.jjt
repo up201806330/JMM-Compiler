@@ -18,6 +18,20 @@ public class Jmm {
 
 PARSER_END(Jmm)
 
+JAVACODE
+void error_skipto(int kind) {
+  ParseException e = generateParseException();  // generate the exception object
+  System.out.println(e.toString());  // print the error message
+  Token t;
+  // consume tokens all the way up to a token of "kind" - use a do-while loop
+  // rather than a while because the current token is the one immediately before
+  // the erroneous token (in our case the token immediately before what should
+  // have been "if"/"while".
+  do {
+    t = getNextToken();
+  }
+  while (t.kind != kind);
+}
 
 SKIP :
 {
@@ -147,7 +161,7 @@ void MethodDeclaration(): { Token t_name; } {
     |
     <Static> <Void> t_name = <Main> { jjtThis.value = t_name.image; } <OpenParenthesis> <TypeString> <OpenArray> <CloseArray>
     <Identifier> <CloseParenthesis> <OpenBlock>
-        (LOOKAHEAD(3) VarDeclaration() | Statement())* // Allowed for now
+        (LOOKAHEAD(2) VarDeclaration() | Statement())* // Allowed for now
     <CloseBlock>
     )
 }
@@ -170,9 +184,21 @@ void Type(): { Token t_type; } {
 void Statement() #void: {} {
     (<OpenBlock> (Statement())* <CloseBlock> )
     | (<If> <OpenParenthesis> Expression() #IfCondition <CloseParenthesis> Statement() <Else> Statement() #Else) #IfStatement
-    | (<While> <OpenParenthesis> Expression() #WhileCondition <CloseParenthesis> Statement()) #WhileStatement
+    | WhileStatement()
     | (<Print> <OpenParenthesis> Expression() <CloseParenthesis> <Semicolon> ) #PrintStatement
     | (Expression() [Assignment()] <Semicolon>)
+}
+
+void WhileStatement(): {} {
+    <While> <OpenParenthesis>
+    try{
+        (Expression() #WhileCondition <CloseParenthesis>)
+    }
+    catch(ParseException e){
+        error_skipto(CloseParenthesis);
+    }
+
+    Statement() #WhileBody
 }
 
 void Assignment() #void: {} {
