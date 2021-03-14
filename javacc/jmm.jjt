@@ -136,7 +136,7 @@ void VarDeclaration(): { Token t_name; } {
 void MethodDeclaration(): { Token t_name; } {
     <Public>
     (
-    Type() t_name = <Identifier> { jjtThis.value = t_name.image; }
+    Type() t_name = <Identifier> { jjtThis.value = t_name.image; } // Ha forma de substituir o node Type por um novo chamado ReturnType mas c o valor dele??
     <OpenParenthesis>
         Parameters()
     <CloseParenthesis>
@@ -145,7 +145,7 @@ void MethodDeclaration(): { Token t_name; } {
         Return()
     <CloseBlock>
     |
-    <Static> <Void> <Main> <OpenParenthesis> <TypeString> <OpenArray> <CloseArray>
+    <Static> <Void> t_name = <Main> { jjtThis.value = t_name.image; } <OpenParenthesis> <TypeString> <OpenArray> <CloseArray>
     <Identifier> <CloseParenthesis> <OpenBlock>
         (LOOKAHEAD(3) VarDeclaration() | Statement())* // Allowed for now
     <CloseBlock>
@@ -227,20 +227,23 @@ void Mult() #void: {} {
 }
 
 void Not() #void: {} {
-    (<NotOp> Not() #NotExpression() ) | Dot() //Não sei como corrigir mas o not não pode ter expressões do lado esquerdo
+    (<NotOp> Not() #NotExpression) | Terminations()
 }
 
-void Dot() #void: {} {
-    Array() (<Dot> DotStatement() #DotExpression Array() )*
+void Terminations() #void: {} {
+    Terminal() (Array() | DotStatement())* // o intellij está a queixar se disto mas n percebo pq
 }
 
 void Array() #void: {} {
-    Terminal() (<OpenArray> Expression() <CloseArray> #ArrayExpression(2) [Terminal()] )*
+    <OpenArray> Expression() <CloseArray> #ArrayExpression(2)
 }
 
-void DotStatement() #void: {} {
-    <Length> #Length
-    | (LOOKAHEAD(2) <Identifier> <OpenParenthesis> [Expression() (<Comma> Expression())*] <CloseParenthesis> )* #CallExpression
+void DotStatement() #void: { Token t_value; } {
+    <Dot>
+    (
+    (t_value = <Length> { jjtThis.value = t_value.image; }) #Length
+    | (t_value = <Identifier> { jjtThis.value = t_value.image; } <OpenParenthesis> [Expression() (<Comma> Expression())*] <CloseParenthesis> ) #CallExpression(1)
+    )
 }
 
 void Terminal() #void: { Token t_value; } {
@@ -248,14 +251,15 @@ void Terminal() #void: { Token t_value; } {
     | ( t_value = <True> { jjtThis.value = t_value; } ) #Bool
     | ( t_value = <False> { jjtThis.value = t_value; } ) #Bool
     | ( t_value = <Identifier> { jjtThis.value = t_value; } ) #Identifier
-    | ( t_value = <This> { jjtThis.value = t_value; } ) #This
+    | ( <This> ) #This
     | (<OpenParenthesis> Expression() <CloseParenthesis> ) #ParenthesisExpression
     | New()
 }
 
 void New() #void: { Token t_type; } {
-    <New> (
-      ( t_type = <TypeInt> { jjtThis.value = t_type.image + " array"; } <OpenArray> Expression() <CloseArray> ) #NewIntArray
+    <New>
+    (
+    ( <TypeInt> <OpenArray> Expression() <CloseArray> ) #NewIntArray
     | ( t_type = <Identifier> { jjtThis.value = t_type.image; } <OpenParenthesis> <CloseParenthesis> ) #NewClass
     )
 }
