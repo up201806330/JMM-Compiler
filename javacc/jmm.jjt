@@ -30,7 +30,7 @@ void error_skipto(int kind) { // Currently skiping until ")", skipping until "{"
   do {
     t = getNextToken();
   }
-  while (t.kind != kind);
+  while (getToken(1).kind != kind);
 }
 
 SKIP :
@@ -114,7 +114,7 @@ TOKEN :
     | <NotOp: "!" >
     | <Print: "System.out.println">
 
-    | <Identifier: <Letter> (<Letter> | <Digit> | "_" )* >
+    | <Identifier: <Letter> (<Letter> | <Digit> | "_" | "$")* >
     | <Letter: (<LowerCase> | <UpperCase>) >
     | <LowerCase: ["a"-"z"] >
     | <UpperCase: ["A"-"Z"] >
@@ -128,29 +128,29 @@ SimpleNode Program(): {} {
 }
 
 void ImportDeclaration(): { Token t_name; } {
-    <Import> t_name = <Identifier> { jjtThis.value = t_name.image; } (<Dot> <Identifier>)* <Semicolon>
+    <Import> t_name = <Identifier> { jjtThis.name = t_name.image; } (<Dot> <Identifier>)* <Semicolon>
 }
 
 void ClassDeclaration(): { Token t_name; } {
-    <Class> t_name = <Identifier> { jjtThis.value = t_name.image; } [ClassInheritance()]
+    <Class> t_name = <Identifier> { jjtThis.name = t_name.image; } [ClassInheritance()]
     <OpenBlock>
         (VarDeclaration())*
         (MethodDeclaration())*
     <CloseBlock>
 }
 
-void ClassInheritance(): { Token t_name; } {
-    <Extends> t_name = <Identifier> { jjtThis.name = t_name.image; }
+void ClassInheritance(): { Token t_type; } {
+    <Extends> t_type = <Identifier> { jjtThis.type = t_type.image; }
 }
 
 void VarDeclaration(): { Token t_name; } {
-    Type() t_name = <Identifier> { jjtThis.value = t_name.image; } <Semicolon>
+    Type() t_name = <Identifier> { jjtThis.name = t_name.image; } <Semicolon>
 }
 
 void MethodDeclaration(): { Token t_name; } {
     <Public>
     (
-    Type() t_name = <Identifier> { jjtThis.value = t_name.image; } // Ha forma de substituir o node Type por um novo chamado ReturnType mas c o valor dele??
+    Type() t_name = <Identifier> { jjtThis.name = t_name.image; } // Ha forma de substituir o node Type por um novo chamado ReturnType mas c o valor dele??
     <OpenParenthesis>
         Parameters()
     <CloseParenthesis>
@@ -159,7 +159,7 @@ void MethodDeclaration(): { Token t_name; } {
         Return()
     <CloseBlock>
     |
-    <Static> <Void> t_name = <Main> { jjtThis.value = t_name.image; } <OpenParenthesis> <TypeString> <OpenArray> <CloseArray>
+    <Static> <Void> t_name = <Main> { jjtThis.name = t_name.image; } <OpenParenthesis> <TypeString> <OpenArray> <CloseArray>
     <Identifier> <CloseParenthesis> <OpenBlock>
         (LOOKAHEAD(2) VarDeclaration() | Statement())* // Allowed for now
     <CloseBlock>
@@ -171,14 +171,14 @@ void Parameters() #void: {} {
 }
 
 void Parameter(): { Token t_name; } {
-    Type() t_name = <Identifier> { jjtThis.value = t_name.image; }
+    Type() t_name = <Identifier> { jjtThis.name = t_name.image; }
 }
 
 void Type(): { Token t_type; } {
     ( (t_type = <TypeInt> [<OpenArray> <CloseArray>])
     | t_type = <TypeBoolean>
     | t_type = <Identifier>
-    ) { jjtThis.value = t_type.image; }
+    ) { jjtThis.type = t_type.image; }
 }
 
 void Statement() #void: {} {
@@ -195,7 +195,7 @@ void WhileStatement(): {} {
         (Expression() #WhileCondition <CloseParenthesis>)
     }
     catch(ParseException e){
-        error_skipto(CloseParenthesis);
+        error_skipto(OpenBlock);
     }
 
     Statement() #WhileBody
@@ -264,11 +264,11 @@ void Array() #void: {} {
     <OpenArray> Expression() <CloseArray> #ArrayExpression(2)
 }
 
-void DotStatement() #void: { Token t_value; } {
+void DotStatement() #CallExpression: { Token t_name; } {
     <Dot>
     (
-    (t_value = <Length> { jjtThis.value = t_value.image; }) #Length
-    | (t_value = <Identifier> { jjtThis.value = t_value.image; } <OpenParenthesis> [Expression() (<Comma> Expression())*] <CloseParenthesis> ) #CallExpression(1)
+    (t_name = <Length> { jjtThis.name = t_name.image; })
+    | (t_name = <Identifier> { jjtThis.name = t_name.image; } <OpenParenthesis> [Expression() (<Comma> Expression())*] <CloseParenthesis> )
     )
 }
 
@@ -286,6 +286,6 @@ void New() #void: { Token t_type; } {
     <New>
     (
     ( <TypeInt> <OpenArray> Expression() <CloseArray> ) #NewIntArray
-    | ( t_type = <Identifier> { jjtThis.value = t_type.image; } <OpenParenthesis> <CloseParenthesis> ) #NewClass
+    | ( t_type = <Identifier> { jjtThis.type = t_type.image; } <OpenParenthesis> <CloseParenthesis> ) #NewClass
     )
 }

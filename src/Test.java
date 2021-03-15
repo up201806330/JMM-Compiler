@@ -10,12 +10,8 @@ class Test {
     public static void main(String[] args) {
         boolean a;
         a = true;
-        while(a = true) {
-            while(a = true) {
-                while(a = true) {
-                    a = false;
-                }
-            }
+        while(a) {
+            a = false;
         }
     }
 

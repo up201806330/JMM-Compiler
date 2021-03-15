@@ -11,16 +11,17 @@ import java.util.List;
 public
 class SimpleNode implements Node, JmmNode {
 
+  protected int id;
   protected Node parent;
   protected Node[] children;
-  protected int id;
-  protected Object value;
   protected Jmm parser;
-  public String name;
 
-    // added
-    public int val;
-    public Operator op = null;
+  public int val; // Here because of Calculator still being compiled for some reason
+
+  protected Object name;
+  protected Object type;
+  protected Object value;
+
 
   public SimpleNode(int i) {
     id = i;
@@ -30,7 +31,6 @@ class SimpleNode implements Node, JmmNode {
     this(i);
     parser = p;
   }
-
 
   public String getKind() {
 	  return toString();
@@ -49,7 +49,7 @@ class SimpleNode implements Node, JmmNode {
   }
   
   public List<JmmNode> getChildren() {
-    return (children == null) ? new ArrayList<>() : Arrays.asList((JmmNode[])children);
+    return JmmNode.convertChildren(children);
   }
   
   public int getNumChildren() {
@@ -111,7 +111,11 @@ class SimpleNode implements Node, JmmNode {
      out its children. */
 
   public void dump(String prefix) {
-    System.out.println(toString(prefix) + (this.value != null ? " [" + this.value.toString() + "]" : ""));
+    System.out.println(
+            toString(prefix) +
+            (this.type != null ? " {" + this.type.toString() + "}" : "") +
+            (this.name != null ? " (" + this.name.toString() + ")" : "") +
+            (this.value != null ? " [" + this.value.toString() + "]" : ""));
     if (children != null) {
       for (int i = 0; i < children.length; ++i) {
         SimpleNode n = (SimpleNode)children[i];
