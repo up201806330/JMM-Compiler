@@ -6,6 +6,8 @@ import java.lang.RuntimeException;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public
@@ -16,15 +18,16 @@ class SimpleNode implements Node, JmmNode {
   protected Node[] children;
   protected Jmm parser;
 
-  public int val; // Here because of Calculator still being compiled for some reason
-
-  protected Object name;
-  protected Object type;
-  protected Object value;
-
+  protected Map<String, Object> attributes;
 
   public SimpleNode(int i) {
     id = i;
+    attributes = new HashMap<String, Object>() {{
+      put("name", null);
+      put("type", null);
+      put("value", null);
+
+    }};
   }
 
   public SimpleNode(Jmm p, int i) {
@@ -37,15 +40,23 @@ class SimpleNode implements Node, JmmNode {
   }
   
   public List<String> getAttributes() {
-	throw new RuntimeException("Not implemented yet");
+	List<String> result = new ArrayList<String>();
+	for (Map.Entry<String,Object> entry : attributes.entrySet()){
+	  if (entry.getValue() != null) result.add(entry.getKey());
+    }
+	return result;
+  }
+
+  public void put(String attribute, Object value) {
+    attributes.put(attribute, value);
   }
 
   public void put(String attribute, String value) {
-	throw new RuntimeException("Not implemented yet");	  
+    put(attribute, (Object) value);
   }
 
   public String get(String attribute) {
-	throw new RuntimeException("Not implemented yet");
+    return attributes.get(attribute).toString();
   }
   
   public List<JmmNode> getChildren() {
@@ -93,8 +104,8 @@ class SimpleNode implements Node, JmmNode {
     return (children == null) ? 0 : children.length;
   }
 
-  public void jjtSetValue(Object value) { this.value = value; }
-  public Object jjtGetValue() { return value; }
+  public void jjtSetValue(Object value) { this.attributes.put("value", value); }
+  public Object jjtGetValue() { return this.attributes.get("value"); }
 
   /* You can override these two methods in subclasses of SimpleNode to
      customize the way the node appears when the tree is dumped.  If
@@ -113,9 +124,9 @@ class SimpleNode implements Node, JmmNode {
   public void dump(String prefix) {
     System.out.println(
             toString(prefix) +
-            (this.type != null ? " {" + this.type.toString() + "}" : "") +
-            (this.name != null ? " (" + this.name.toString() + ")" : "") +
-            (this.value != null ? " [" + this.value.toString() + "]" : ""));
+            (this.attributes.get("type") != null ? " {" + this.attributes.get("type") + "}" : "") +
+            (this.attributes.get("name") != null ? " (" + this.attributes.get("name") + ")" : "") +
+            (this.attributes.get("value") != null ? " [" + this.attributes.get("value") + "]" : ""));
     if (children != null) {
       for (int i = 0; i < children.length; ++i) {
         SimpleNode n = (SimpleNode)children[i];
