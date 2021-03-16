@@ -225,19 +225,20 @@ void And() #void: {} {
 }
 
 void LessThan() #void: {} {
-    Add() (<LessThanOp> Add() #LessThanExpression(2) )*
+    AddSub() (<LessThanOp> AddSub() #LessThanExpression(2) )*
 }
 
-void Add() #void: {} {
-    Sub() (<AddOp> Sub() #AddExpression(2) )*
+void AddSub() #void: {} {
+    MultDiv() (
+        <AddOp> MultDiv() #AddExpression(2) 
+        | <SubOp> MultDiv()  #SubExpression(2) )*
 }
 
-void Sub() #void: {} {
-    Mult() (<SubOp> Mult()  #SubExpression(2) )*
-}
 
-void Mult() #void: {} {
-    Not() (<MultOp> Not()  #MultExpression(2) )*
+void MultDiv() #void: {} {
+    Not() (
+        <MultOp> Not()  #MultExpression(2) 
+        |<DivOp> Not()  #DivExpression(2)  )*
 }
 
 void Not() #void: {} {
@@ -252,12 +253,16 @@ void Array() #void: {} {
     <OpenArray> Expression() <CloseArray> #ArrayExpression(2)
 }
 
-void DotStatement() #CallExpression: { Token t_name; } {
+void DotStatement() #void: { Token t_name; } {
     <Dot>
     (
-    (t_name = <Length> { jjtThis.put("name", t_name.image); })
-    | (t_name = <Identifier> { jjtThis.put("name", t_name.image); } <OpenParenthesis> [Expression() (<Comma> Expression())*] <CloseParenthesis> )
+      (t_name = <Length> { jjtThis.put("name", t_name.image); } #PropertyAccess(1))
+    | CallExpression()
     )
+}
+
+void CallExpression() #CallExpression(2):{Token t_name;}{
+    t_name = <Identifier> { jjtThis.put("name", t_name.image); } <OpenParenthesis> ([Expression() (<Comma> Expression())*]#ArgsList) <CloseParenthesis>
 }
 
 void Terminal() #void: { Token t_value; } {
