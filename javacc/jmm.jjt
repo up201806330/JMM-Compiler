@@ -4,17 +4,7 @@ options
 }
 
 PARSER_BEGIN(Jmm)
-public class Jmm {
-    public static void main(String args[]) throws ParseException {
-        
-        System.out.println("Write an Java-- expression:");
-        Jmm myParser = new Jmm(System.in);
-        SimpleNode root = myParser.Program(); // returns reference to root node
-        
-        root.dump(""); // prints the tree on the screen
-        System.out.println("Finished Parsing");
-        }
-    }
+public class Jmm { public static void main(String args[]) throws ParseException { } }
 
 PARSER_END(Jmm)
 

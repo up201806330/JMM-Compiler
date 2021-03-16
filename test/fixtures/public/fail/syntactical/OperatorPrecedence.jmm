@@ -1,0 +1,6 @@
+class NestedLoop {
+	public static void main(String[] args) {
+        int a;
+        a = 1 + 2 * 3 - 4 * this.func(1,2);
+	}
+}
