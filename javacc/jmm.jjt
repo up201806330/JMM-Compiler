@@ -11,7 +11,7 @@ PARSER_END(Jmm)
 JAVACODE
 void error_skipto(int kind) {
   ParseException e = generateParseException();  // generate the exception object
-  System.out.println(e.toString());  // print the error message
+  System.out.println("While Error: " + e.toString());  // print the error message
   Token t;
   Token next = getToken(1);
   // consume tokens all the way up to a token of "kind" - use a do-while loop
