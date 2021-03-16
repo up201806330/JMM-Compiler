@@ -25,13 +25,13 @@ public class Main implements JmmParser {
 		    Jmm jmm = new Jmm(new StringReader(jmmCode));
     		root = jmm.Program(); // returns reference to root node
             	
-    		root.dump(""); // prints the tree on the screen
-			//System.out.println(root.toJson());
+    		//root.dump(""); // prints the tree on the screen
+			System.out.println(root.toJson());
     	
     		return new JmmParserResult(root, reports);
-		} catch(ParseException e) {
+		} catch(Exception e) {
 			//throw new RuntimeException("Error while parsing", e);
-			reports.add(new Report(ReportType.ERROR, Stage.SYNTATIC, e.getStackTrace()[0].getLineNumber(), e.getMessage()));
+			reports.add(new Report(ReportType.ERROR, Stage.SYNTATIC, 0, e.getMessage()));
 			return new JmmParserResult(root, reports);
 		}
 	}

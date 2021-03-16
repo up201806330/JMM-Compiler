@@ -4,14 +4,20 @@ options
 }
 
 PARSER_BEGIN(Jmm)
-public class Jmm { public static void main(String args[]) throws ParseException { } }
-
+import java.util.*;
+import pt.up.fe.comp.jmm.report.*;
+public class Jmm {
+    List<Report> reports = new ArrayList<Report>();
+    List<Report> getReports(){
+        return reports;
+    }
+}
 PARSER_END(Jmm)
 
 JAVACODE
 void error_skipto(int kind) {
-  ParseException e = generateParseException();  // generate the exception object
-  System.out.println("While Error: " + e.toString());  // print the error message
+  // ParseException e = generateParseException();  // generate the exception object
+  // System.out.println("While Error: " + e.toString());  // print the error message
   Token t;
   Token next = getToken(1);
   // consume tokens all the way up to a token of "kind" - use a do-while loop
@@ -104,6 +110,7 @@ TOKEN :
     | <AddOp: "+" >
     | <SubOp: "-" >
     | <MultOp: "*" >
+    | <DivOp: "/" >
     | <NotOp: "!" >
     | <Print: "System.out.println">
 
@@ -114,9 +121,14 @@ TOKEN :
 }
 
 SimpleNode Program(): {} {
-    (ImportDeclaration())*
-    ClassDeclaration()
-    <EOF>
+    try{
+        (ImportDeclaration())*
+        ClassDeclaration()
+        <EOF>
+    }
+    catch(ParseException e){
+        reports.add(new Report(ReportType.ERROR, Stage.SYNTATIC, token.beginLine, e.getMessage()));
+    }
     { return jjtThis; }
 }
 
@@ -188,6 +200,7 @@ void WhileStatement(): {} {
         (Expression() #WhileCondition <CloseParenthesis>)
     }
     catch(ParseException e){
+        reports.add(new Report(ReportType.ERROR, Stage.SYNTATIC, token.beginLine, e.getMessage()));
         error_skipto(OpenBlock);
     }
 
