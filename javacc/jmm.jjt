@@ -23,14 +23,17 @@ void error_skipto(int kind) {
   ParseException e = generateParseException();  // generate the exception object
   System.out.println(e.toString());  // print the error message
   Token t;
+  Token next = getToken(1);
   // consume tokens all the way up to a token of "kind" - use a do-while loop
   // rather than a while because the current token is the one immediately before
   // the erroneous token (in our case the token immediately before what should
   // have been "if"/"while".
-  do {
+  while (next.kind != kind && next.kind != 0){
     t = getNextToken();
+    next = getToken(1);
+//    System.out.print(t);
+//    System.out.println(getToken(1));
   }
-  while (getToken(1).kind != kind);
 }
 
 SKIP :
@@ -209,24 +212,6 @@ void Assignment() #void: {} {
 void Return(): {} {
     <Return> Expression() <Semicolon>
 }
-
-/*
-void Expression() #void: {} {
-    (Expression() (<AndOp> | <LessThanOp> | <AddOp> | <SubOp> | <MultOp> ) Expression())
-    | (Expression() <OpenArray> Expression() <CloseArray>)
-    | (Expression() <Dot> <Length>)
-    | (Expression() <Dot> <Identifier> <OpenParenthesis> [Expression() (<Comma> Expression())*] <CloseParenthesis> )
-    | <IntegerLiteral>
-    | <True>
-    | <False>
-    | <Identifier>
-    | <This>
-    | (<New> <TypeInt> <OpenArray> Expression() <CloseArray>)
-    | (<New> <Identifier> <OpenParenthesis> <CloseParenthesis>)
-    | (<NotOp> Expression())
-    | (<OpenParenthesis> Expression() <CloseParenthesis>)
-}
-*/
 
 void Expression() #void: {} {
     And()

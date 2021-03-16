@@ -2,6 +2,7 @@
 import pt.up.fe.comp.jmm.JmmParser;
 import pt.up.fe.comp.jmm.JmmParserResult;
 import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.specs.util.SpecsIo;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -29,16 +30,9 @@ public class Main implements JmmParser {
 	}
 
     public static void main(String[] args) throws FileNotFoundException {
-		File testFile = new File("./src/Test.java");
-		Scanner myReader = new Scanner(testFile);
-		StringBuilder data = new StringBuilder();
-		while (myReader.hasNextLine()) {
-			data.append(myReader.nextLine());
-			data.append('\n');
-		}
-		myReader.close();
 		Main temp = new Main();
-		temp.parse(data.toString());
+		String fileContents = SpecsIo.read(args[0]);
+		temp.parse(fileContents);
     }
 
 
