@@ -27,7 +27,9 @@ public class Main implements JmmParser {
             	
     		//root.dump(""); // prints the tree on the screen
 			System.out.println(root.toJson());
-    	
+
+			reports = jmm.getReports();
+
     		return new JmmParserResult(root, reports);
 		} catch(Exception e) {
 			//throw new RuntimeException("Error while parsing", e);
