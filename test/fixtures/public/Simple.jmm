@@ -1,4 +1,4 @@
-import io;
+import io.Test1.Test2;
 class Simple {
 
     public int add(int a, int b){

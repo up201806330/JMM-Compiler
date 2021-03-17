@@ -131,7 +131,11 @@ SimpleNode Program(): {} {
 }
 
 void ImportDeclaration(): { Token t_name; } {
-    <Import> t_name = <Identifier> { jjtThis.put("name", t_name.image); } (<Dot> <Identifier>)* <Semicolon>
+    <Import> t_name = <Identifier> { jjtThis.put("name", t_name.image); } (ImportDeclarationPackage())* <Semicolon>
+}
+
+void ImportDeclarationPackage(): { Token t_name; } {
+    <Dot> t_name = <Identifier> { jjtThis.put("name", t_name.image); }
 }
 
 void ClassDeclaration(): { Token t_name; } {
