@@ -153,7 +153,7 @@ void VarDeclaration(): { Token t_name; } {
 void MethodDeclaration(): { Token t_name; } {
     <Public>
     (
-    Type() t_name = <Identifier> { jjtThis.put("name", t_name.image); } // Ha forma de substituir o node Type por um novo chamado ReturnType mas c o valor dele??
+    ReturnType() t_name = <Identifier> { jjtThis.put("name", t_name.image); } // Ha forma de substituir o node Type por um novo chamado ReturnType mas c o valor dele??
     <OpenParenthesis>
         Parameters()
     <CloseParenthesis>
@@ -178,8 +178,15 @@ void Parameter(): { Token t_name; } {
 }
 
 void Type(): { Token t_type; } {
-    ( (t_type = <TypeInt> [<OpenArray> <CloseArray>])
-    | t_type = <TypeBoolean>
+    (t_type = <TypeInt> { jjtThis.put("type", t_type.image); } [<OpenArray> <CloseArray> { jjtThis.put("type", "intArray"); }])
+    | (t_type = <TypeBoolean>
+    | t_type = <Identifier>
+    ) { jjtThis.put("type", t_type.image); }
+}
+
+void ReturnType(): { Token t_type; } {
+    (t_type = <TypeInt> { jjtThis.put("type", t_type.image); } [<OpenArray> <CloseArray> { jjtThis.put("type", "intArray"); }])
+    | (t_type = <TypeBoolean>
     | t_type = <Identifier>
     ) { jjtThis.put("type", t_type.image); }
 }
@@ -208,7 +215,6 @@ void WhileStatement(): {} {
 void Assignment() #void: {} {
     <Equals> Expression() #Assignment(2)
 }
-
 
 void Return(): {} {
     <Return> Expression() <Semicolon>
