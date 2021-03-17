@@ -43,11 +43,13 @@ public class Main implements JmmParser {
 		String fileContents = SpecsIo.read(args[0]);
 		JmmParserResult results = temp.parse(fileContents);
 
-		if (results.getReports().size() > 0) {
-			for (Report r : results.getReports().subList(0, 10)) { // Only shows first 10
+		List<Report> reports = results.getReports();
+
+		if (reports.size() > 0) {
+			for (Report r : reports.subList(0, reports.size() > 10 ? 10 : reports.size())) { // Only shows first 10
 				System.out.println("Report: " + r.getMessage());
 			}
-			if (results.getReports().size() > 10) System.out.println("Aditional errors hidden");
+			if (reports.size() > 10) System.out.println("Aditional errors hidden");
 		}
     }
 
