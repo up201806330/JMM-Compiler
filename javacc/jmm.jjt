@@ -18,6 +18,11 @@ JAVACODE
 void while_error_recovery() {
   Token t;
   Token next = getToken(1);
+
+  if (next.kind == OpenBlock) {
+    return;
+  }
+
   while (true){
     t = getNextToken();
     next = getToken(1);
