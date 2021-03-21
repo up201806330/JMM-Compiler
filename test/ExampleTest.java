@@ -196,7 +196,7 @@ public class ExampleTest {
 
     @Test
     public void testOperatorPrecedence() {
-        String file = SpecsIo.read("test/fixtures/public/fail/syntactical/OperatorPrecedence.jmm");
+        String file = SpecsIo.read("test/fixtures/public/OperatorPrecedence.jmm");
         JmmParserResult result = TestUtils.parse(file);
         try {
             TestUtils.noErrors(result.getReports());

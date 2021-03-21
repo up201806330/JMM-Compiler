@@ -8,6 +8,7 @@ import pt.up.fe.specs.util.SpecsIo;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.io.StringReader;
@@ -26,7 +27,6 @@ public class Main implements JmmParser {
     		root = jmm.Program(); // returns reference to root node
             	
     		root.dump(""); // prints the tree on the screen
-			//System.out.println(root.toJson());
 
 			reports = jmm.getReports();
 
@@ -46,10 +46,15 @@ public class Main implements JmmParser {
 		List<Report> reports = results.getReports();
 
 		if (reports.size() > 0) {
-			for (Report r : reports.subList(0, reports.size() > 10 ? 10 : reports.size())) { // Only shows first 10
+			for (Report r : reports.subList(0, Math.min(reports.size(), 10))) { // Only shows first 10
 				System.out.println("Report: " + r.getMessage());
 			}
 			if (reports.size() > 10) System.out.println("Aditional errors hidden");
+		}
+
+		File output = new File("./outputJson.txt");
+		try (PrintWriter out = new PrintWriter(output)) {
+			out.println(results.toJson());
 		}
     }
 

@@ -7,3 +7,4 @@ comp2021-*.jar
 gradle/
 gradlew
 gradlew.bat
+outputJson.txt
