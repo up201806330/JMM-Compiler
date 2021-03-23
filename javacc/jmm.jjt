@@ -132,7 +132,7 @@ SimpleNode Program(): {} {
         <EOF>
     }
     catch(ParseException e){
-        reports.add(new Report(ReportType.ERROR, Stage.SYNTATIC, token.beginLine, e.getMessage()));
+        reports.add(new Report(ReportType.ERROR, Stage.SYNTATIC, token.beginLine, token.beginColumn, e.getMessage()));
     }
     { return jjtThis; }
 }
