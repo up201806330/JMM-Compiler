@@ -1,9 +1,7 @@
 package pt.up.fe.comp.jmm.ast;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -45,7 +43,7 @@ public class JmmNodeImpl implements JmmNode {
     @Override
     public String get(String attribute) {
 
-        return this.attributes.get(attribute);
+        return Objects.toString(this.attributes.get(attribute));
     }
 
     @Override

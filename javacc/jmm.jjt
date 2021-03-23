@@ -148,7 +148,7 @@ void ImportDeclarationPackage(): { Token t_name; } {
 void ClassDeclaration(): { Token t_name; } {
     <Class> t_name = <Identifier> { jjtThis.put("name", t_name.image); } [ClassInheritance()]
     <OpenBlock>
-        (VarDeclaration())*
+        (VarDeclaration() #Field)*
         (MethodDeclaration())*
     <CloseBlock>
 }

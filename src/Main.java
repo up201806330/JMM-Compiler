@@ -1,4 +1,5 @@
 
+import pt.up.fe.comp.MainAnalysis;
 import pt.up.fe.comp.jmm.JmmParser;
 import pt.up.fe.comp.jmm.JmmParserResult;
 import pt.up.fe.comp.jmm.report.Report;
@@ -33,7 +34,7 @@ public class Main implements JmmParser {
     		return new JmmParserResult(root, reports);
 		} catch(Exception e) {
 			//throw new RuntimeException("Error while parsing", e);
-			reports.add(new Report(ReportType.ERROR, Stage.SYNTATIC, 0, e.getMessage()));
+			reports.add(new Report(ReportType.ERROR, Stage.SYNTATIC, -1, -1, e.getMessage()));
 			return new JmmParserResult(root, reports);
 		}
 	}
@@ -56,6 +57,10 @@ public class Main implements JmmParser {
 		try (PrintWriter out = new PrintWriter(output)) {
 			out.println(results.toJson());
 		}
+
+		MainAnalysis analysis = new MainAnalysis();
+		analysis.semanticAnalysis(results);
+
     }
 
 
