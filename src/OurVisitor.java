@@ -3,10 +3,10 @@ import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 
 import java.util.stream.Collectors;
 
-public class JmmVisitor extends AJmmVisitor<String, String> {
+public class OurVisitor extends AJmmVisitor<String, String> {
     private final String identifierAttribute;
 
-    public JmmVisitor(String identifierType, String identifierAttribute) {
+    public OurVisitor(String identifierType, String identifierAttribute) {
         this.identifierAttribute = identifierAttribute;
 
         addVisit(identifierType, this::dealWithIdentifier); // Method reference

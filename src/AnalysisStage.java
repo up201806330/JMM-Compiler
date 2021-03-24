@@ -9,9 +9,7 @@ import pt.up.fe.comp.jmm.JmmParserResult;
 import pt.up.fe.comp.jmm.analysis.JmmAnalysis;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.comp.jmm.ast.examples.ExamplePostorderVisitor;
-import pt.up.fe.comp.jmm.ast.examples.ExamplePreorderVisitor;
 import pt.up.fe.comp.jmm.ast.examples.ExamplePrintVariables;
-import pt.up.fe.comp.jmm.ast.examples.ExampleVisitor;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp.jmm.report.Stage;
@@ -36,11 +34,11 @@ public class AnalysisStage implements JmmAnalysis {
         JmmNode node = parserResult.getRootNode();
 
         System.out.println("Dump tree with Visitor where you control tree traversal");
-        var visitor = new JmmVisitor("Identifier", "id");
+        var visitor = new OurVisitor("Identifier", "id");
         System.out.println(visitor.visit(node, ""));
 
         System.out.println("Dump tree with Visitor that automatically performs preorder tree traversal");
-        var preOrderVisitor = new JmmPreorderVisitor("Identifier", "id");
+        var preOrderVisitor = new OurPreorderVisitor("Identifier", "id");
         System.out.println(preOrderVisitor.visit(node, ""));
 
         System.out.println(

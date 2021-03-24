@@ -3,10 +3,10 @@ import pt.up.fe.comp.jmm.analysis.table.Type;
 
 import java.util.Set;
 
-public class JmmSymbol extends Symbol {
+public class OurSymbol extends Symbol {
     private final Set<String> attributes;
 
-    public JmmSymbol(Type type, String name, Set<String> attributes) {
+    public OurSymbol(Type type, String name, Set<String> attributes) {
         super(type, name);
         this.attributes = attributes;
     }

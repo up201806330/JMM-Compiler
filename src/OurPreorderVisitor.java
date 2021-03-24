@@ -11,12 +11,12 @@ import java.util.stream.Collectors;
  * @author JBispo
  *
  */
-public class JmmPreorderVisitor extends PreorderJmmVisitor<String, String> {
+public class OurPreorderVisitor extends PreorderJmmVisitor<String, String> {
 
     private final String identifierAttribute;
 
-    public JmmPreorderVisitor(String identifierType, String identifierAttribute) {
-        super(JmmPreorderVisitor::reduce);
+    public OurPreorderVisitor(String identifierType, String identifierAttribute) {
+        super(OurPreorderVisitor::reduce);
 
         this.identifierAttribute = identifierAttribute;
 
