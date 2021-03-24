@@ -4,16 +4,27 @@ import pt.up.fe.comp.jmm.analysis.table.Type;
 
 import java.util.*;
 
-public class OurSymbolTable implements SymbolTable { // TODO decide if we want global or hierarchical
+public class OurScopedSymbolTable implements SymbolTable {
+    String scopeName;
+    OurScopedSymbolTable parent;
+
     // For every valuable node holds a set of attributes or qualifiers i.e. Import, Class, ...
-    // TODO Missing scope
     Set<OurSymbol> table = new HashSet<>();
+
+    OurScopedSymbolTable(OurScopedSymbolTable parent, String scopeName){
+        this.parent = parent;
+        if (scopeName != null) this.scopeName = scopeName;
+        else this.scopeName = "Global";
+    }
 
     public void put(OurSymbol symbol) { table.add(symbol); }
 
     @Override
     public List<String> getImports() {
         List<String> result = new ArrayList<>();
+
+        if (parent != null) result.addAll(parent.getImports());
+
         for (OurSymbol entry : table) {
             if (entry.isImport()) result.add(entry.getName());
         }
@@ -59,7 +70,7 @@ public class OurSymbolTable implements SymbolTable { // TODO decide if we want g
         for (OurSymbol entry : table) {
             if (entry.isReturn()) return entry.getType();
         }
-        return null;
+        return new Type("void", false);
     }
 
     @Override

@@ -34,11 +34,11 @@ public class AnalysisStage implements JmmAnalysis {
         JmmNode node = parserResult.getRootNode();
 
         System.out.println("Dump tree with Visitor where you control tree traversal");
-        var visitor = new OurVisitor("Identifier", "id");
+        var visitor = new OurVisitor();
         System.out.println(visitor.visit(node, ""));
 
         System.out.println("Dump tree with Visitor that automatically performs preorder tree traversal");
-        var preOrderVisitor = new OurPreorderVisitor("Identifier", "id");
+        var preOrderVisitor = new OurPreorderVisitor();
         System.out.println(preOrderVisitor.visit(node, ""));
 
         System.out.println(

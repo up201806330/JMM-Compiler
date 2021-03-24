@@ -13,21 +13,35 @@ import java.util.stream.Collectors;
  */
 public class OurPreorderVisitor extends PreorderJmmVisitor<String, String> {
 
-    private final String identifierAttribute;
+    private final String identifierType = "Identifier";
+    private final String identifierAttribute = "id";
 
-    public OurPreorderVisitor(String identifierType, String identifierAttribute) {
+    private final String typeType = "Identifier";
+    private final String typeAttribute = "type";
+
+    public OurPreorderVisitor() {
         super(OurPreorderVisitor::reduce);
 
-        this.identifierAttribute = identifierAttribute;
-
         addVisit(identifierType, this::dealWithIdentifier);
+        addVisit(typeType, this::dealWithType);
         setDefaultVisit(this::defaultVisit);
     }
 
     public String dealWithIdentifier(JmmNode node, String space) {
+        // if (node.getKind().equals("This")) {
         if (node.getOptional(identifierAttribute).orElse("").equals("this")) {
             return space + "THIS_ACCESS";
         }
+
+        return defaultVisit(node, space);
+    }
+    public String dealWithType(JmmNode node, String space) {
+        if (node.get(typeAttribute).equals("intArray")) {
+            node.put("isArray", "true");
+            node.put("type", "int");
+        }
+        else
+            node.put("isArray", "false");
 
         return defaultVisit(node, space);
     }

@@ -4,16 +4,17 @@ import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import java.util.stream.Collectors;
 
 public class OurVisitor extends AJmmVisitor<String, String> {
-    private final String identifierAttribute;
 
-    public OurVisitor(String identifierType, String identifierAttribute) {
-        this.identifierAttribute = identifierAttribute;
+    private final String identifierType = "Identifier";
+    private final String identifierAttribute = "id";
 
+    public OurVisitor() {
         addVisit(identifierType, this::dealWithIdentifier); // Method reference
         setDefaultVisit(this::defaultVisit); // Method reference
     }
 
     public String dealWithIdentifier(JmmNode node, String space) {
+        // if (node.getKind().equals("This")) {
         if (node.getOptional(identifierAttribute).orElse("").equals("this")) {
             return space + "THIS_ACCESS\n";
         }
