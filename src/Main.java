@@ -58,7 +58,7 @@ public class Main implements JmmParser {
 			out.println(results.toJson());
 		}
 
-		MainAnalysis analysis = new MainAnalysis();
+		AnalysisStage analysis = new AnalysisStage();
 		analysis.semanticAnalysis(results);
 
     }
