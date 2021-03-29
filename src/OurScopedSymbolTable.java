@@ -9,14 +9,14 @@ public class OurScopedSymbolTable implements SymbolTable {
     OurScopedSymbolTable parent;
 
     // For every valuable node holds a set of attributes or qualifiers i.e. Import, Class, ...
-    HashMap<String, OurSymbol> table = new HashMap<>();
+    HashMap<OurSymbol, OurSymbol> table = new HashMap<>();
 
     OurScopedSymbolTable(OurScopedSymbolTable parent, String scopeName){
         this.parent = parent;
         this.scopeName = scopeName;
     }
 
-    public void put(OurSymbol symbol) { table.put(symbol.getName(), symbol); }
+    public void put(OurSymbol symbol) { table.put(symbol, symbol); }
 
     @Override
     public List<String> getImports() {
@@ -94,15 +94,14 @@ public class OurScopedSymbolTable implements SymbolTable {
     public String toString(){
         final Object[][] stringTable = new String[table.size() + 1][];
         StringBuilder result = new StringBuilder();
-        stringTable[0] = new String[] {"| SYMBOL NAME", "| TYPE |" /*Missing Scope Here*/};
+        stringTable[0] = new String[] {"| SYMBOL NAME ", " | TYPE ", " | SCOPE |"};
         Iterator it = table.entrySet().iterator(); int i = 1;
         while(it.hasNext()){
-            Map.Entry pair = (Map.Entry)it.next();
-            stringTable[i++] = new String[] { "| " + pair.getKey().toString(), " | " + pair.getValue().toString() + " |" /*Missing Scope Here*/ };
+            OurSymbol symbol = (OurSymbol)((Map.Entry)it.next()).getValue();
+            stringTable[i++] = new String[] { "| " + symbol.getName(), " | " + symbol.toString(), " | TBD   |" };
         }
         for (final Object[] row : stringTable) {
-            // result.format("%-15s%-15s%-15s%n", row); Change to this after adding scope
-            result.append(String.format("%-15s%-15s%n", row));
+            result.append(String.format("%-25s%-35s%-10s%n", row));
         }
         return result.toString();
     }
