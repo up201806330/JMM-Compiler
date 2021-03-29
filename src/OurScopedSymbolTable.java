@@ -89,4 +89,21 @@ public class OurScopedSymbolTable implements SymbolTable {
         }
         return result;
     }
+
+    @Override
+    public String toString(){
+        final Object[][] stringTable = new String[table.size() + 1][];
+        StringBuilder result = new StringBuilder();
+        stringTable[0] = new String[] {"| SYMBOL NAME", "| TYPE |" /*Missing Scope Here*/};
+        Iterator it = table.entrySet().iterator(); int i = 1;
+        while(it.hasNext()){
+            Map.Entry pair = (Map.Entry)it.next();
+            stringTable[i++] = new String[] { "| " + pair.getKey().toString(), "| " + pair.getValue().toString() + " |" /*Missing Scope Here*/ };
+        }
+        for (final Object[] row : stringTable) {
+            // result.format("%-15s%-15s%-15s%n", row); Change to this after adding scope
+            result.append(String.format("%-15s%-15s%n", row));
+        }
+        return result.toString();
+    }
 }
