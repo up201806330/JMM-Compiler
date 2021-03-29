@@ -1,6 +1,7 @@
 import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
+import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.specs.util.utilities.StringLines;
 
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.stream.Collectors;
  * @author JBispo
  *
  */
-public class OurPreorderVisitor extends PreorderJmmVisitor<String, String> {
+public class OurPreorderVisitor extends PreorderJmmVisitor<List<Report>, Boolean> {
 
     private final String identifierType = "Identifier";
     private final String identifierAttribute = "id";
@@ -23,24 +24,13 @@ public class OurPreorderVisitor extends PreorderJmmVisitor<String, String> {
     SymbolTable symbolTable;
 
     public OurPreorderVisitor(SymbolTable symbolTable) {
-        super(OurPreorderVisitor::reduce);
-
-        addVisit(identifierType, this::dealWithIdentifier);
         addVisit(typeType, this::dealWithType);
         setDefaultVisit(this::defaultVisit);
 
         this.symbolTable = symbolTable;
     }
 
-    public String dealWithIdentifier(JmmNode node, String space) {
-        // if (node.getKind().equals("This")) {
-        if (node.getOptional(identifierAttribute).orElse("").equals("this")) {
-            return space + "THIS_ACCESS";
-        }
-
-        return defaultVisit(node, space);
-    }
-    public String dealWithType(JmmNode node, String space) {
+    public Boolean dealWithType(JmmNode node, List<Report> reports) {
         if (node.get(typeAttribute).equals("intArray")) {
             node.put("isArray", "true");
             node.put("type", "int");
@@ -48,36 +38,11 @@ public class OurPreorderVisitor extends PreorderJmmVisitor<String, String> {
         else
             node.put("isArray", "false");
 
-        return defaultVisit(node, space);
+        return defaultVisit(node, reports);
     }
 
-    private String defaultVisit(JmmNode node, String space) {
-        String content = space + node.getKind();
-        String attrs = node.getAttributes()
-                .stream()
-                .filter(a -> !a.equals("line"))
-                .map(a -> a + "=" + node.get(a))
-                .collect(Collectors.joining(", ", "[", "]"));
+    private Boolean defaultVisit(JmmNode node, List<Report> space) {
 
-        content += ((attrs.length() > 2) ? attrs : "");
-
-        return content;
+        return true;
     }
-
-    private static String reduce(String nodeResult, List<String> childrenResults) {
-        var content = new StringBuilder();
-
-        content.append(nodeResult).append("\n");
-
-        for (var childResult : childrenResults) {
-            var childContent = StringLines.getLines(childResult).stream()
-                    .map(line -> " " + line + "\n")
-                    .collect(Collectors.joining());
-
-            content.append(childContent);
-        }
-
-        return content.toString();
-    }
-
 }
