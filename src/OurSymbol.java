@@ -24,7 +24,7 @@ public class OurSymbol extends Symbol {
 
     @Override
     public String toString(){
-        StringBuilder result = new StringBuilder(getType().getName() + ((getType().isArray()) ? " Array" : ""));
+        StringBuilder result = new StringBuilder(getType().getName() + ((getType().isArray()) ? "[]" : ""));
         for(String attribute : attributes){
             result.append(", ").append(attribute);
         }
