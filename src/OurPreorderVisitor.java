@@ -1,4 +1,5 @@
 import pt.up.fe.comp.jmm.JmmNode;
+import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
 import pt.up.fe.specs.util.utilities.StringLines;
 
@@ -19,12 +20,16 @@ public class OurPreorderVisitor extends PreorderJmmVisitor<String, String> {
     private final String typeType = "Identifier";
     private final String typeAttribute = "type";
 
-    public OurPreorderVisitor() {
+    SymbolTable symbolTable;
+
+    public OurPreorderVisitor(SymbolTable symbolTable) {
         super(OurPreorderVisitor::reduce);
 
         addVisit(identifierType, this::dealWithIdentifier);
         addVisit(typeType, this::dealWithType);
         setDefaultVisit(this::defaultVisit);
+
+        this.symbolTable = symbolTable;
     }
 
     public String dealWithIdentifier(JmmNode node, String space) {

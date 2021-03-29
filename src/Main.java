@@ -60,7 +60,6 @@ public class Main implements JmmParser {
 
 		AnalysisStage analysis = new AnalysisStage();
 		analysis.semanticAnalysis(results);
-
     }
 
 

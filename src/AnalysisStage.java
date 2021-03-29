@@ -33,13 +33,16 @@ public class AnalysisStage implements JmmAnalysis {
 
         JmmNode node = parserResult.getRootNode();
 
+        OurScopedSymbolTable symbolTable = new OurScopedSymbolTable(null, "Global");
+
         System.out.println("Dump tree with Visitor where you control tree traversal");
         var visitor = new OurVisitor();
         System.out.println(visitor.visit(node, ""));
 
-        System.out.println("Dump tree with Visitor that automatically performs preorder tree traversal");
-        var preOrderVisitor = new OurPreorderVisitor();
-        System.out.println(preOrderVisitor.visit(node, ""));
+        System.out.println("Create symbol table with Visitor that automatically performs preorder tree traversal");
+        var preOrderVisitor = new OurPreorderVisitor(symbolTable);
+        preOrderVisitor.visit(node);
+        // System.out.println(preOrderVisitor.getSymbolTable());
 
         System.out.println(
                 "Create histogram of node kinds with Visitor that automatically performs postorder tree traversal");
@@ -54,7 +57,7 @@ public class AnalysisStage implements JmmAnalysis {
         varPrinter.visit(node, null);
 
         // No Symbol Table being calculated yet
-        return new JmmSemanticsResult(parserResult, null, new ArrayList<>());
+        return new JmmSemanticsResult(parserResult, symbolTable, new ArrayList<>());
 
     }
 
