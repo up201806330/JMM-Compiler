@@ -10,7 +10,6 @@ import pt.up.fe.comp.jmm.JmmParserResult;
 import pt.up.fe.comp.jmm.analysis.JmmAnalysis;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.comp.jmm.ast.examples.ExamplePostorderVisitor;
-import pt.up.fe.comp.jmm.ast.examples.ExamplePreorderVisitor;
 import pt.up.fe.comp.jmm.ast.examples.ExamplePrintVariables;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.ReportType;
@@ -35,13 +34,14 @@ public class AnalysisStage implements JmmAnalysis {
 
         JmmNode node = parserResult.getRootNode();
 
-        System.out.println("Dump tree with Visitor where you control tree traversal");
-        var visitor = new OurVisitor();
-        System.out.println(visitor.visit(node, ""));
+        // System.out.println("Dump tree with Visitor where you control tree traversal");
+        // var visitor = new OurVisitor();
+        // System.out.println(visitor.visit(node, ""));
 
         // System.out.println("Dump tree with Visitor that automatically performs preorder tree traversal");
         // var preOrderVisitor = new ExamplePreorderVisitor("Identifier", "id");
         // System.out.println(preOrderVisitor.visit(node, ""));
+        List<Report> reports = new ArrayList<>();
 
         System.out.println("Create histogram of node kinds with Visitor that automatically performs postorder tree traversal");
         var postOrderVisitor = new ExamplePostorderVisitor();
@@ -49,11 +49,14 @@ public class AnalysisStage implements JmmAnalysis {
         postOrderVisitor.visit(node, kindCount);
         System.out.println("Kinds count: " + kindCount + "\n");
 
-        System.out.println("Create symbol table with Visitor that automatically performs preorder tree traversal");
-        OurScopedSymbolTable symbolTable = new OurScopedSymbolTable(null, "Global");
-        var anotherPostOrderVisitor = new OurPostorderVisitor(symbolTable);
-        List<Report> reports = new ArrayList<>();
+        System.out.println("Put node types in correct nodes with Visitor that automatically performs postorder tree traversal");
+        var anotherPostOrderVisitor = new OurPostorderVisitor();
         anotherPostOrderVisitor.visit(node, reports);
+
+        System.out.println("Create symbol table with Visitor that automatically performs preorder tree traversal");
+        OurSymbolTable symbolTable = new OurSymbolTable();
+        var preorderVisitor = new OurPreorderVisitor(symbolTable);
+        preorderVisitor.visit(node, reports);
         System.out.println(symbolTable.toString());
 
         System.out.println(

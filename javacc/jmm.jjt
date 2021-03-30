@@ -164,7 +164,7 @@ void VarDeclaration(): { Token t_name; } {
 void MethodDeclaration(): { Token t_name; } {
     <Public>
     (
-    ReturnType() t_name = <Identifier> { jjtThis.put("name", t_name.image); } // Ha forma de substituir o node Type por um novo chamado ReturnType mas c o valor dele??
+    Type() t_name = <Identifier> { jjtThis.put("name", t_name.image); }
     <OpenParenthesis>
         Parameters()
     <CloseParenthesis>
@@ -180,7 +180,7 @@ void MethodDeclaration(): { Token t_name; } {
     )
 }
 
-void Parameters() #void: {} {
+void Parameters(): {} {
     [Parameter() (<Comma> Parameter())* ]
 }
 
@@ -189,13 +189,6 @@ void Parameter(): { Token t_name; } {
 }
 
 void Type(): { Token t_type; } {
-    (t_type = <TypeInt> { jjtThis.put("type", t_type.image); } [<OpenArray> <CloseArray> { jjtThis.put("type", "intArray"); }])
-    | (t_type = <TypeBoolean>
-    | t_type = <Identifier>
-    ) { jjtThis.put("type", t_type.image); }
-}
-
-void ReturnType(): { Token t_type; } {
     (t_type = <TypeInt> { jjtThis.put("type", t_type.image); } [<OpenArray> <CloseArray> { jjtThis.put("type", "intArray"); }])
     | (t_type = <TypeBoolean>
     | t_type = <Identifier>
