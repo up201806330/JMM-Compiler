@@ -59,7 +59,7 @@ public class Main implements JmmParser {
 	private static void showReports(List<Report> reports){
 		if (reports.size() > 0) {
 			for (Report r : reports.subList(0, Math.min(reports.size(), 10))) { // Only shows first 10
-				System.out.println("Report: " + r.getMessage());
+				System.out.println("Report: " + r);
 			}
 			if (reports.size() > 10) System.out.println("Aditional errors hidden");
 		}
