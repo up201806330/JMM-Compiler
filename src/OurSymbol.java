@@ -6,11 +6,15 @@ import java.util.HashSet;
 public class OurSymbol extends Symbol {
     private final HashSet<String> attributes;
     private final OurScope scope;
+    private final Integer line;
+    private final Integer column;
 
-    public OurSymbol(Type type, String name, HashSet<String> attributes, OurScope scope) {
+    public OurSymbol(Type type, String name, HashSet<String> attributes, OurScope scope, Integer line, Integer column) {
         super(type, name);
         this.attributes = attributes;
         this.scope = scope;
+        this.line = line;
+        this.column = column;
     }
 
     public boolean isImport() { return attributes.contains("import"); }
@@ -32,5 +36,13 @@ public class OurSymbol extends Symbol {
 
     public String getScope(){
         return scope.toString();
+    }
+
+    public Integer getLine() {
+        return line;
+    }
+
+    public Integer getColumn() {
+        return column;
     }
 }

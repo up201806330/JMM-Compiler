@@ -18,8 +18,8 @@ public class OurSymbolTable implements SymbolTable {
             return new Report(
                     ReportType.ERROR,
                     Stage.SYNTATIC,
-                    -1,
-                    -1,
+                    symbol.getLine(),
+                    symbol.getColumn(),
                     "Variable " + symbol.getName() + " is already defined in the scope"
                     );
         else return null;

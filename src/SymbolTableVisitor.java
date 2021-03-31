@@ -37,7 +37,9 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
                                 ),
                         node.get(nameAttribute),
                         new HashSet<>(Arrays.asList("variable")),
-                        scopeStack.peek()
+                        scopeStack.peek(),
+                        Integer.parseInt(node.get("line")),
+                        Integer.parseInt(node.get("column"))
                         )
                 ));
 
@@ -52,7 +54,9 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
                 ),
                 node.get(nameAttribute),
                 new HashSet<>(Arrays.asList("method")),
-                scopeStack.peek()
+                scopeStack.peek(),
+                Integer.parseInt(node.get("line")),
+                Integer.parseInt(node.get("column"))
                 );
 
         scopeStack.push(new OurScope(OurScope.ScopeEnum.FunctionVariable, symbol));
