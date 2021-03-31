@@ -72,7 +72,7 @@ public class OurSymbolTable implements SymbolTable {
     @Override
     public Type getReturnType(String methodName) {
         for (OurSymbol entry : table.keySet()) {
-            if (entry.isReturn()) return entry.getType();
+            if (entry.isReturn() && entry.getScope().getName().equals(methodName)) return entry.getType();
         }
         return new Type("void", false);
     }
@@ -81,7 +81,7 @@ public class OurSymbolTable implements SymbolTable {
     public List<Symbol> getParameters(String methodName) {
         List<Symbol> result = new ArrayList<>();
         for (OurSymbol entry : table.keySet()) {
-            if (entry.isParameter()) result.add(entry);
+            if (entry.isParameter() && entry.getScope().getName().equals(methodName)) result.add(entry);
         }
         return result;
     }
@@ -90,7 +90,7 @@ public class OurSymbolTable implements SymbolTable {
     public List<Symbol> getLocalVariables(String methodName) {
         List<Symbol> result = new ArrayList<>();
         for (OurSymbol entry : table.keySet()) {
-            if (entry.isVariable()) result.add(entry);
+            if (entry.isVariable() && entry.getScope().getName().equals(methodName)) result.add(entry);
         }
         return result;
     }

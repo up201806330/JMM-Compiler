@@ -39,8 +39,8 @@ public class OurSymbol extends Symbol {
         return result.toString();
     }
 
-    public String getScope(){
-        return scope.toString();
+    public OurScope getScope(){
+        return scope;
     }
 
     public Integer getLine() {

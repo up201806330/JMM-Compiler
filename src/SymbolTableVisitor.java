@@ -12,9 +12,6 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
 
     private final String methodDeclNodeName = "MethodDeclaration";
     private final String varDeclNodeName = "VarDeclaration";
-    private final String typeAttribute = "type";
-    private final String nameAttribute = "name";
-    private final String isArrayAttribute = "isArray";
 
     OurSymbolTable symbolTable;
     Stack<OurScope> scopeStack = new Stack<>();
@@ -34,7 +31,8 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
                 new HashSet<>(Arrays.asList("variable")),
                 scopeStack.peek());
 
-        reports.add(symbolTable.put(symbol));
+        Report insertionError = symbolTable.put(symbol);
+        if (insertionError != null) reports.add(insertionError);
 
         return defaultVisit(node, reports);
     }
@@ -46,7 +44,9 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
                 scopeStack.peek());
 
         scopeStack.push(new OurScope(OurScope.ScopeEnum.FunctionVariable, symbol));
-        reports.add(symbolTable.put(symbol));
+
+        Report insertionError = symbolTable.put(symbol);
+        if (insertionError != null) reports.add(insertionError);
 
         boolean result = defaultVisit(node, reports);
 

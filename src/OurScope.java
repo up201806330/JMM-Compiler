@@ -17,4 +17,8 @@ public class OurScope {
     public String toString(){
         return scope.toString() + (scope.ordinal() > 0 ? " (" + functionSymbol.getName() + ")" : "");
     }
+
+    public String getName(){
+        return functionSymbol.getName();
+    }
 }
