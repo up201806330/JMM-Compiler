@@ -1,6 +1,5 @@
 import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.analysis.table.Type;
-import pt.up.fe.comp.jmm.ast.PostorderJmmVisitor;
 import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
 import pt.up.fe.comp.jmm.report.Report;
 
@@ -9,13 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Stack;
 
-/**
- * Counts the occurrences of each node kind.
- * 
- * @author JBispo
- *
- */
-public class OurPreorderVisitor extends PreorderJmmVisitor<List<Report>, Boolean> {
+public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean> {
 
     private final String methodDeclNodeName = "MethodDeclaration";
     private final String varDeclNodeName = "VarDeclaration";
@@ -26,10 +19,10 @@ public class OurPreorderVisitor extends PreorderJmmVisitor<List<Report>, Boolean
     OurSymbolTable symbolTable;
     Stack<OurScope> scopeStack = new Stack<>();
 
-    public OurPreorderVisitor(OurSymbolTable symbolTable) {
+    public SymbolTableVisitor(OurSymbolTable symbolTable) {
         addVisit(varDeclNodeName, this::dealWithVarDecl);
         addVisit(methodDeclNodeName, this::dealWithMethodDecl);
-        setDefaultVisit(OurPreorderVisitor::defaultVisit);
+        setDefaultVisit(SymbolTableVisitor::defaultVisit);
 
         this.symbolTable = symbolTable;
         this.scopeStack.push(new OurScope(OurScope.ScopeEnum.Global, null));

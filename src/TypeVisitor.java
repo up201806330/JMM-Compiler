@@ -1,22 +1,18 @@
 import pt.up.fe.comp.jmm.JmmNode;
-import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.PostorderJmmVisitor;
 import pt.up.fe.comp.jmm.report.Report;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Stack;
 
-public class OurPostorderVisitor extends PostorderJmmVisitor<List<Report>, Boolean> {
+public class TypeVisitor extends PostorderJmmVisitor<List<Report>, Boolean> {
 
     private final String typeNodeName = "Type";
     private final String typeAttribute = "type";
     private final String isArrayAttribute = "isArray";
 
-    public OurPostorderVisitor() {
+    public TypeVisitor() {
         addVisit(typeNodeName, this::dealWithType);
-        setDefaultVisit(OurPostorderVisitor::defaultVisit);
+        setDefaultVisit(TypeVisitor::defaultVisit);
     }
 
     public Boolean dealWithType(JmmNode node, List<Report> reports) {

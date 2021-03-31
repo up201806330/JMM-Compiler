@@ -26,6 +26,8 @@ class SimpleNode implements Node, JmmNode {
       put("name", null);
       put("type", null);
       put("value", null);
+      put("line", null);
+      put("column", null);
 
     }};
   }

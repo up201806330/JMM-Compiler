@@ -50,12 +50,12 @@ public class AnalysisStage implements JmmAnalysis {
         System.out.println("Kinds count: " + kindCount + "\n");
 
         System.out.println("Put node types in correct nodes with Visitor that automatically performs postorder tree traversal");
-        var anotherPostOrderVisitor = new OurPostorderVisitor();
+        var anotherPostOrderVisitor = new TypeVisitor();
         anotherPostOrderVisitor.visit(node, reports);
 
         System.out.println("Create symbol table with Visitor that automatically performs preorder tree traversal");
         OurSymbolTable symbolTable = new OurSymbolTable();
-        var preorderVisitor = new OurPreorderVisitor(symbolTable);
+        var preorderVisitor = new SymbolTableVisitor(symbolTable);
         preorderVisitor.visit(node, reports);
         System.out.println(symbolTable.toString());
 
