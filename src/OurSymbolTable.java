@@ -14,7 +14,7 @@ public class OurSymbolTable implements SymbolTable {
 
     public Report put(OurSymbol symbol) {
         // Check for repeat symbols
-        if (table.put(symbol, symbol) != null)
+        if (table.putIfAbsent(symbol, symbol) != null)
             return new Report(
                     ReportType.ERROR,
                     Stage.SYNTATIC,

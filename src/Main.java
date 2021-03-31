@@ -11,11 +11,8 @@ import pt.up.fe.specs.util.SpecsIo;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.ArrayList;
+import java.util.*;
 import java.io.StringReader;
-import java.util.List;
-import java.util.Scanner;
 
 public class Main implements JmmParser {
 

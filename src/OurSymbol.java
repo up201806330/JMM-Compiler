@@ -50,4 +50,35 @@ public class OurSymbol extends Symbol {
     public Integer getColumn() {
         return column;
     }
+
+    @Override
+    public int hashCode() {
+        Type type = getType();
+        return (int) getName().hashCode() *
+                type.getName().hashCode() *
+                (type.isArray() ? 1231 : 1237) * // boolean doesnt have .hashCode() :sadge:
+                attributes.hashCode() *
+                scope.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+
+        OurSymbol other = (OurSymbol) obj;
+        if (!getName().equals(other.getName()))
+            return false;
+        if (!(getType().getName().equals(other.getType().getName()) && getType().isArray() == other.getType().isArray()))
+            return false;
+        if (!getAttributes().equals(other.getAttributes()))
+            return false;
+        if (!scope.equals(other.scope))
+            return false;
+        return true;
+    }
 }

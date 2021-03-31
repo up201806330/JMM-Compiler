@@ -1,14 +1,12 @@
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import pt.up.fe.comp.TestUtils;
 import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.JmmParserResult;
 import pt.up.fe.comp.jmm.analysis.JmmAnalysis;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
+import pt.up.fe.comp.jmm.ast.JmmNodeImpl;
 import pt.up.fe.comp.jmm.ast.examples.ExamplePostorderVisitor;
 import pt.up.fe.comp.jmm.ast.examples.ExamplePrintVariables;
 import pt.up.fe.comp.jmm.report.Report;
@@ -65,6 +63,9 @@ public class AnalysisStage implements JmmAnalysis {
         // varPrinter.visit(node, null);
 
         // No Symbol Table being calculated yet
+
+
+
         return new JmmSemanticsResult(parserResult, symbolTable, reports);
 
     }
