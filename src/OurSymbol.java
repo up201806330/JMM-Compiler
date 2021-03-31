@@ -1,3 +1,4 @@
+import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 
@@ -9,12 +10,16 @@ public class OurSymbol extends Symbol {
     private final Integer line;
     private final Integer column;
 
-    public OurSymbol(Type type, String name, HashSet<String> attributes, OurScope scope, Integer line, Integer column) {
-        super(type, name);
+    public OurSymbol(JmmNode node, HashSet<String> attributes, OurScope scope) {
+        super(new Type(
+                        node.getOptional("type").orElse("void"),
+                        Boolean.parseBoolean(node.getOptional("isArray").orElse("false"))
+                ),
+                node.get("name"));
         this.attributes = attributes;
         this.scope = scope;
-        this.line = line;
-        this.column = column;
+        this.line = Integer.parseInt(node.get("line"));
+        this.column = Integer.parseInt(node.get("column"));
     }
 
     public boolean isImport() { return attributes.contains("import"); }

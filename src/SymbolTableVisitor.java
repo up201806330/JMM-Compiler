@@ -29,35 +29,21 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
     }
 
     public Boolean dealWithVarDecl(JmmNode node, List<Report> reports) {
-        reports.add(symbolTable.put(
-                new OurSymbol(
-                        new Type(
-                                node.get(typeAttribute),
-                                Boolean.parseBoolean(node.get(isArrayAttribute))
-                                ),
-                        node.get(nameAttribute),
-                        new HashSet<>(Arrays.asList("variable")),
-                        scopeStack.peek(),
-                        Integer.parseInt(node.get("line")),
-                        Integer.parseInt(node.get("column"))
-                        )
-                ));
+        OurSymbol symbol = new OurSymbol(
+                node,
+                new HashSet<>(Arrays.asList("variable")),
+                scopeStack.peek());
+
+        reports.add(symbolTable.put(symbol));
 
         return defaultVisit(node, reports);
     }
 
     public Boolean dealWithMethodDecl(JmmNode node, List<Report> reports) {
         OurSymbol symbol = new OurSymbol(
-                new Type(
-                        node.getOptional(typeAttribute).orElse("void"),
-                        Boolean.parseBoolean(node.getOptional(isArrayAttribute).orElse("false"))
-                ),
-                node.get(nameAttribute),
+                node,
                 new HashSet<>(Arrays.asList("method")),
-                scopeStack.peek(),
-                Integer.parseInt(node.get("line")),
-                Integer.parseInt(node.get("column"))
-                );
+                scopeStack.peek());
 
         scopeStack.push(new OurScope(OurScope.ScopeEnum.FunctionVariable, symbol));
         reports.add(symbolTable.put(symbol));
