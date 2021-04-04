@@ -30,6 +30,12 @@ public class OurScope {
     }
 
     @Override
+    public int hashCode() {
+        return scope.hashCode() *
+                (functionSymbol != null ? functionSymbol.hashCode() : 1);
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj)
             return true;

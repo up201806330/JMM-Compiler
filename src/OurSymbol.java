@@ -2,6 +2,7 @@ import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 
+import java.util.Arrays;
 import java.util.HashSet;
 
 public class OurSymbol extends Symbol {
@@ -57,7 +58,7 @@ public class OurSymbol extends Symbol {
         return (int) getName().hashCode() *
                 type.getName().hashCode() *
                 (type.isArray() ? 1231 : 1237) * // boolean doesnt have .hashCode() :sadge:
-                attributes.hashCode() *
+                Arrays.hashCode(attributes.toArray()) *
                 scope.hashCode();
     }
 
