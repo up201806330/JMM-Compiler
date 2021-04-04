@@ -1,38 +1,39 @@
 import pt.up.fe.comp.jmm.JmmNode;
-import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
 import pt.up.fe.comp.jmm.report.Report;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean> {
 
     private final String methodDeclNodeName = "MethodDeclaration";
     private final String varDeclNodeName = "VarDeclaration";
+    private final String methodParamNodeName = "Parameter";
 
     OurSymbolTable symbolTable;
-    Stack<OurScope> scopeStack = new Stack<>();
 
     public SymbolTableVisitor(OurSymbolTable symbolTable) {
         addVisit(varDeclNodeName, this::dealWithVarDecl);
         addVisit(methodDeclNodeName, this::dealWithMethodDecl);
+        addVisit(methodParamNodeName, this::dealWithMethodParameter);
         setDefaultVisit(SymbolTableVisitor::defaultVisit);
 
         this.symbolTable = symbolTable;
-        this.scopeStack.push(new OurScope(OurScope.ScopeEnum.Global, null));
     }
 
     public Boolean dealWithVarDecl(JmmNode node, List<Report> reports) {
+        var parentFunction = node.getAncestor(methodDeclNodeName);
         OurSymbol symbol = new OurSymbol(
                 node,
                 new HashSet<>(Arrays.asList("variable")),
-                scopeStack.peek());
+                new OurScope(
+                        OurScope.ScopeEnum.FunctionVariable,
+                        parentFunction.map(jmmNode -> symbolTable.getByValue(jmmNode)).orElse(null)
+                )
+        );
 
-        Report insertionError = symbolTable.put(symbol);
-        if (insertionError != null) reports.add(insertionError);
+        Optional<Report> insertionError = symbolTable.put(symbol, node);
+        insertionError.ifPresent(reports::add);
 
         return defaultVisit(node, reports);
     }
@@ -41,21 +42,32 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
         OurSymbol symbol = new OurSymbol(
                 node,
                 new HashSet<>(Arrays.asList("method")),
-                scopeStack.peek());
+                new OurScope());
 
-        scopeStack.push(new OurScope(OurScope.ScopeEnum.FunctionVariable, symbol));
+        Optional<Report> insertionError = symbolTable.put(symbol, node);
+        insertionError.ifPresent(reports::add);
 
-        Report insertionError = symbolTable.put(symbol);
-        if (insertionError != null) reports.add(insertionError);
-
-        boolean result = defaultVisit(node, reports);
-
-        scopeStack.pop();
-
-        return result;
+        return defaultVisit(node, reports);
     }
 
-    private static Boolean defaultVisit(JmmNode node, List<Report> kindCount) {
+    public Boolean dealWithMethodParameter(JmmNode node, List<Report> reports){
+        var parentFunction = node.getAncestor(methodDeclNodeName);
+        OurSymbol symbol = new OurSymbol(
+                node,
+                new HashSet<>(Arrays.asList("parameter")),
+                new OurScope(
+                        OurScope.ScopeEnum.FunctionParameter,
+                        parentFunction.map(jmmNode -> symbolTable.getByValue(jmmNode)).orElse(null)
+                )
+        );
+
+        Optional<Report> insertionError = symbolTable.put(symbol, node);
+        insertionError.ifPresent(reports::add);
+
+        return defaultVisit(node, reports);
+    }
+
+    private static Boolean defaultVisit(JmmNode node, List<Report> reports) {
         return true;
     }
 

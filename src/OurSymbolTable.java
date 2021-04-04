@@ -1,3 +1,4 @@
+import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Type;
@@ -10,19 +11,26 @@ import java.util.*;
 public class OurSymbolTable implements SymbolTable {
 
     // For every valuable node holds a  set of attributes or qualifiers i.e. Import, Class, ...
-    HashMap<OurSymbol, OurSymbol> table = new HashMap<>();
+    HashMap<OurSymbol, JmmNode> table = new HashMap<>();
 
-    public Report put(OurSymbol symbol) {
+    public Optional<Report> put(OurSymbol symbol, JmmNode node) {
         // Check for repeat symbols
-        if (table.putIfAbsent(symbol, symbol) != null)
-            return new Report(
-                    ReportType.ERROR,
-                    Stage.SYNTATIC,
-                    symbol.getLine(),
-                    symbol.getColumn(),
-                    "Variable " + symbol.getName() + " is already defined in the scope"
-                    );
-        else return null;
+        if (table.putIfAbsent(symbol, node) != null)
+            return Optional.of(
+                    new Report(
+                        ReportType.ERROR,
+                        Stage.SYNTATIC,
+                        symbol.getLine(),
+                        symbol.getColumn(),
+                        "Variable " + symbol.getName() + " is already defined in the scope"));
+        else return Optional.empty();
+    }
+
+    public OurSymbol getByValue(JmmNode node) {
+        for (var entry : table.entrySet()) {
+            if (entry.getValue().equals(node)) return entry.getKey();
+        }
+        return null;
     }
 
     @Override

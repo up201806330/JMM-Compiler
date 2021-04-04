@@ -10,9 +10,14 @@ public class OurScope {
     ScopeEnum scope;
     OurSymbol functionSymbol;
 
+    public OurScope() {
+        this.functionSymbol = null;
+        this.scope = ScopeEnum.Global;
+    }
+
     public OurScope(ScopeEnum scope, OurSymbol functionSymbol){
-        this.scope = scope;
         this.functionSymbol = functionSymbol;
+        this.scope = (scope != null && functionSymbol != null) ? scope : ScopeEnum.Global;
     }
 
     public String getName(){
