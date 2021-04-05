@@ -1,6 +1,7 @@
 options
 {
     LOOKAHEAD=1;
+    NODE_SCOPE_HOOK=true;
 }
 
 PARSER_BEGIN(Jmm)
@@ -10,6 +11,14 @@ public class Jmm {
     List<Report> reports = new ArrayList<Report>();
     List<Report> getReports(){
         return reports;
+    }
+
+    void jjtreeOpenNodeScope(Node n) {
+        ((SimpleNode)n).put("line", Integer.toString(getToken(1).beginLine));
+        ((SimpleNode)n).put("column", Integer.toString(getToken(1).beginColumn));
+    }
+
+    void jjtreeCloseNodeScope(Node n) {
     }
 }
 PARSER_END(Jmm)
@@ -138,24 +147,15 @@ SimpleNode Program(): {} {
 }
 
 void ImportDeclaration(): { Token t_name; } {
-    <Import> t_name = <Identifier> {
-            jjtThis.put("name", t_name.image);
-            jjtThis.put("line", token.beginLine);
-            jjtThis.put("column", token.beginColumn); } (ImportDeclarationPackage())* <Semicolon>
+    <Import> t_name = <Identifier> { jjtThis.put("name", t_name.image); } (ImportDeclarationPackage())* <Semicolon>
 }
 
 void ImportDeclarationPackage(): { Token t_name; } {
-    <Dot> t_name = <Identifier> {
-            jjtThis.put("name", t_name.image);
-            jjtThis.put("line", token.beginLine);
-            jjtThis.put("column", token.beginColumn); }
+    <Dot> t_name = <Identifier> { jjtThis.put("name", t_name.image); }
 }
 
 void ClassDeclaration(): { Token t_name; } {
-    <Class> t_name = <Identifier> {
-            jjtThis.put("name", t_name.image);
-            jjtThis.put("line", token.beginLine);
-            jjtThis.put("column", token.beginColumn); } [ClassInheritance()]
+    <Class> t_name = <Identifier> { jjtThis.put("name", t_name.image); } [ClassInheritance()]
     <OpenBlock>
         (VarDeclaration() #Field)*
         (MethodDeclaration())*
@@ -163,26 +163,17 @@ void ClassDeclaration(): { Token t_name; } {
 }
 
 void ClassInheritance(): { Token t_type; } {
-    <Extends> t_type = <Identifier> {
-            jjtThis.put("type", t_type.image);
-            jjtThis.put("line", token.beginLine);
-            jjtThis.put("column", token.beginColumn); }
+    <Extends> t_type = <Identifier> { jjtThis.put("type", t_type.image); }
 }
 
 void VarDeclaration(): { Token t_name; } {
-    Type() t_name = <Identifier> {
-            jjtThis.put("name", t_name.image);
-            jjtThis.put("line", token.beginLine);
-            jjtThis.put("column", token.beginColumn); } <Semicolon>
+    Type() t_name = <Identifier> { jjtThis.put("name", t_name.image); } <Semicolon>
 }
 
 void MethodDeclaration(): { Token t_name; } {
     <Public>
     (
-    Type() t_name = <Identifier> {
-            jjtThis.put("name", t_name.image);
-            jjtThis.put("line", token.beginLine);
-            jjtThis.put("column", token.beginColumn); }
+    Type() t_name = <Identifier> { jjtThis.put("name", t_name.image); }
     <OpenParenthesis>
         Parameters()
     <CloseParenthesis>
@@ -191,10 +182,7 @@ void MethodDeclaration(): { Token t_name; } {
         Return()
     <CloseBlock>
     |
-    <Static> <Void> t_name = <Main> {
-            jjtThis.put("name", t_name.image);
-            jjtThis.put("line", token.beginLine);
-            jjtThis.put("column", token.beginColumn); } <OpenParenthesis> <TypeString> <OpenArray> <CloseArray>
+    <Static> <Void> t_name = <Main> { jjtThis.put("name", t_name.image); } <OpenParenthesis> <TypeString> <OpenArray> <CloseArray>
     <Identifier> <CloseParenthesis> <OpenBlock>
         (LOOKAHEAD(2) VarDeclaration() | Statement())* // Allowed for now
     <CloseBlock>
@@ -206,14 +194,10 @@ void Parameters(): {} {
 }
 
 void Parameter(): { Token t_name; } {
-    Type() t_name = <Identifier> {
-            jjtThis.put("name", t_name.image);
-            jjtThis.put("line", token.beginLine);
-            jjtThis.put("column", token.beginColumn); }
+    Type() t_name = <Identifier> { jjtThis.put("name", t_name.image); }
 }
 
 void Type(): { Token t_type; } {
-    { jjtThis.put("line", token.beginLine); jjtThis.put("column", token.beginColumn); }
     (t_type = <TypeInt> { jjtThis.put("type", t_type.image); } [<OpenArray> <CloseArray> { jjtThis.put("type", "intArray"); }])
     | (t_type = <TypeBoolean>
     | t_type = <Identifier>
@@ -294,11 +278,8 @@ void DotStatement() #void: { Token t_name; } {
     )
 }
 
-void CallExpression() #CallExpression(2):{Token t_name;}{
-    t_name = <Identifier> {
-            jjtThis.put("name", t_name.image);
-            jjtThis.put("line", token.beginLine);
-            jjtThis.put("column", token.beginColumn); }
+void CallExpression() #CallExpression(2) :{Token t_name;}{
+    t_name = <Identifier> { jjtThis.put("name", t_name.image); }
             <OpenParenthesis> ([Expression() (<Comma> Expression())*]#ArgsList) <CloseParenthesis>
 }
 
