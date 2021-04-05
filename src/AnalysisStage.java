@@ -52,9 +52,9 @@ public class AnalysisStage implements JmmAnalysis {
         anotherPostOrderVisitor.visit(node, reports);
 
         System.out.println("Create symbol table with Visitor that automatically performs preorder tree traversal");
-        OurSymbolTable symbolTable = new OurSymbolTable();
-        var preorderVisitor = new SymbolTableVisitor(symbolTable);
+        var preorderVisitor = new SymbolTableVisitor();
         preorderVisitor.visit(node, reports);
+        OurSymbolTable symbolTable = preorderVisitor.getSymbolTable();
         System.out.println(symbolTable.toString());
 
         // System.out.println(

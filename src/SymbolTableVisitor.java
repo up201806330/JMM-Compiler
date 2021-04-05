@@ -6,19 +6,33 @@ import java.util.*;
 
 public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean> {
 
+    private final String importDeclNodeName = "ImportDeclaration";
     private final String methodDeclNodeName = "MethodDeclaration";
     private final String varDeclNodeName = "VarDeclaration";
     private final String methodParamNodeName = "Parameter";
 
     OurSymbolTable symbolTable;
 
-    public SymbolTableVisitor(OurSymbolTable symbolTable) {
+    OurSymbolTable getSymbolTable(){ return symbolTable; }
+
+    public SymbolTableVisitor() {
+        addVisit(importDeclNodeName, this::dealWithImportDecl);
         addVisit(varDeclNodeName, this::dealWithVarDecl);
         addVisit(methodDeclNodeName, this::dealWithMethodDecl);
         addVisit(methodParamNodeName, this::dealWithMethodParameter);
         setDefaultVisit(SymbolTableVisitor::defaultVisit);
+    }
 
-        this.symbolTable = symbolTable;
+    public Boolean dealWithImportDecl(JmmNode node, List<Report> reports){
+        OurSymbol symbol = new OurSymbol(
+                node,
+                new HashSet<>(Arrays.asList("import")),
+                new OurScope()
+        );
+        Optional<Report> insertionError = symbolTable.put(symbol, node);
+        insertionError.ifPresent(reports::add);
+
+        return defaultVisit(node, reports);
     }
 
     public Boolean dealWithVarDecl(JmmNode node, List<Report> reports) {
