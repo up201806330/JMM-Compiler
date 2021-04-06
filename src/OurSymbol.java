@@ -28,7 +28,6 @@ public class OurSymbol extends Symbol {
     public boolean isSuper() { return attributes.contains("extends"); }
     public boolean isField() { return attributes.contains("field"); }
     public boolean isMethod() { return attributes.contains("method"); }
-    public boolean isReturn() { return attributes.contains("return"); }
     public boolean isParameter() { return attributes.contains("parameter"); }
     public boolean isVariable() { return attributes.contains("variable"); }
 

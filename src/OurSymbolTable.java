@@ -10,6 +10,7 @@ import java.util.*;
 
 public class OurSymbolTable implements SymbolTable {
 
+    String className;
     // For every valuable node holds a  set of attributes or qualifiers i.e. Import, Class, ...
     HashMap<OurSymbol, JmmNode> table = new HashMap<>();
 
@@ -46,10 +47,7 @@ public class OurSymbolTable implements SymbolTable {
 
     @Override
     public String getClassName() {
-        for (OurSymbol entry : table.keySet()) {
-            if (entry.isClass()) return entry.getName();
-        }
-        return null;
+        return className;
     }
 
     @Override
@@ -81,9 +79,9 @@ public class OurSymbolTable implements SymbolTable {
     @Override
     public Type getReturnType(String methodName) {
         for (OurSymbol entry : table.keySet()) {
-            if (entry.isReturn() && entry.getScope().getName().equals(methodName)) return entry.getType();
+            if (entry.isMethod() && entry.getName().equals(methodName)) return entry.getType();
         }
-        return new Type("void", false);
+        return null;
     }
 
     @Override
@@ -108,7 +106,7 @@ public class OurSymbolTable implements SymbolTable {
     public String toString(){
         final Object[][] stringTable = new String[table.size() + 1][];
         StringBuilder result = new StringBuilder();
-        stringTable[0] = new String[] {"| SYMBOL NAME ", " | TYPE ", " | SCOPE ", " |"};
+        stringTable[0] = new String[] {"Symbol table: " + className + "\n| SYMBOL NAME ", " | TYPE ", " | SCOPE ", " |"};
         Iterator it = table.entrySet().iterator(); int i = 1;
         while(it.hasNext()){
             Map.Entry pair = (Map.Entry)it.next();

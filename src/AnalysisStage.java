@@ -63,8 +63,28 @@ public class AnalysisStage implements JmmAnalysis {
         // var varPrinter = new ExamplePrintVariables("Variable", "name", "line");
         // varPrinter.visit(node, null);
 
+        /*
         List<Symbol> params = symbolTable.getParameters("main");
         for(Symbol param : params) System.out.println(param);
+
+        System.out.println(symbolTable.getReturnType("main"));
+        System.out.println(symbolTable.getReturnType("printL"));
+
+        List<Symbol> vars = symbolTable.getLocalVariables("main");
+        for(Symbol var : vars) System.out.println(var);
+
+        List<String> methods = symbolTable.getMethods();
+        for(String method : methods) System.out.println(method);
+
+        List<Symbol> fields = symbolTable.getFields();
+        for(Symbol field : fields) System.out.println(field);
+
+        System.out.println(symbolTable.getSuper());
+        System.out.println(symbolTable.getClassName());
+
+        List<String> imports = symbolTable.getImports();
+        for(String imp : imports) System.out.println(imp);
+        */
 
         return new JmmSemanticsResult(parserResult, symbolTable, reports);
 
