@@ -11,7 +11,7 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
     private final String varDeclNodeName = "VarDeclaration";
     private final String methodParamNodeName = "Parameter";
 
-    OurSymbolTable symbolTable;
+    OurSymbolTable symbolTable = new OurSymbolTable();
 
     OurSymbolTable getSymbolTable(){ return symbolTable; }
 

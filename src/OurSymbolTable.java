@@ -15,14 +15,15 @@ public class OurSymbolTable implements SymbolTable {
 
     public Optional<Report> put(OurSymbol symbol, JmmNode node) {
         // Check for repeat symbols
-        if (table.putIfAbsent(symbol, node) != null)
+        var existingEntry = table.putIfAbsent(symbol, node);
+        if (existingEntry != null)
             return Optional.of(
                     new Report(
                         ReportType.ERROR,
                         Stage.SYNTATIC,
                         symbol.getLine(),
                         symbol.getColumn(),
-                        "Variable " + symbol.getName() + " is already defined in the scope"));
+                            "Symbol " + symbol.getName() + " is already defined in the scope"));
         else return Optional.empty();
     }
 
