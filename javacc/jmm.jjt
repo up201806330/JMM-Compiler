@@ -189,7 +189,7 @@ void MethodDeclaration(): { Token t_name; } {
     )
 }
 
-void Parameters(): {} {
+void Parameters() #void: {} {
     [Parameter() (<Comma> Parameter())* ]
 }
 

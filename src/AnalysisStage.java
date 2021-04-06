@@ -6,6 +6,7 @@ import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.JmmParserResult;
 import pt.up.fe.comp.jmm.analysis.JmmAnalysis;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.ast.JmmNodeImpl;
 import pt.up.fe.comp.jmm.ast.examples.ExamplePostorderVisitor;
 import pt.up.fe.comp.jmm.ast.examples.ExamplePrintVariables;
@@ -61,6 +62,9 @@ public class AnalysisStage implements JmmAnalysis {
         //         "Print variables name and line, and their corresponding parent with Visitor that automatically performs preorder tree traversal");
         // var varPrinter = new ExamplePrintVariables("Variable", "name", "line");
         // varPrinter.visit(node, null);
+
+        List<Symbol> params = symbolTable.getParameters("main");
+        for(Symbol param : params) System.out.println(param);
 
         return new JmmSemanticsResult(parserResult, symbolTable, reports);
 

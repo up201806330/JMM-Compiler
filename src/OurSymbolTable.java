@@ -23,7 +23,7 @@ public class OurSymbolTable implements SymbolTable {
                         Stage.SYNTATIC,
                         symbol.getLine(),
                         symbol.getColumn(),
-                            "Symbol " + symbol.getName() + " is already defined in the scope"));
+                            "Symbol '" + symbol.getName() + "' is already defined in the scope"));
         else return Optional.empty();
     }
 

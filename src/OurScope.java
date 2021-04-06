@@ -2,6 +2,7 @@ import java.util.Objects;
 
 public class OurScope {
     public enum ScopeEnum {
+        Error,
         Global,
         FunctionParameter,
         FunctionVariable
@@ -17,7 +18,7 @@ public class OurScope {
 
     public OurScope(ScopeEnum scope, OurSymbol functionSymbol){
         this.functionSymbol = functionSymbol;
-        this.scope = (scope != null && functionSymbol != null) ? scope : ScopeEnum.Global;
+        this.scope = (scope != null && functionSymbol != null) ? scope : ScopeEnum.Error;
     }
 
     public String getName(){
@@ -26,7 +27,7 @@ public class OurScope {
 
     @Override
     public String toString(){
-        return scope.toString() + (scope.ordinal() > 0 ? " (" + functionSymbol.getName() + ")" : "");
+        return scope.toString() + (scope.ordinal() > ScopeEnum.Global.ordinal() ? " (" + functionSymbol.getName() + ")" : "");
     }
 
     @Override
