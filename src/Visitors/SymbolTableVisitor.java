@@ -66,7 +66,7 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
             reports.add(
                     new Report(
                             ReportType.WARNING,
-                            Stage.SYNTATIC,
+                            Stage.SEMANTIC,
                             symbol.getLine(),
                             symbol.getColumn(),
                             "Variable '" + symbol.getName() + "' defined inside method with a lexical error"));
@@ -106,7 +106,7 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
             reports.add(
                     new Report(
                             ReportType.WARNING,
-                            Stage.SYNTATIC,
+                            Stage.SEMANTIC,
                             symbol.getLine(),
                             symbol.getColumn(),
                             "Parameter '" + symbol.getName() + "' defined for method with a lexical error"));

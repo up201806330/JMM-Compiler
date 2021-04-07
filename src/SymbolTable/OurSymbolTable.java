@@ -22,7 +22,7 @@ public class OurSymbolTable implements SymbolTable {
             return Optional.of(
                     new Report(
                         ReportType.ERROR,
-                        Stage.SYNTATIC,
+                        Stage.SEMANTIC,
                         symbol.getLine(),
                         symbol.getColumn(),
                             "Symbol '" + symbol.getName() + "' is already defined in the scope"));
