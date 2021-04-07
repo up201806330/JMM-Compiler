@@ -62,7 +62,7 @@ public class AnalysisStage implements JmmAnalysis {
         //         "Print variables name and line, and their corresponding parent with Visitor that automatically performs preorder tree traversal");
         // var varPrinter = new ExamplePrintVariables("Variable", "name", "line");
         // varPrinter.visit(node, null);
-        
+
         return new JmmSemanticsResult(parserResult, symbolTable, reports);
 
     }

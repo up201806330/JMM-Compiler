@@ -11,6 +11,7 @@ import java.util.*;
 public class OurSymbolTable implements SymbolTable {
 
     String className;
+    String superName;
     // For every valuable node holds a  set of attributes or qualifiers i.e. Import, Class, ...
     HashMap<OurSymbol, JmmNode> table = new HashMap<>();
 
@@ -52,10 +53,7 @@ public class OurSymbolTable implements SymbolTable {
 
     @Override
     public String getSuper() {
-        for (OurSymbol entry : table.keySet()) {
-            if (entry.isSuper()) return entry.getName();
-        }
-        return null;
+        return superName;
     }
 
     @Override
@@ -104,10 +102,13 @@ public class OurSymbolTable implements SymbolTable {
 
     @Override
     public String toString(){
-        final Object[][] stringTable = new String[table.size() + 1][];
+        final Object[][] stringTable = new String[table.size() + 2][];
         StringBuilder result = new StringBuilder();
-        stringTable[0] = new String[] {"Symbol table: " + className + "\n| SYMBOL NAME ", " | TYPE ", " | SCOPE ", " |"};
-        Iterator it = table.entrySet().iterator(); int i = 1;
+
+        stringTable[0] = new String[] {className + (superName != null ? (" extends " + superName) : "") ,"", "", ""};
+        stringTable[1] = new String[] {"| SYMBOL NAME ", " | TYPE ", " | SCOPE ", " |"};
+
+        Iterator it = table.entrySet().iterator(); int i = 2;
         while(it.hasNext()){
             Map.Entry pair = (Map.Entry)it.next();
             OurSymbol symbol = (OurSymbol) pair.getKey();
