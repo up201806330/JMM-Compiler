@@ -40,6 +40,9 @@ sourceSets {
    main {
       java {
          srcDir 'src'
+         srcDir 'src/Stages'
+         srcDir 'src/SymbolTable'
+         srcDir 'src/Visitors'
          srcDir 'src-lib'
          srcDir 'generated'
       }
