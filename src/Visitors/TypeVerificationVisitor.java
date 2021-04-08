@@ -1,4 +1,5 @@
 import pt.up.fe.comp.jmm.JmmNode;
+import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.PostorderJmmVisitor;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.ReportType;
@@ -11,6 +12,7 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
     private final String terminalNodeName = "Terminal";
     private final String binaryNodeName = "Binary";
     private final String methodDeclNodeName = "MethodDeclaration";
+    private final String arrayExprNodeName = "ArrayExpression";
 
     OurSymbolTable symbolTable;
 
@@ -19,19 +21,18 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
 
         addVisit(terminalNodeName, this::dealWithTerminal);
         addVisit(binaryNodeName, this::dealWithBinary);
+        addVisit(arrayExprNodeName, this::dealWithArrayExpression);
         setDefaultVisit(TypeVerificationVisitor::defaultVisit);
     }
 
     private Boolean dealWithTerminal(JmmNode node, List<Report> reports){
         if (!node.get("type").equals("identifier")) return defaultVisit(node, reports);
 
-        var parentFunction = node.getAncestor(methodDeclNodeName);
+        String variableType = symbolTable.getLocalVariableType(
+                node.getAncestor(methodDeclNodeName).map(ancestorNode -> ancestorNode.get("name")).orElse(null),
+                node.get("value")).getName();
 
-        String returnType = symbolTable.getLocalVariableReturnType(
-                parentFunction.map(jmmNode -> jmmNode.get("name")).orElse(null)
-                , node.get("name"));
-
-        if (returnType == null){
+        if (variableType == null){
             reports.add(new Report(
                     ReportType.WARNING,
                     Stage.SEMANTIC,
@@ -43,7 +44,7 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
             return defaultVisit(node, reports);
         }
 
-        node.put("type", returnType);
+        node.put("type", variableType);
 
         return defaultVisit(node, reports);
     }
@@ -85,6 +86,34 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
         return defaultVisit(node, reports);
     }
 
+    private Boolean dealWithArrayExpression(JmmNode node, List<Report> reports){
+        List<JmmNode> children = node.getChildren();
+        if (children.size() != 2) {
+            reports.add(new Report(
+                    ReportType.WARNING,
+                    Stage.SEMANTIC,
+                    Integer.parseInt(node.get("line")),
+                    Integer.parseInt(node.get("column")),
+                    "Binary node doesn't have 2 children. Something is wrong in syntactic phase"
+            ));
+        }
+
+        Type variableType = symbolTable.getLocalVariableType(
+                node.getAncestor(methodDeclNodeName).map(ancestorNode -> ancestorNode.get("name")).orElse(null),
+                children.get(0).get("value"));
+
+        if (!variableType.isArray()) {
+            reports.add(new Report(
+                    ReportType.WARNING,
+                    Stage.SEMANTIC,
+                    Integer.parseInt(node.get("line")),
+                    Integer.parseInt(node.get("column")),
+                    "Array type expected; found: '" + variableType.getName() + "'"
+            ));
+        }
+
+        return defaultVisit(node, reports);
+    }
 
     private static Boolean defaultVisit(JmmNode node, List<Report> reports) {
         return true;

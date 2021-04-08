@@ -36,19 +36,19 @@ public class OurSymbolTable implements SymbolTable {
         return null;
     }
 
-    public String getLocalVariableReturnType(String methodName, String varName){
+    public Type getLocalVariableType(String methodName, String value){
         for (OurSymbol entry : table.keySet()) {
             if (entry.getScope().getName().equals(methodName) &&
-            entry.getName().equals(varName)) return entry.getType().getName();
+            entry.getName().equals(value)) return entry.getType();
         }
 
         // If localVariable isn't found, search in the globals
         for (OurSymbol entry : table.keySet()) {
             if (entry.getScope().scope.equals(OurScope.ScopeEnum.Global) &&
-                    entry.getName().equals(varName)) return entry.getType().getName();
+                    entry.getName().equals(value)) return entry.getType();
         }
 
-        return null;
+        return new Type(value, false);
     }
 
     @Override

@@ -58,7 +58,7 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
                 new HashSet<>(Arrays.asList("variable")),
                 new OurScope(
                         OurScope.ScopeEnum.FunctionVariable,
-                        parentFunction.map(jmmNode -> symbolTable.getByValue(jmmNode)).orElse(null)
+                        parentFunction.map(ancestorNode -> symbolTable.getByValue(ancestorNode)).orElse(null)
                 )
         );
 

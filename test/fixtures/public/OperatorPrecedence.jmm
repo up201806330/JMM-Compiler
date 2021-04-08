@@ -1,9 +1,7 @@
 class NestedLoop extends Loop{
 	public static void main(String[] args) {
-        int a;
+        int[] a;
         boolean b;
-        a = 1 + true * 3 - 4 * a.length - a[5];
-
-        b = new int[10];
+        a = 1 + 2 * 3 - 4 * this.func(1,2) - a.length;
 	}
 }
