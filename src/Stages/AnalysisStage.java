@@ -45,6 +45,10 @@ public class AnalysisStage implements JmmAnalysis {
         var anotherPostOrderVisitor = new TypeAssignmentVisitor();
         anotherPostOrderVisitor.visit(node, reports);
 
+        System.out.println("Dump tree with Visitor where you control tree traversal");
+        var visitor = new OurVisitor();
+        System.out.println(visitor.visit(node, ""));
+
         System.out.println("Create symbol table with Visitor that automatically performs preorder tree traversal");
         var preorderVisitor = new SymbolTableVisitor();
         preorderVisitor.visit(node, reports);
@@ -56,8 +60,8 @@ public class AnalysisStage implements JmmAnalysis {
         typeVerificationVisitor.visit(node, reports);
 
         System.out.println("Dump tree with Visitor where you control tree traversal");
-        var visitor = new OurVisitor();
-        System.out.println(visitor.visit(node, ""));
+        var anotherVisitor = new OurVisitor();
+        System.out.println(anotherVisitor.visit(node, ""));
 
 //         System.out.println(
 //                 "Print variables name and line, and their corresponding parent with Visitor that automatically performs preorder tree traversal");

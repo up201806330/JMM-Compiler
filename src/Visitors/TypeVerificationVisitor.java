@@ -21,7 +21,7 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
         this.symbolTable = symbolTable;
 
         addVisit(terminalNodeName, this::dealWithTerminal);
-        addVisit(binaryNodeName, this::checkChildrenAreOfSameType);
+        addVisit(binaryNodeName, this::dealWithBinary);
         addVisit(assignmentNodeName, this::checkChildrenAreOfSameType);
         addVisit(arrayExprNodeName, this::dealWithArrayExpression);
         setDefaultVisit(TypeVerificationVisitor::defaultVisit);
@@ -55,6 +55,11 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
         return defaultVisit(node, reports);
     }
 
+    private Boolean dealWithBinary(JmmNode node, List<Report> reports){
+        return checkTheresNoArrayAccess(node, reports) &&
+        checkChildrenAreOfSameType(node, reports);
+    }
+
     private Boolean dealWithArrayExpression(JmmNode node, List<Report> reports){
         List<JmmNode> children = getChildren(node, reports);
 
@@ -66,7 +71,7 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
                     Integer.parseInt(node.get("column")),
                     "Array type expected; found: '" + children.get(0).get("name") + "'"
             ));
-        }
+        };
 
         return defaultVisit(node, reports);
     }
@@ -80,17 +85,8 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
             return defaultVisit(node, reports);
         }
 
-        Type leftVarType = symbolTable.getLocalVariableType(
-                node.getAncestor(methodDeclNodeName).map(ancestorNode -> ancestorNode.get("name")).orElse(null),
-                children.get(0).get("type"),
-                children.get(0).get("value"),
-                Boolean.valueOf(children.get(0).get("isArray")));
-
-        Type rightVarType = symbolTable.getLocalVariableType(
-                node.getAncestor(methodDeclNodeName).map(ancestorNode -> ancestorNode.get("name")).orElse(null),
-                children.get(1).get("type"),
-                children.get(1).get("value"),
-                Boolean.valueOf(children.get(1).get("isArray")));
+        Type leftVarType = getChildNodeType(0, node, children);
+        Type rightVarType = getChildNodeType(1, node, children);
 
         if (!leftVarType.equals(rightVarType)) {
             reports.add(new Report(
@@ -112,6 +108,38 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
         }
 
         return defaultVisit(node, reports);
+    }
+
+    private Boolean checkTheresNoArrayAccess(JmmNode node, List<Report> reports){
+        List<JmmNode> children = getChildren(node, reports);
+
+        Type leftVarType = getChildNodeType(0, node, children);
+        Type rightVarType = getChildNodeType(1, node, children);
+
+        if (leftVarType.isArray() || rightVarType.isArray()) {
+            reports.add(new Report(
+                    ReportType.ERROR,
+                    Stage.SEMANTIC,
+                    Integer.parseInt(node.get("line")),
+                    Integer.parseInt(node.get("column")),
+                    "Operator '" + node.get("value") +
+                            "' cannot be applied to '" +
+                            leftVarType.getName() + (leftVarType.isArray() ? "[]" : "") + "', '" +
+                            rightVarType.getName() + (rightVarType.isArray() ? "[]" : "") + "'"
+            ));
+            node.put("type", "error");
+            node.put("isArray", "error");
+        }
+
+        return defaultVisit(node, reports);
+    }
+
+    private Type getChildNodeType(int index, JmmNode node, List<JmmNode> children) {
+        return symbolTable.getLocalVariableType(
+                node.getAncestor(methodDeclNodeName).map(ancestorNode -> ancestorNode.get("name")).orElse(null),
+                children.get(index).get("type"),
+                children.get(index).getOptional("value").orElse(""),
+                Boolean.valueOf(children.get(index).get("isArray")));
     }
 
     private List<JmmNode> getChildren(JmmNode node, List<Report> reports) {
