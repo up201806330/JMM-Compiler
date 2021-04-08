@@ -36,7 +36,7 @@ public class OurSymbolTable implements SymbolTable {
         return null;
     }
 
-    public Type getLocalVariableType(String methodName, String value){
+    public Type getLocalVariableType(String methodName, String type, String value, Boolean isArray){
         for (OurSymbol entry : table.keySet()) {
             if (entry.getScope().getName().equals(methodName) &&
             entry.getName().equals(value)) return entry.getType();
@@ -48,7 +48,7 @@ public class OurSymbolTable implements SymbolTable {
                     entry.getName().equals(value)) return entry.getType();
         }
 
-        return new Type(value, false);
+        return new Type(type, isArray);
     }
 
     @Override

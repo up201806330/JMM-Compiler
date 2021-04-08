@@ -6,6 +6,7 @@ import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.JmmParserResult;
 import pt.up.fe.comp.jmm.analysis.JmmAnalysis;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
+import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp.jmm.report.Stage;
@@ -44,10 +45,6 @@ public class AnalysisStage implements JmmAnalysis {
         var anotherPostOrderVisitor = new TypeAssignmentVisitor();
         anotherPostOrderVisitor.visit(node, reports);
 
-        System.out.println("Dump tree with Visitor where you control tree traversal");
-        var visitor = new OurVisitor();
-        System.out.println(visitor.visit(node, ""));
-
         System.out.println("Create symbol table with Visitor that automatically performs preorder tree traversal");
         var preorderVisitor = new SymbolTableVisitor();
         preorderVisitor.visit(node, reports);
@@ -58,10 +55,17 @@ public class AnalysisStage implements JmmAnalysis {
         var typeVerificationVisitor = new TypeVerificationVisitor(symbolTable);
         typeVerificationVisitor.visit(node, reports);
 
+        System.out.println("Dump tree with Visitor where you control tree traversal");
+        var visitor = new OurVisitor();
+        System.out.println(visitor.visit(node, ""));
+
 //         System.out.println(
 //                 "Print variables name and line, and their corresponding parent with Visitor that automatically performs preorder tree traversal");
 //         var varPrinter = new ExamplePrintVariables("Variable", "name", "line");
 //         varPrinter.visit(node, null);
+
+        Type a = new Type("a", true), b = new Type("a", true);
+        System.out.println(a.equals(b));
 
         return new JmmSemanticsResult(parserResult, symbolTable, reports);
 

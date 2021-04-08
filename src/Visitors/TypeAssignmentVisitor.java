@@ -6,32 +6,47 @@ import java.util.List;
 
 public class TypeAssignmentVisitor extends PostorderJmmVisitor<List<Report>, Boolean> {
 
-    private final String typeNodeName = "Type";
-    private final String typeAttribute = "type";
-    private final String isArrayAttribute = "isArray";
-    private final String arrayExprNodeName = "ArrayExpression";
+    private static final String typeNodeName = "Type";
+    private final static String terminalNodeName = "Terminal";
+    private final static String propertyAccessNodeName = "PropertyAccess";
+    private static final String typeAttribute = "type";
+    private static final String isArrayAttribute = "isArray";
+    private static final String arrayExprNodeName = "ArrayExpression";
 
     public TypeAssignmentVisitor() {
-        addVisit(typeNodeName, this::dealWithType);
+        addVisit(typeNodeName, this::dealWithTypeAffectingParent);
+        addVisit(terminalNodeName, this::dealWithTypeNotAffectingParent);
+        addVisit(propertyAccessNodeName, this::dealWithTypeNotAffectingParent);
         addVisit(arrayExprNodeName, this::dealWithArrayExpr);
         setDefaultVisit(TypeAssignmentVisitor::defaultVisit);
     }
 
-    public Boolean dealWithType(JmmNode node, List<Report> reports) {
+    private void setType(JmmNode node) {
         if (node.get(typeAttribute).equals("intArray")) {
             node.put(isArrayAttribute, "true");
             node.put(typeAttribute, "int");
         }
         else
             node.put(isArrayAttribute, "false");
+    }
+
+    public Boolean dealWithTypeAffectingParent(JmmNode node, List<Report> reports) {
+        setType(node);
 
         node.getParent().put(typeAttribute, node.get(typeAttribute));
         node.getParent().put(isArrayAttribute, node.get(isArrayAttribute));
         return defaultVisit(node, reports);
     }
 
+    public Boolean dealWithTypeNotAffectingParent(JmmNode node, List<Report> reports) {
+        setType(node);
+
+        return defaultVisit(node, reports);
+    }
+
     private Boolean dealWithArrayExpr(JmmNode node, List<Report> reports){
-        node.put("type", "int"); // Since arrays can only be of ints, this is hardcoded
+        node.put(typeAttribute, "int"); // Since arrays can only be of ints, this is hardcoded
+        node.put(isArrayAttribute, "true");
         return defaultVisit(node, reports);
     }
 

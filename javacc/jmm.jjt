@@ -273,7 +273,7 @@ void Array() #void: {} {
 void DotStatement() #void: { Token t_name; } {
     <Dot>
     (
-      (t_name = <Length> { jjtThis.put("name", t_name.image); jjtThis.put("type", "int"); } #PropertyAccess(1))
+      (t_name = <Length> { jjtThis.put("value", t_name.image); jjtThis.put("type", "int"); } #PropertyAccess(1))
     | CallExpression()
     )
 }
