@@ -22,7 +22,7 @@ public class OurScope {
     }
 
     public String getName(){
-        return functionSymbol.getName();
+        return functionSymbol != null ? functionSymbol.getName() : "";
     }
 
     @Override

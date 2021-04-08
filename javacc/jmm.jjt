@@ -238,24 +238,24 @@ void Expression() #void: {} {
 }
 
 void And() #void: {} {
-    LessThan() (<AndOp> LessThan() #AndExpression(2) )*
+    LessThan() ((<AndOp> LessThan() { jjtThis.put("value", "and"); } ) #Binary(2) )*
 }
 
 void LessThan() #void: {} {
-    AddSub() (<LessThanOp> AddSub() #LessThanExpression(2) )*
+    AddSub() ((<LessThanOp> AddSub() { jjtThis.put("value", "lessthan"); } ) #Binary(2) )*
 }
 
 void AddSub() #void: {} {
     MultDiv() (
-        <AddOp> MultDiv() #AddExpression(2) 
-        | <SubOp> MultDiv()  #SubExpression(2) )*
+        (<AddOp> MultDiv() { jjtThis.put("value", "add"); } ) #Binary(2)
+        | (<SubOp> MultDiv() { jjtThis.put("value", "sub"); } )  #Binary(2) )*
 }
 
 
 void MultDiv() #void: {} {
     Not() (
-        <MultOp> Not()  #MultExpression(2) 
-        |<DivOp> Not()  #DivExpression(2)  )*
+        (<MultOp> Not() { jjtThis.put("value", "mult"); } )  #Binary(2)
+        |(<DivOp> Not() { jjtThis.put("value", "div"); } )  #Binary(2) )*
 }
 
 void Not() #void: {} {
@@ -273,7 +273,7 @@ void Array() #void: {} {
 void DotStatement() #void: { Token t_name; } {
     <Dot>
     (
-      (t_name = <Length> { jjtThis.put("name", t_name.image); } #PropertyAccess(1))
+      (t_name = <Length> { jjtThis.put("name", t_name.image); jjtThis.put("type", "int"); } #PropertyAccess(1))
     | CallExpression()
     )
 }
@@ -283,20 +283,20 @@ void CallExpression() #CallExpression(2) :{Token t_name;}{
             <OpenParenthesis> ([Expression() (<Comma> Expression())*]#ArgsList) <CloseParenthesis>
 }
 
-void Terminal() #void: { Token t_value; } {
-    ( t_value = <IntegerLiteral> { jjtThis.put("value", t_value.image); } ) #IntegerLiteral
-    | ( t_value = <True> { jjtThis.put("value", t_value.image); } ) #Bool
-    | ( t_value = <False> { jjtThis.put("value", t_value.image); } ) #Bool
-    | ( t_value = <Identifier> { jjtThis.put("value", t_value.image); } ) #Identifier
-    | ( <This> ) #This
+void Terminal() #void : { Token t_value; } {
+    ( t_value = <IntegerLiteral> { jjtThis.put("value", t_value.image); jjtThis.put("type", "int"); } ) #Terminal
+    | ( t_value = <True> { jjtThis.put("value", t_value.image); jjtThis.put("type", "bool"); } ) #Terminal
+    | ( t_value = <False> { jjtThis.put("value", t_value.image); jjtThis.put("type", "bool"); } ) #Terminal
+    | ( t_value = <Identifier> { jjtThis.put("name", t_value.image); jjtThis.put("type", "identifier"); } ) #Terminal
+    | ( <This> { jjtThis.put("type", "class"); } ) #Terminal
     | (<OpenParenthesis> Expression() <CloseParenthesis> ) #ParenthesisExpression
     | New()
 }
 
-void New() #void: { Token t_type; } {
+void New() : { Token t_type; } {
     <New>
     (
-    ( <TypeInt> <OpenArray> Expression() <CloseArray> ) #NewIntArray
-    | ( t_type = <Identifier> { jjtThis.put("type", t_type.image); } <OpenParenthesis> <CloseParenthesis> ) #NewClass
+    ( <TypeInt> <OpenArray> Expression() <CloseArray>  { jjtThis.put("type", "intArray"); })
+    | ( t_type = <Identifier> { jjtThis.put("type", t_type.image); } <OpenParenthesis> <CloseParenthesis> )
     )
 }
