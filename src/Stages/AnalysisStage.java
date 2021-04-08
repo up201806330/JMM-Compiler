@@ -64,9 +64,6 @@ public class AnalysisStage implements JmmAnalysis {
 //         var varPrinter = new ExamplePrintVariables("Variable", "name", "line");
 //         varPrinter.visit(node, null);
 
-        Type a = new Type("a", true), b = new Type("a", true);
-        System.out.println(a.equals(b));
-
         return new JmmSemanticsResult(parserResult, symbolTable, reports);
 
     }

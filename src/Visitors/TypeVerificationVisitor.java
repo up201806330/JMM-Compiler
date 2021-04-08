@@ -101,7 +101,7 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
                     "Type mismatch (" +
                             leftVarType.getName() + (leftVarType.isArray()?"[]":"") +
                             " != " +
-                            rightVarType.getName() + (leftVarType.isArray()?"[]":"") + ")"
+                            rightVarType.getName() + (rightVarType.isArray()?"[]":"") + ")"
             ));
             node.put("type", "error");
             node.put("isArray", "error");
