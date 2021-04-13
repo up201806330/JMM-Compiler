@@ -9,14 +9,19 @@ public class TypeAssignmentVisitor extends PostorderJmmVisitor<List<Report>, Boo
     private static final String typeNodeName = "Type";
     private final static String terminalNodeName = "Terminal";
     private final static String propertyAccessNodeName = "PropertyAccess";
+    private static final String newNodeName = "New";
+    private static final String literalNodeName = "Literal";
+    private static final String arrayExprNodeName = "ArrayExpression";
+
     private static final String typeAttribute = "type";
     private static final String isArrayAttribute = "isArray";
-    private static final String arrayExprNodeName = "ArrayExpression";
 
     public TypeAssignmentVisitor() {
         addVisit(typeNodeName, this::dealWithTypeAffectingParent);
         addVisit(terminalNodeName, this::dealWithTypeNotAffectingParent);
         addVisit(propertyAccessNodeName, this::dealWithTypeNotAffectingParent);
+        addVisit(newNodeName, this::dealWithTypeNotAffectingParent);
+        addVisit(literalNodeName, this::dealWithTypeNotAffectingParent);
         addVisit(arrayExprNodeName, this::dealWithArrayExpr);
         setDefaultVisit(TypeAssignmentVisitor::defaultVisit);
     }

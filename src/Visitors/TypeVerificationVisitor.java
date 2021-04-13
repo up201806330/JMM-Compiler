@@ -6,6 +6,7 @@ import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp.jmm.report.Stage;
 
 import java.util.List;
+import java.util.Optional;
 
 public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, Boolean> {
 
@@ -30,46 +31,47 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
     private Boolean dealWithTerminal(JmmNode node, List<Report> reports){
         if (!node.get("type").equals("identifier")) return defaultVisit(node, reports);
 
-        Type variableType = symbolTable.getLocalVariableType(
+        var variableTypeOptional = symbolTable.getLocalVariableTypeIfItsDeclared(
                 node.getAncestor(methodDeclNodeName).map(ancestorNode -> ancestorNode.get("name")).orElse(null),
-                node.get("type"),
-                node.get("value"),
-                Boolean.valueOf(node.get("isArray")));
+                node.get("value"));
 
-        if (variableType == null){
+        if (variableTypeOptional.isEmpty()){
             reports.add(new Report(
                     ReportType.WARNING,
                     Stage.SEMANTIC,
                     Integer.parseInt(node.get("line")),
                     Integer.parseInt(node.get("column")),
-                    "Variable " + node.get("name") + " must be declared before being used"
+                    "Variable " + node.get("value") + " must be declared before being used"
             ));
             node.put("type", "error");
             node.put("isArray", "error");
         }
         else {
-            node.put("type", variableType.getName());
-            node.put("isArray", String.valueOf(variableType.isArray()));
+            node.put("type", variableTypeOptional.get().getName());
+            node.put("isArray", String.valueOf(variableTypeOptional.get().isArray()));
         }
 
         return defaultVisit(node, reports);
     }
 
     private Boolean dealWithBinary(JmmNode node, List<Report> reports){
-        return checkTheresNoArrayAccess(node, reports) &&
+        return checkTheresNoArrayType(node, reports) &&
         checkChildrenAreOfSameType(node, reports);
     }
 
     private Boolean dealWithArrayExpression(JmmNode node, List<Report> reports){
-        List<JmmNode> children = getChildren(node, reports);
+        var childrenTypesOpt = binaryChildrenTypes(node, reports);
+        if (childrenTypesOpt.isEmpty()) return defaultVisit(node, reports);
 
-        if (!children.get(0).get("isArray").equals("true")) {
+        var leftVarType = childrenTypesOpt.get().get(0);
+
+        if (!leftVarType.isArray()) {
             reports.add(new Report(
                     ReportType.WARNING,
                     Stage.SEMANTIC,
                     Integer.parseInt(node.get("line")),
                     Integer.parseInt(node.get("column")),
-                    "Array type expected; found: '" + children.get(0).get("name") + "'"
+                    "Array type expected; found: '" + leftVarType.getName() + "'"
             ));
         };
 
@@ -77,16 +79,17 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
     }
 
     private Boolean checkChildrenAreOfSameType(JmmNode node, List<Report> reports){
-        List<JmmNode> children = getChildren(node, reports);
+        var childrenTypesOpt = binaryChildrenTypes(node, reports);
+        if (childrenTypesOpt.isEmpty()) return defaultVisit(node, reports);
 
-        if (children.get(0).get("type").equals("error") || children.get(1).get("type").equals("error")){
+        var leftVarType = childrenTypesOpt.get().get(0);
+        var rightVarType = childrenTypesOpt.get().get(1);
+
+        if (leftVarType.getName().equals("error") || rightVarType.getName().equals("error")){
             node.put("type", "error");
             node.put("isArray", "error");
             return defaultVisit(node, reports);
         }
-
-        Type leftVarType = getChildNodeType(0, node, children);
-        Type rightVarType = getChildNodeType(1, node, children);
 
         if (!leftVarType.equals(rightVarType)) {
             reports.add(new Report(
@@ -110,11 +113,12 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
         return defaultVisit(node, reports);
     }
 
-    private Boolean checkTheresNoArrayAccess(JmmNode node, List<Report> reports){
-        List<JmmNode> children = getChildren(node, reports);
+    private Boolean checkTheresNoArrayType(JmmNode node, List<Report> reports){
+        var childrenTypesOpt = binaryChildrenTypes(node, reports);
+        if (childrenTypesOpt.isEmpty()) return defaultVisit(node, reports);
 
-        Type leftVarType = getChildNodeType(0, node, children);
-        Type rightVarType = getChildNodeType(1, node, children);
+        var leftVarType = childrenTypesOpt.get().get(0);
+        var rightVarType = childrenTypesOpt.get().get(1);
 
         if (leftVarType.isArray() || rightVarType.isArray()) {
             reports.add(new Report(
@@ -134,15 +138,13 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
         return defaultVisit(node, reports);
     }
 
-    private Type getChildNodeType(int index, JmmNode node, List<JmmNode> children) {
-        return symbolTable.getLocalVariableType(
-                node.getAncestor(methodDeclNodeName).map(ancestorNode -> ancestorNode.get("name")).orElse(null),
-                children.get(index).get("type"),
-                children.get(index).getOptional("value").orElse(""),
-                Boolean.valueOf(children.get(index).get("isArray")));
-    }
-
-    private List<JmmNode> getChildren(JmmNode node, List<Report> reports) {
+    /**
+     * Gets the children of a node, assuring there are only 2. Else, creates a report and returns Optional.empty()
+     * @param node Binary node to get children from
+     * @param reports Accumulated reports
+     * @return List of child nodes if there are only 2, else Optional.empty()
+     */
+    private Optional<List<JmmNode>> getBinaryChildren(JmmNode node, List<Report> reports) {
         List<JmmNode> result = node.getChildren();
         if (result.size() != 2) {
             reports.add(new Report(
@@ -152,8 +154,28 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
                     Integer.parseInt(node.get("column")),
                     "Binary node doesn't have 2 children. Something is wrong in syntactic phase"
             ));
+            return Optional.empty();
         }
-        return result;
+        return Optional.of(result);
+    }
+
+    /**
+     * Create type from node with type and isArray parameters already set. Assumes node has already been filled in with these
+     * parameters in a previous search
+     * @param node node whose type will be extracted
+     * @return a Type object
+     */
+    private Type extractTypeFromNode(JmmNode node){
+        return new Type(node.get("type"), Boolean.parseBoolean(node.get("isArray")));
+    }
+
+    private Optional<List<Type>> binaryChildrenTypes(JmmNode node, List<Report> reports){
+        List<JmmNode> children;
+        var childrenOptional = getBinaryChildren(node, reports);
+        if (childrenOptional.isEmpty()) return Optional.empty();
+        else children = childrenOptional.get();
+
+        return Optional.of(List.of(extractTypeFromNode(children.get(0)), extractTypeFromNode(children.get(1))));
     }
 
     private static Boolean defaultVisit(JmmNode node, List<Report> reports) {
