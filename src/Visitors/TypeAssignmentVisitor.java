@@ -51,7 +51,7 @@ public class TypeAssignmentVisitor extends PostorderJmmVisitor<List<Report>, Boo
 
     private Boolean dealWithArrayExpr(JmmNode node, List<Report> reports){
         node.put(typeAttribute, "int"); // Since arrays can only be of ints, this is hardcoded
-        node.put(isArrayAttribute, "true");
+        node.put(isArrayAttribute, "false");
         return defaultVisit(node, reports);
     }
 
