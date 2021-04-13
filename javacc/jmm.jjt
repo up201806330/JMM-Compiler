@@ -238,28 +238,28 @@ void Expression() #void: {} {
 }
 
 void And() #void: {} {
-    LessThan() ((<AndOp> LessThan() { jjtThis.put("value", "and"); } ) #Binary(2) )*
+    LessThan() ((<AndOp> LessThan() { jjtThis.put("value", "&&"); } ) #Binary(2) )*
 }
 
 void LessThan() #void: {} {
-    AddSub() ((<LessThanOp> AddSub() { jjtThis.put("value", "lessthan"); } ) #Binary(2) )*
+    AddSub() ((<LessThanOp> AddSub() { jjtThis.put("value", "<"); } ) #Binary(2) )*
 }
 
 void AddSub() #void: {} {
     MultDiv() (
-        (<AddOp> MultDiv() { jjtThis.put("value", "add"); } ) #Binary(2)
-        | (<SubOp> MultDiv() { jjtThis.put("value", "sub"); } )  #Binary(2) )*
+        (<AddOp> MultDiv() { jjtThis.put("value", "+"); } ) #Binary(2)
+        | (<SubOp> MultDiv() { jjtThis.put("value", "-"); } )  #Binary(2) )*
 }
 
 
 void MultDiv() #void: {} {
     Not() (
-        (<MultOp> Not() { jjtThis.put("value", "mult"); } )  #Binary(2)
-        |(<DivOp> Not() { jjtThis.put("value", "div"); } )  #Binary(2) )*
+        (<MultOp> Not() { jjtThis.put("value", "*"); } )  #Binary(2)
+        |(<DivOp> Not() { jjtThis.put("value", "/"); } )  #Binary(2) )*
 }
 
 void Not() #void: {} {
-    (<NotOp> Not() #NotExpression) | Terminations()
+    (<NotOp> (Not() { jjtThis.put("value", "!"); }) #NotExpression) | Terminations()
 }
 
 void Terminations() #void: {} {
@@ -289,7 +289,7 @@ void Terminal() #void : { Token t_value; } {
     | ( t_value = <False> { jjtThis.put("value", t_value.image); jjtThis.put("type", "bool"); } ) #Literal
     | ( t_value = <Identifier> { jjtThis.put("value", t_value.image); jjtThis.put("type", "identifier"); } ) #Terminal
     | ( <This> { jjtThis.put("type", "class"); } ) #Terminal
-    | (<OpenParenthesis> Expression() <CloseParenthesis> ) #ParenthesisExpression
+    | (<OpenParenthesis> Expression() <CloseParenthesis> )
     | New()
 }
 
