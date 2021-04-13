@@ -21,6 +21,8 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
         addVisit(Constants.assignmentNodeName, this::dealWithAssignment);
         addVisit(Constants.arrayExprNodeName, this::dealWithArrayExpression);
         addVisit(Constants.notExprNodeName, this::dealWithNotExpr);
+        addVisit(Constants.ifConditionNodeName, this::dealWithCondition);
+        addVisit(Constants.whileConditionNodeName, this::dealWithCondition);
         setDefaultVisit(TypeVerificationVisitor::defaultVisit);
     }
 
@@ -127,7 +129,6 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
     }
 
     private Boolean dealWithLessThanExpr(JmmNode node, List<Report> reports, Type leftOperandType, Type rightOperandType){
-        System.out.println(node.get(Constants.typeAttribute));
         if (!node.get(Constants.typeAttribute).equals(Constants.intType)){
             reports.add(new Report(
                     ReportType.ERROR,
@@ -146,6 +147,24 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
         return defaultVisit(node, reports);
     }
 
+    private Boolean dealWithCondition(JmmNode node, List<Report> reports){
+        var childrenTypesOpt = childrenTypes(node, reports);
+        if (childrenTypesOpt.isEmpty()) return defaultVisit(node, reports);
+        var childrenTypes = childrenTypesOpt.get();
+        Type operation = childrenTypes.get(0);
+
+        if (!operation.getName().equals(Constants.booleanType)){
+            reports.add(new Report(
+                    ReportType.ERROR,
+                    Stage.SEMANTIC,
+                    Integer.parseInt(node.get("line")),
+                    Integer.parseInt(node.get("column")),
+                    "Condition requires type: ''boolean' ; Got '" + operation.getName() + "'"
+            ));
+        }
+        
+        return defaultVisit(node, reports);
+    }
     /**
      * Checks if both operands (or if there is only one, the right one) are of type bool
      *
@@ -160,7 +179,6 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
                 !leftOperandType.getName().equals(Constants.booleanType) || !rightOperandType.getName().equals(Constants.booleanType) :
                 !rightOperandType.getName().equals(Constants.booleanType)){
 
-            System.out.println(node.get("line"));
             reports.add(new Report(
                     ReportType.ERROR,
                     Stage.SEMANTIC,

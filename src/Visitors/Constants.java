@@ -17,6 +17,8 @@ public class Constants {
     public static final String importDeclNodeName = "ImportDeclaration";
     public static final String varDeclNodeName = "VarDeclaration";
     public static final String methodParamNodeName = "Parameter";
+    public static final String ifConditionNodeName = "IfCondition";
+    public static final String whileConditionNodeName = "WhileCondition";
 
     // Attribute names
     public static final String nameAttribute = "name";
@@ -24,12 +26,10 @@ public class Constants {
     public static final String valueAttribute = "value";
     public static final String lineAttribute = "line";
     public static final String columnAttribute = "column";
-
-
-    public static final String identifierAttribute = "identifier";
     public static final String arrayAttribute = "isArray";
 
     // Types
+    public static final String identifierAttribute = "identifier";
     public static final String intArrayType = "intArray";
     public static final String intType = "int";
     public static final String booleanType = "bool";
