@@ -1,4 +1,5 @@
 import pt.up.fe.comp.jmm.JmmNode;
+import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.ReportType;
@@ -82,10 +83,21 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
                 new HashSet<>(Arrays.asList(Constants.methodAttribute)),
                 new OurScope());
 
+
+        symbol.insertParameterTypes(getParameterTypes(node));
         Optional<Report> insertionError = symbolTable.put(symbol, node);
         insertionError.ifPresent(reports::add);
 
         return defaultVisit(node, reports);
+    }
+
+    private List<Type> getParameterTypes(JmmNode node) {
+        List<Type> result = new ArrayList<>();
+        for (JmmNode child : node.getChildren()){
+            if (child.getKind().equals(Constants.methodParamNodeName))
+                result.add(new Type(child.get(Constants.typeAttribute), Boolean.parseBoolean(child.get(Constants.arrayAttribute))));
+        }
+        return result;
     }
 
     public Boolean dealWithMethodParameter(JmmNode node, List<Report> reports){

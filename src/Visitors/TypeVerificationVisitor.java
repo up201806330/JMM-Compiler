@@ -53,7 +53,7 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
     }
 
     private Boolean dealWithBinary(JmmNode node, List<Report> reports){
-        var childrenTypesOpt = childrenTypes(node, reports);
+        var childrenTypesOpt = NodeUtils.childrenTypes(node, reports);
         if (childrenTypesOpt.isEmpty()) return defaultVisit(node, reports);
         var childrenTypes = childrenTypesOpt.get();
         Type leftOperandType = childrenTypes.get(0), rightOperandType = (childrenTypes.size() > 1 ? childrenTypes.get(1) : null);
@@ -76,7 +76,7 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
     }
 
     private Boolean dealWithAssignment(JmmNode node, List<Report> reports){
-        var childrenTypesOpt = childrenTypes(node, reports);
+        var childrenTypesOpt = NodeUtils.childrenTypes(node, reports);
         if (childrenTypesOpt.isEmpty()) return defaultVisit(node, reports);
         var childrenTypes = childrenTypesOpt.get();
         Type leftOperandType = childrenTypes.get(0), rightOperandType = childrenTypes.get(1);
@@ -92,7 +92,7 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
     }
 
     private Boolean dealWithArrayExpression(JmmNode node, List<Report> reports){
-        var childrenTypesOpt = childrenTypes(node, reports);
+        var childrenTypesOpt = NodeUtils.childrenTypes(node, reports);
         if (childrenTypesOpt.isEmpty()) return defaultVisit(node, reports);
 
         var leftVarType = childrenTypesOpt.get().get(0);
@@ -123,7 +123,7 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
     }
 
     private Boolean dealWithNotExpr(JmmNode node, List<Report> reports){
-        var childrenTypesOpt = childrenTypes(node, reports);
+        var childrenTypesOpt = NodeUtils.childrenTypes(node, reports);
         if (childrenTypesOpt.isEmpty()) return defaultVisit(node, reports);
         var childrenTypes = childrenTypesOpt.get();
         Type rightOperandType = childrenTypes.get(0);
@@ -160,7 +160,7 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
     }
 
     private Boolean dealWithCondition(JmmNode node, List<Report> reports){
-        var childrenTypesOpt = childrenTypes(node, reports);
+        var childrenTypesOpt = NodeUtils.childrenTypes(node, reports);
         if (childrenTypesOpt.isEmpty()) return defaultVisit(node, reports);
         var childrenTypes = childrenTypesOpt.get();
         Type operation = childrenTypes.get(0);
@@ -177,15 +177,7 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
 
         return defaultVisit(node, reports);
     }
-    /**
-     * Checks if both operands (or if there is only one, the right one) are of type bool
-     *
-     * @param node Node to get children from
-     * @param reports Accumulated reports
-     * @param leftOperandType Type object
-     * @param rightOperandType Type object
-     * @return
-     */
+
     private Boolean dealWithBooleanExpr(JmmNode node, List<Report> reports, Type leftOperandType, Type rightOperandType){
         if (leftOperandType != null ?
                 !leftOperandType.getName().equals(Constants.booleanType) || !rightOperandType.getName().equals(Constants.booleanType) :
@@ -262,55 +254,6 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
         }
 
         return defaultVisit(node, reports);
-    }
-
-    /**
-     * Gets the children of a node
-     * @param node node to get children from
-     * @param reports Accumulated reports
-     * @return Optional of list of child nodes. If node is Binary and there are not 2 child nodes, Optional.empty()
-     */
-    private Optional<List<JmmNode>> getChildren(JmmNode node, List<Report> reports) {
-        List<JmmNode> result = node.getChildren();
-        if (result.size() != 2 && node.getKind().equals(Constants.binaryNodeName)) {
-            reports.add(new Report(
-                    ReportType.WARNING,
-                    Stage.SEMANTIC,
-                    Integer.parseInt(node.get(Constants.lineAttribute)),
-                    Integer.parseInt(node.get(Constants.columnAttribute)),
-                    "Binary node doesn't have 2 children. Something is wrong in syntactic phase"
-            ));
-            return Optional.empty();
-        }
-        return Optional.of(result);
-    }
-
-    /**
-     * Create type from node with type and isArray parameters already set. Assumes node has already been filled in with these
-     * parameters in a previous search
-     * @param node Node whose type will be extracted
-     * @return A Type object
-     */
-    private Type extractTypeFromNode(JmmNode node){
-        return new Type(node.get(Constants.typeAttribute), Boolean.parseBoolean(node.get(Constants.arrayAttribute)));
-    }
-
-    /**
-     *
-     * @param node Node to get children from
-     * @param reports Accumulated reports
-     * @return Optional of list of Types, or if there are no children, Optional.empty()
-     */
-    private Optional<List<Type>> childrenTypes(JmmNode node, List<Report> reports){
-        List<JmmNode> children;
-        var childrenOptional = getChildren(node, reports);
-        if (childrenOptional.isEmpty()) return Optional.empty();
-        else children = childrenOptional.get();
-
-        List<Type> result = new ArrayList<>();
-        result.add(extractTypeFromNode(children.get(0)));
-        if (children.size() > 1) result.add(extractTypeFromNode(children.get(1)));
-        return Optional.of(result);
     }
 
     private static Boolean defaultVisit(JmmNode node, List<Report> reports) {

@@ -7,16 +7,17 @@ public class Constants {
     public final static String propertyAccessNodeName = "PropertyAccess";
     public static final String newNodeName = "New";
     public static final String literalNodeName = "Literal";
-    public static final String arrayExprNodeName = "ArrayExpression";
     public static final String binaryNodeName = "Binary";
-    public static final String assignmentNodeName = "Assignment";
+    public static final String methodParamNodeName = "Parameter";
+    public static final String arrayExprNodeName = "ArrayExpression";
     public static final String notExprNodeName = "NotExpression";
+    public static final String callExprNodeName = "CallExpression";
+    public static final String assignmentNodeName = "Assignment";
     public static final String methodDeclNodeName = "MethodDeclaration";
     public static final String classDeclNodeName = "ClassDeclaration";
-    public static final String classInheritNodeName = "ClassInheritance";
     public static final String importDeclNodeName = "ImportDeclaration";
     public static final String varDeclNodeName = "VarDeclaration";
-    public static final String methodParamNodeName = "Parameter";
+    public static final String classInheritNodeName = "ClassInheritance";
     public static final String ifConditionNodeName = "IfCondition";
     public static final String whileConditionNodeName = "WhileCondition";
 
@@ -27,6 +28,7 @@ public class Constants {
     public static final String lineAttribute = "line";
     public static final String columnAttribute = "column";
     public static final String arrayAttribute = "isArray";
+    public static final String thisAttribute = "this";
 
     // Types
     public static final String identifierAttribute = "identifier";

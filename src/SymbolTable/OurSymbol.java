@@ -2,14 +2,17 @@ import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 public class OurSymbol extends Symbol implements Comparable<OurSymbol> {
     private final HashSet<String> attributes;
     private final OurScope scope;
     private final Integer line;
     private final Integer column;
+    private final List<Type> parameterTypes = new ArrayList<>();
 
     public OurSymbol(JmmNode node, HashSet<String> attributes, OurScope scope) {
         super(new Type(
@@ -21,6 +24,12 @@ public class OurSymbol extends Symbol implements Comparable<OurSymbol> {
         this.scope = scope;
         this.line = Integer.parseInt(node.get(Constants.lineAttribute));
         this.column = Integer.parseInt(node.get(Constants.columnAttribute));
+    }
+
+    public void insertParameterTypes(List<Type> parameterTypes){
+        if (!attributes.contains(Constants.methodAttribute)) return;
+
+        this.parameterTypes.addAll(parameterTypes);
     }
 
     public boolean isImport() { return attributes.contains(Constants.importAttribute); }

@@ -288,7 +288,7 @@ void Terminal() #void : { Token t_value; } {
     | ( t_value = <True> { jjtThis.put("value", t_value.image); jjtThis.put("type", "boolean"); } ) #Literal
     | ( t_value = <False> { jjtThis.put("value", t_value.image); jjtThis.put("type", "boolean"); } ) #Literal
     | ( t_value = <Identifier> { jjtThis.put("value", t_value.image); jjtThis.put("type", "identifier"); } ) #Terminal
-    | ( <This> { jjtThis.put("type", "class"); } ) #Terminal
+    | ( t_value = <This> { jjtThis.put("value", t_value.image); jjtThis.put("type", "class"); } ) #Terminal
     | (<OpenParenthesis> Expression() <CloseParenthesis> )
     | New()
 }
