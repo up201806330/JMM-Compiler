@@ -103,7 +103,19 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
                     Stage.SEMANTIC,
                     Integer.parseInt(node.get("line")),
                     Integer.parseInt(node.get("column")),
-                    "Array type expected; found: '" + leftVarType.getName() + "'"
+                    "Array access requires type: 'int[]' ; Got '" + leftVarType.getName() + "'"
+            ));
+        };
+
+        var rightVarType = childrenTypesOpt.get().get(1);
+
+        if (!rightVarType.getName().equals(Constants.intType)) {
+            reports.add(new Report(
+                    ReportType.WARNING,
+                    Stage.SEMANTIC,
+                    Integer.parseInt(node.get("line")),
+                    Integer.parseInt(node.get("column")),
+                    "Array access index requires type: 'int' ; Got '" + rightVarType.getName() + "'"
             ));
         };
 
