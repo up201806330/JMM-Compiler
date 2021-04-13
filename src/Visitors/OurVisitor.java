@@ -5,20 +5,8 @@ import java.util.stream.Collectors;
 
 public class OurVisitor extends AJmmVisitor<String, String> {
 
-    private final String identifierType = "Identifier";
-    private final String identifierAttribute = "id";
-
     public OurVisitor() {
-        addVisit(identifierType, this::dealWithIdentifier); // Method reference
-        setDefaultVisit(this::defaultVisit); // Method reference
-    }
-
-    public String dealWithIdentifier(JmmNode node, String space) {
-        // if (node.getKind().equals("This")) {
-        if (node.getOptional(identifierAttribute).orElse("").equals("this")) {
-            return space + "THIS_ACCESS\n";
-        }
-        return defaultVisit(node, space);
+        setDefaultVisit(this::defaultVisit);
     }
 
     private String defaultVisit(JmmNode node, String space) {

@@ -8,41 +8,35 @@ import java.util.*;
 
 public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean> {
 
-    private final String classDeclNodeName = "ClassDeclaration";
-    private final String classInheritNodeName = "ClassInheritance";
-    private final String importDeclNodeName = "ImportDeclaration";
-    private final String methodDeclNodeName = "MethodDeclaration";
-    private final String varDeclNodeName = "VarDeclaration";
-    private final String methodParamNodeName = "Parameter";
 
     OurSymbolTable symbolTable = new OurSymbolTable();
 
     OurSymbolTable getSymbolTable(){ return symbolTable; }
 
     public SymbolTableVisitor() {
-        addVisit(classDeclNodeName, this::dealWithClassDecl);
-        addVisit(classInheritNodeName, this::dealWithClassInheritance);
-        addVisit(importDeclNodeName, this::dealWithImportDecl);
-        addVisit(varDeclNodeName, this::dealWithVarDecl);
-        addVisit(methodDeclNodeName, this::dealWithMethodDecl);
-        addVisit(methodParamNodeName, this::dealWithMethodParameter);
+        addVisit(Constants.classDeclNodeName, this::dealWithClassDecl);
+        addVisit(Constants.classInheritNodeName, this::dealWithClassInheritance);
+        addVisit(Constants.importDeclNodeName, this::dealWithImportDecl);
+        addVisit(Constants.varDeclNodeName, this::dealWithVarDecl);
+        addVisit(Constants.methodDeclNodeName, this::dealWithMethodDecl);
+        addVisit(Constants.methodParamNodeName, this::dealWithMethodParameter);
         setDefaultVisit(SymbolTableVisitor::defaultVisit);
     }
 
     private Boolean dealWithClassDecl(JmmNode node, List<Report> reports){
-        symbolTable.className = node.get("name");
+        symbolTable.className = node.get(Constants.nameAttribute);
         return defaultVisit(node, reports);
     }
 
     private Boolean dealWithClassInheritance(JmmNode node, List<Report> reports){
-        symbolTable.superName = node.get("type");
+        symbolTable.superName = node.get(Constants.typeAttribute);
         return defaultVisit(node, reports);
     }
 
     public Boolean dealWithImportDecl(JmmNode node, List<Report> reports){
         OurSymbol symbol = new OurSymbol(
                 node,
-                new HashSet<>(Arrays.asList("import")),
+                new HashSet<>(Arrays.asList(Constants.importAttribute)),
                 new OurScope()
         );
         Optional<Report> insertionError = symbolTable.put(symbol, node);
@@ -52,10 +46,12 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
     }
 
     public Boolean dealWithVarDecl(JmmNode node, List<Report> reports) {
-        var parentFunction = node.getAncestor(methodDeclNodeName);
+        var parentFunction = node.getAncestor(Constants.methodDeclNodeName);
+        List<String> attributes = new ArrayList<>(); attributes.add(Constants.variableAttribute);
+        if (parentFunction.isEmpty()) attributes.add(Constants.fieldAttribute);
         OurSymbol symbol = new OurSymbol(
                 node,
-                new HashSet<>(Arrays.asList("variable")),
+                new HashSet<>(attributes),
                 parentFunction.isEmpty() ? new OurScope() :
                 new OurScope(
                         OurScope.ScopeEnum.FunctionVariable,
@@ -83,7 +79,7 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
     public Boolean dealWithMethodDecl(JmmNode node, List<Report> reports) {
         OurSymbol symbol = new OurSymbol(
                 node,
-                new HashSet<>(Arrays.asList("method")),
+                new HashSet<>(Arrays.asList(Constants.methodAttribute)),
                 new OurScope());
 
         Optional<Report> insertionError = symbolTable.put(symbol, node);
@@ -93,10 +89,10 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
     }
 
     public Boolean dealWithMethodParameter(JmmNode node, List<Report> reports){
-        var parentFunction = node.getAncestor(methodDeclNodeName);
+        var parentFunction = node.getAncestor(Constants.methodDeclNodeName);
         OurSymbol symbol = new OurSymbol(
                 node,
-                new HashSet<>(Arrays.asList("parameter")),
+                new HashSet<>(Arrays.asList(Constants.parameterAttribute)),
                 new OurScope(
                         OurScope.ScopeEnum.FunctionParameter,
                         parentFunction.map(jmmNode -> symbolTable.getByValue(jmmNode)).orElse(null)

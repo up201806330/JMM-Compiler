@@ -13,22 +13,22 @@ public class OurSymbol extends Symbol implements Comparable<OurSymbol> {
 
     public OurSymbol(JmmNode node, HashSet<String> attributes, OurScope scope) {
         super(new Type(
-                        node.getOptional("type").orElse("void"),
-                        Boolean.parseBoolean(node.getOptional("isArray").orElse("false"))
+                        node.getOptional(Constants.typeAttribute).orElse(Constants.voidType),
+                        Boolean.parseBoolean(node.getOptional(Constants.arrayAttribute).orElse("false"))
                 ),
-                node.get("name"));
+                node.get(Constants.nameAttribute));
         this.attributes = attributes;
         this.scope = scope;
-        this.line = Integer.parseInt(node.get("line"));
-        this.column = Integer.parseInt(node.get("column"));
+        this.line = Integer.parseInt(node.get(Constants.lineAttribute));
+        this.column = Integer.parseInt(node.get(Constants.columnAttribute));
     }
 
-    public boolean isImport() { return attributes.contains("import"); }
-    public boolean isClass() { return attributes.contains("class"); }
-    public boolean isField() { return attributes.contains("field"); }
-    public boolean isMethod() { return attributes.contains("method"); }
-    public boolean isParameter() { return attributes.contains("parameter"); }
-    public boolean isVariable() { return attributes.contains("variable"); }
+    public boolean isImport() { return attributes.contains(Constants.importAttribute); }
+    public boolean isClass() { return attributes.contains(Constants.classAttribute); }
+    public boolean isField() { return attributes.contains(Constants.fieldAttribute); }
+    public boolean isMethod() { return attributes.contains(Constants.methodAttribute); }
+    public boolean isParameter() { return attributes.contains(Constants.parameterAttribute); }
+    public boolean isVariable() { return attributes.contains(Constants.variableAttribute); }
 
     public String getAttributes(){
         StringBuilder result = new StringBuilder(getType().getName() + ((getType().isArray()) ? "[]" : ""));

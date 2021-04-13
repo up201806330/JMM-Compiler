@@ -11,47 +11,40 @@ import java.util.Optional;
 
 public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, Boolean> {
 
-    private static final String terminalNodeName = "Terminal";
-    private static final String binaryNodeName = "Binary";
-    private static final String assignmentNodeName = "Assignment";
-    private static final String arrayExprNodeName = "ArrayExpression";
-    private static final String notExprNodeName = "NotExpression";
-    private static final String methodDeclNodeName = "MethodDeclaration";
-
     OurSymbolTable symbolTable;
 
     public TypeVerificationVisitor(OurSymbolTable symbolTable){
         this.symbolTable = symbolTable;
 
-        addVisit(terminalNodeName, this::dealWithTerminal);
-        addVisit(binaryNodeName, this::dealWithBinary);
-        addVisit(assignmentNodeName, this::dealWithAssignment);
-        addVisit(arrayExprNodeName, this::dealWithArrayExpression);
-        addVisit(notExprNodeName, this::dealWithNotExpr);
+        addVisit(Constants.terminalNodeName, this::dealWithTerminal);
+        addVisit(Constants.binaryNodeName, this::dealWithBinary);
+        addVisit(Constants.assignmentNodeName, this::dealWithAssignment);
+        addVisit(Constants.arrayExprNodeName, this::dealWithArrayExpression);
+        addVisit(Constants.notExprNodeName, this::dealWithNotExpr);
         setDefaultVisit(TypeVerificationVisitor::defaultVisit);
     }
 
     private Boolean dealWithTerminal(JmmNode node, List<Report> reports){
-        if (!node.get("type").equals("identifier")) return defaultVisit(node, reports);
+        if (!node.get(Constants.typeAttribute).equals(Constants.identifierAttribute)) return defaultVisit(node, reports);
 
         var variableTypeOptional = symbolTable.getLocalVariableTypeIfItsDeclared(
-                node.getAncestor(methodDeclNodeName).map(ancestorNode -> ancestorNode.get("name")).orElse(null),
-                node.get("value"));
+                node.getAncestor(Constants.methodDeclNodeName).map(ancestorNode -> ancestorNode.get(Constants.nameAttribute)).orElse(null),
+                node.get(Constants.valueAttribute));
 
         if (variableTypeOptional.isEmpty()){
             reports.add(new Report(
                     ReportType.WARNING,
                     Stage.SEMANTIC,
-                    Integer.parseInt(node.get("line")),
-                    Integer.parseInt(node.get("column")),
-                    "Variable " + node.get("value") + " must be declared before being used"
+                    Integer.parseInt(node.get(Constants.lineAttribute)),
+                    Integer.parseInt(node.get(Constants.columnAttribute)),
+                    "Variable " + node.get(Constants.valueAttribute) + " must be declared before being used"
             ));
-            node.put("type", "error");
-            node.put("isArray", "error");
+            node.put(Constants.typeAttribute, Constants.error);
+            node.put(Constants.arrayAttribute, Constants.error);
         }
         else {
-            node.put("type", variableTypeOptional.get().getName());
-            node.put("isArray", String.valueOf(variableTypeOptional.get().isArray()));
+            node.put(Constants.typeAttribute, variableTypeOptional.get().getName());
+            node.put(Constants.arrayAttribute, String.valueOf(variableTypeOptional.get().isArray()));
         }
 
         return defaultVisit(node, reports);
@@ -63,20 +56,20 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
         var childrenTypes = childrenTypesOpt.get();
         Type leftOperandType = childrenTypes.get(0), rightOperandType = (childrenTypes.size() > 1 ? childrenTypes.get(1) : null);
 
-        String binaryOperation = node.get("value");
+        String binaryOperation = node.get(Constants.valueAttribute);
 
         // An error occurred somewhere in the children, no longer analyses this expression
-        if (leftOperandType.getName().equals("error") || (rightOperandType != null && rightOperandType.getName().equals("error"))){
-            node.put("type", "error");
-            node.put("isArray", "error");
+        if (leftOperandType.getName().equals(Constants.error) || (rightOperandType != null && rightOperandType.getName().equals(Constants.error))){
+            node.put(Constants.typeAttribute, Constants.error);
+            node.put(Constants.arrayAttribute, Constants.error);
             return defaultVisit(node, reports);
         }
 
         return checkTheresNoArrayType(node, reports, leftOperandType, rightOperandType) &&
         checkChildrenAreOfSameType(node, reports, leftOperandType, rightOperandType) &&
-        ((binaryOperation.equals("&&")) ?
+        ((binaryOperation.equals(Constants.andExpression)) ?
                 dealWithBooleanExpr(node, reports, leftOperandType, rightOperandType) : true) &&
-        ((binaryOperation.equals("<") ?
+        ((binaryOperation.equals(Constants.lessThanExpression) ?
                 dealWithLessThanExpr(node, reports, leftOperandType, rightOperandType): true));
     }
 
@@ -87,9 +80,9 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
         Type leftOperandType = childrenTypes.get(0), rightOperandType = childrenTypes.get(1);
 
         // An error occurred somewhere in the children, no longer analyses this expression
-        if (leftOperandType.getName().equals("error") || rightOperandType.getName().equals("error")){
-            node.put("type", "error");
-            node.put("isArray", "error");
+        if (leftOperandType.getName().equals(Constants.error) || rightOperandType.getName().equals(Constants.error)){
+            node.put(Constants.typeAttribute, Constants.error);
+            node.put(Constants.arrayAttribute, Constants.error);
             return defaultVisit(node, reports);
         }
 
@@ -122,9 +115,9 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
         Type rightOperandType = childrenTypes.get(0);
 
         // An error occurred somewhere in the children, no longer analyses this expression
-        if (rightOperandType.getName().equals("error")){
-            node.put("type", "error");
-            node.put("isArray", "error");
+        if (rightOperandType.getName().equals(Constants.error)){
+            node.put(Constants.typeAttribute, Constants.error);
+            node.put(Constants.arrayAttribute, Constants.error);
             return defaultVisit(node, reports);
         }
 
@@ -134,21 +127,21 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
     }
 
     private Boolean dealWithLessThanExpr(JmmNode node, List<Report> reports, Type leftOperandType, Type rightOperandType){
-        System.out.println(node.get("type"));
-        if (!node.get("type").equals("int")){
+        System.out.println(node.get(Constants.typeAttribute));
+        if (!node.get(Constants.typeAttribute).equals(Constants.intType)){
             reports.add(new Report(
                     ReportType.ERROR,
                     Stage.SEMANTIC,
-                    Integer.parseInt(node.get("line")),
-                    Integer.parseInt(node.get("column")),
-                    "Operator '" + node.get("value") +
+                    Integer.parseInt(node.get(Constants.lineAttribute)),
+                    Integer.parseInt(node.get(Constants.columnAttribute)),
+                    "Operator '" + node.get(Constants.valueAttribute) +
                             "' cannot be applied to '" +
                             leftOperandType.getName() + "', '" +
                             rightOperandType.getName() + "'"
             ));
         }
         else {
-            node.put("type", "bool");
+            node.put(Constants.typeAttribute, Constants.booleanType);
         }
         return defaultVisit(node, reports);
     }
@@ -164,8 +157,8 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
      */
     private Boolean dealWithBooleanExpr(JmmNode node, List<Report> reports, Type leftOperandType, Type rightOperandType){
         if (leftOperandType != null ?
-                !leftOperandType.getName().equals("bool") || !rightOperandType.getName().equals("bool") :
-                !rightOperandType.getName().equals("bool")){
+                !leftOperandType.getName().equals(Constants.booleanType) || !rightOperandType.getName().equals(Constants.booleanType) :
+                !rightOperandType.getName().equals(Constants.booleanType)){
 
             System.out.println(node.get("line"));
             reports.add(new Report(
@@ -178,8 +171,8 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
                             (leftOperandType != null ? leftOperandType.getName() + "', '" : "") +
                             rightOperandType.getName() + "'"
             ));
-            node.put("type", "error");
-            node.put("isArray", "error");
+            node.put(Constants.typeAttribute, Constants.error);
+            node.put(Constants.arrayAttribute, Constants.error);
         }
 
         return defaultVisit(node, reports);
@@ -198,19 +191,19 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
             reports.add(new Report(
                     ReportType.ERROR,
                     Stage.SEMANTIC,
-                    Integer.parseInt(node.get("line")),
-                    Integer.parseInt(node.get("column")),
+                    Integer.parseInt(node.get(Constants.lineAttribute)),
+                    Integer.parseInt(node.get(Constants.columnAttribute)),
                     "Type mismatch (" +
                             leftOperandType.getName() + (leftOperandType.isArray()?"[]":"") +
                             " != " +
                             rightOperandType.getName() + (rightOperandType.isArray()?"[]":"") + ")"
             ));
-            node.put("type", "error");
-            node.put("isArray", "error");
+            node.put(Constants.typeAttribute, Constants.error);
+            node.put(Constants.arrayAttribute, Constants.error);
         }
         else {
-            node.put("type", leftOperandType.getName());
-            node.put("isArray", String.valueOf(leftOperandType.isArray()));
+            node.put(Constants.typeAttribute, leftOperandType.getName());
+            node.put(Constants.arrayAttribute, String.valueOf(leftOperandType.isArray()));
         }
 
         return defaultVisit(node, reports);
@@ -227,15 +220,15 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
             reports.add(new Report(
                     ReportType.ERROR,
                     Stage.SEMANTIC,
-                    Integer.parseInt(node.get("line")),
-                    Integer.parseInt(node.get("column")),
-                    "Operator '" + node.get("value") +
+                    Integer.parseInt(node.get(Constants.lineAttribute)),
+                    Integer.parseInt(node.get(Constants.columnAttribute)),
+                    "Operator '" + node.get(Constants.valueAttribute) +
                             "' cannot be applied to '" +
                             leftOperandType.getName() + (leftOperandType.isArray() ? "[]" : "") + "', '" +
                             rightOperandType.getName() + (rightOperandType.isArray() ? "[]" : "") + "'"
             ));
-            node.put("type", "error");
-            node.put("isArray", "error");
+            node.put(Constants.typeAttribute, Constants.error);
+            node.put(Constants.arrayAttribute, Constants.error);
         }
 
         return defaultVisit(node, reports);
@@ -249,12 +242,12 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
      */
     private Optional<List<JmmNode>> getChildren(JmmNode node, List<Report> reports) {
         List<JmmNode> result = node.getChildren();
-        if (result.size() != 2 && node.getKind().equals(binaryNodeName)) {
+        if (result.size() != 2 && node.getKind().equals(Constants.binaryNodeName)) {
             reports.add(new Report(
                     ReportType.WARNING,
                     Stage.SEMANTIC,
-                    Integer.parseInt(node.get("line")),
-                    Integer.parseInt(node.get("column")),
+                    Integer.parseInt(node.get(Constants.lineAttribute)),
+                    Integer.parseInt(node.get(Constants.columnAttribute)),
                     "Binary node doesn't have 2 children. Something is wrong in syntactic phase"
             ));
             return Optional.empty();
@@ -269,7 +262,7 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
      * @return A Type object
      */
     private Type extractTypeFromNode(JmmNode node){
-        return new Type(node.get("type"), Boolean.parseBoolean(node.get("isArray")));
+        return new Type(node.get(Constants.typeAttribute), Boolean.parseBoolean(node.get(Constants.arrayAttribute)));
     }
 
     /**
