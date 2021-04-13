@@ -159,10 +159,10 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
                     Stage.SEMANTIC,
                     Integer.parseInt(node.get("line")),
                     Integer.parseInt(node.get("column")),
-                    "Condition requires type: ''boolean' ; Got '" + operation.getName() + "'"
+                    "Condition requires type: 'boolean' ; Got '" + operation.getName() + "'"
             ));
         }
-        
+
         return defaultVisit(node, reports);
     }
     /**

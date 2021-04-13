@@ -32,7 +32,7 @@ public class Constants {
     public static final String identifierAttribute = "identifier";
     public static final String intArrayType = "intArray";
     public static final String intType = "int";
-    public static final String booleanType = "bool";
+    public static final String booleanType = "boolean";
     public static final String voidType = "void";
 
     public static final String andExpression = "&&";
