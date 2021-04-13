@@ -5,7 +5,7 @@ import pt.up.fe.comp.jmm.analysis.table.Type;
 import java.util.Arrays;
 import java.util.HashSet;
 
-public class OurSymbol extends Symbol {
+public class OurSymbol extends Symbol implements Comparable<OurSymbol> {
     private final HashSet<String> attributes;
     private final OurScope scope;
     private final Integer line;
@@ -79,5 +79,13 @@ public class OurSymbol extends Symbol {
         if (!scope.equals(other.scope))
             return false;
         return true;
+    }
+
+    @Override
+    public int compareTo(OurSymbol o) {
+        int compareByLine = getLine().compareTo(o.getLine());
+        if (compareByLine == 0) return getColumn().compareTo(o.getColumn());
+        else return compareByLine;
+
     }
 }

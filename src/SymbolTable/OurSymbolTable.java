@@ -12,8 +12,7 @@ public class OurSymbolTable implements SymbolTable {
 
     String className;
     String superName;
-    // For every valuable node holds a  set of attributes or qualifiers i.e. Import, Class, ...
-    HashMap<OurSymbol, JmmNode> table = new HashMap<>();
+    SortedMap<OurSymbol, JmmNode> table = new TreeMap<>();
 
     public Optional<Report> put(OurSymbol symbol, JmmNode node) {
         // Check for repeat symbols
@@ -123,9 +122,9 @@ public class OurSymbolTable implements SymbolTable {
         stringTable[0] = new String[] {className + (superName != null ? (" extends " + superName) : "") ,"", "", ""};
         stringTable[1] = new String[] {"| SYMBOL NAME ", " | TYPE ", " | SCOPE ", " |"};
 
-        Iterator it = table.entrySet().iterator(); int i = 2;
+        Iterator<Map.Entry<OurSymbol, JmmNode>> it = table.entrySet().iterator(); int i = 2;
         while(it.hasNext()){
-            Map.Entry pair = (Map.Entry)it.next();
+            Map.Entry<OurSymbol, JmmNode> pair = it.next();
             OurSymbol symbol = (OurSymbol) pair.getKey();
             stringTable[i++] = new String[] { "| " + symbol.getName(), " | " + symbol.getAttributes(), " | " + symbol.getScope(), " |" };
         }
