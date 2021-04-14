@@ -35,13 +35,16 @@ public class OurSymbolTable implements SymbolTable {
         return null;
     }
 
-    public Optional<Type> getLocalVariableTypeIfItsDeclared(String methodName, String value){
-        for (OurSymbol entry : table.keySet()) {
-            if (entry.getScope().getName().equals(methodName) &&
-            entry.getName().equals(value)) return Optional.ofNullable(entry.getType());
+    public Optional<Type> tryGettingSymbolType(String methodName, String value){
+        // If methodName is provided, search for definition inside that method's scope
+        if (!methodName.equals(Constants.thisAttribute)){
+            for (OurSymbol entry : table.keySet()) {
+                if (entry.getScope().getName().equals(methodName) &&
+                        entry.getName().equals(value)) return Optional.ofNullable(entry.getType());
+            }
         }
 
-        // If localVariable isn't found, search in the globals
+        // If symbol isn't declared locally, search in the globals
         for (OurSymbol entry : table.keySet()) {
             if (entry.getScope().scope.equals(OurScope.ScopeEnum.Global) &&
                     entry.getName().equals(value)) return Optional.ofNullable(entry.getType());

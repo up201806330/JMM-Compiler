@@ -55,13 +55,13 @@ public class AnalysisStage implements JmmAnalysis {
         OurSymbolTable symbolTable = preorderVisitor.getSymbolTable();
         System.out.println(symbolTable.toString());
 
-        System.out.println("Type verifications...");
-        var typeVerificationVisitor = new TypeVerificationVisitor(symbolTable);
-        typeVerificationVisitor.visit(node, reports);
-
         System.out.println("Method verifications...");
         var methodVerificationVisitor = new MethodVerificationVisitor(symbolTable);
         methodVerificationVisitor.visit(node, reports);
+
+        System.out.println("Type verifications...");
+        var typeVerificationVisitor = new TypeVerificationVisitor(symbolTable);
+        typeVerificationVisitor.visit(node, reports);
 
         System.out.println("Dump tree with Visitor where you control tree traversal");
         var anotherVisitor = new OurVisitor();

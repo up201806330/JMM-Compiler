@@ -23,9 +23,52 @@ public class MethodVerificationVisitor extends PostorderJmmVisitor<List<Report>,
     private Boolean dealWithCallExpr(JmmNode node, List<Report> reports){
         var children = node.getChildren();
         var target = children.get(0);
+        var targetClassName = target.get(Constants.valueAttribute);
+        var methodName = node.get(Constants.nameAttribute);
 
-        if (target.get(Constants.valueAttribute).equals(Constants.thisAttribute)){
+        var methodTypeOpt = symbolTable.tryGettingSymbolType(
+                targetClassName,
+                methodName);
 
+        // If method is called on this and class doesn't extend any other class, will check for unresolved method
+        if (targetClassName.equals(Constants.thisAttribute)){
+            if (methodTypeOpt.isEmpty() && symbolTable.superName == null) {
+                reports.add(new Report(
+                        ReportType.WARNING,
+                        Stage.SEMANTIC,
+                        Integer.parseInt(node.get("line")),
+                        Integer.parseInt(node.get("column")),
+                        "Cannot resolve method '" + methodName +
+                                "' in class '" + symbolTable.className
+                ));
+                node.put(Constants.typeAttribute, Constants.error);
+                node.put(Constants.arrayAttribute, Constants.error);
+            }
+            else if (symbolTable.superName != null){
+                node.put(Constants.typeAttribute, Constants.autoType);
+                node.put(Constants.arrayAttribute, "false");
+            }
+            else {
+                node.put(Constants.typeAttribute, methodTypeOpt.get().getName());
+                node.put(Constants.arrayAttribute, String.valueOf(methodTypeOpt.get().isArray()));
+            }
+        }
+        else {
+            if (symbolTable.getImports().contains(targetClassName)){
+                node.put(Constants.typeAttribute, Constants.autoType);
+                node.put(Constants.arrayAttribute, "false");
+            }
+            else {
+                reports.add(new Report(
+                        ReportType.WARNING,
+                        Stage.SEMANTIC,
+                        Integer.parseInt(node.get("line")),
+                        Integer.parseInt(node.get("column")),
+                        "Cannot resolve class '" + targetClassName + "'"
+                ));
+                node.put(Constants.typeAttribute, Constants.error);
+                node.put(Constants.arrayAttribute, Constants.error);
+            }
         }
 
         return defaultVisit(node, reports);

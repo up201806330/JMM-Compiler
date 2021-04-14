@@ -5,9 +5,7 @@ import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp.jmm.report.Stage;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, Boolean> {
 
@@ -29,8 +27,8 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
     private Boolean dealWithTerminal(JmmNode node, List<Report> reports){
         if (!node.get(Constants.typeAttribute).equals(Constants.identifierAttribute)) return defaultVisit(node, reports);
 
-        var variableTypeOptional = symbolTable.getLocalVariableTypeIfItsDeclared(
-                node.getAncestor(Constants.methodDeclNodeName).map(ancestorNode -> ancestorNode.get(Constants.nameAttribute)).orElse(null),
+        var variableTypeOptional = symbolTable.tryGettingSymbolType(
+                node.getAncestor(Constants.methodDeclNodeName).map(ancestorNode -> ancestorNode.get(Constants.nameAttribute)).orElse("this"),
                 node.get(Constants.valueAttribute));
 
         if (variableTypeOptional.isEmpty()){
@@ -224,8 +222,10 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
             node.put(Constants.arrayAttribute, Constants.error);
         }
         else {
-            node.put(Constants.typeAttribute, leftOperandType.getName());
-            node.put(Constants.arrayAttribute, String.valueOf(leftOperandType.isArray()));
+            String commonType = (leftOperandType.getName().equals(Constants.autoType) ? leftOperandType.getName() : rightOperandType.getName());
+            boolean commonIsArray = (leftOperandType.getName().equals(Constants.autoType) ? leftOperandType.isArray() : rightOperandType.isArray());
+            node.put(Constants.typeAttribute, commonType);
+            node.put(Constants.arrayAttribute, String.valueOf(commonIsArray));
         }
 
         return defaultVisit(node, reports);
