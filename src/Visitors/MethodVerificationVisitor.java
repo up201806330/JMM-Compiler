@@ -54,7 +54,7 @@ public class MethodVerificationVisitor extends PostorderJmmVisitor<List<Report>,
                 node.put(Constants.typeAttribute, Constants.error);
                 node.put(Constants.arrayAttribute, Constants.error);
             }
-            else if (target.get(Constants.valueAttribute).equals(symbolTable.className) &&        // If method was called on this class' static context
+            else if (target.get(Constants.valueAttribute).equals(symbolTable.className) &&         // If method was called on this class' static context
                     (targetClassSymbolOpt.isPresent() && !targetClassSymbolOpt.get().isStatic())){ // but function isn't static (e.g. public void Foo(); ThisClass.Foo() )
 
                 reports.add(new Report(

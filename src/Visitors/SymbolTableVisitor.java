@@ -9,7 +9,6 @@ import java.util.*;
 
 public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean> {
 
-
     OurSymbolTable symbolTable = new OurSymbolTable();
 
     OurSymbolTable getSymbolTable(){ return symbolTable; }
@@ -69,13 +68,13 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
         );
 
         if (symbol.getScope().scope == OurScope.ScopeEnum.Error){
-            reports.add(
-                    new Report(
-                            ReportType.WARNING,
-                            Stage.SEMANTIC,
-                            symbol.getLine(),
-                            symbol.getColumn(),
-                            "Variable '" + symbol.getName() + "' defined inside method with a lexical error"));
+//            reports.add(
+//                    new Report(
+//                            ReportType.WARNING,
+//                            Stage.SEMANTIC,
+//                            symbol.getLine(),
+//                            symbol.getColumn(),
+//                            "Variable '" + symbol.getName() + "' defined inside method with a lexical error"));
             return defaultVisit(node, reports);
         }
 
@@ -123,13 +122,13 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
         );
 
         if (symbol.getScope().scope == OurScope.ScopeEnum.Error){
-            reports.add(
-                    new Report(
-                            ReportType.WARNING,
-                            Stage.SEMANTIC,
-                            symbol.getLine(),
-                            symbol.getColumn(),
-                            "Parameter '" + symbol.getName() + "' defined for method with a lexical error"));
+//            reports.add(
+//                    new Report(
+//                            ReportType.WARNING,
+//                            Stage.SEMANTIC,
+//                            symbol.getLine(),
+//                            symbol.getColumn(),
+//                            "Parameter '" + symbol.getName() + "' defined for method with a lexical error"));
             return defaultVisit(node, reports);
         }
 
