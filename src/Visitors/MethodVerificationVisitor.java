@@ -35,9 +35,11 @@ public class MethodVerificationVisitor extends PostorderJmmVisitor<List<Report>,
                 targetClassName,
                 methodName);
 
-        // If method is called on this and class doesn't extend any other class, will check for unresolved method
-        if (targetClassName.equals(Constants.thisAttribute) || targetClassName.equals(symbolTable.className)){ // TODO must check here if its static
-            if (methodTypeOpt.isEmpty() && symbolTable.superName == null) {
+        if ( targetClassName.equals(Constants.thisAttribute) ||   // If method was called on this context ( e.g. this.Foo() )
+                (targetClassName.equals(symbolTable.className) && // Or if it was called on this class' static context (e.g. ThisClass.Foo() )
+                        node.getOptional(Constants.staticAttribute).isPresent()) ){
+
+            if (methodTypeOpt.isEmpty() && symbolTable.superName == null) { // If method name isn't found and there is no inheritance present
                 reports.add(new Report(
                         ReportType.ERROR,
                         Stage.SEMANTIC,
@@ -49,15 +51,15 @@ public class MethodVerificationVisitor extends PostorderJmmVisitor<List<Report>,
                 node.put(Constants.typeAttribute, Constants.error);
                 node.put(Constants.arrayAttribute, Constants.error);
             }
-            else if (symbolTable.superName != null){
+            else if (symbolTable.superName != null){ // If there is inheritance present, assume method is defined there and assume type is correct
                 node.put(Constants.typeAttribute, Constants.autoType);
                 node.put(Constants.arrayAttribute, "false");
             }
-            else {
+            else { // If method name was found in this class
                 var argsList = children.get(1);
                 var args = argsList.getChildren();
                 var method = symbolTable.getMethodWithNParameters(methodName, args.size());
-                if (method.isEmpty()) {
+                if (method.isEmpty()) { // Check if method signature is correct (number of parameters and TODO types of parameters)
                     reports.add(new Report(
                             ReportType.ERROR,
                             Stage.SEMANTIC,
@@ -69,18 +71,18 @@ public class MethodVerificationVisitor extends PostorderJmmVisitor<List<Report>,
                     ));
                     node.put(Constants.typeAttribute, Constants.error);
                     node.put(Constants.arrayAttribute, Constants.error);
-                } else {
+                } else { // Method signature is correct, success!
                     node.put(Constants.typeAttribute, methodTypeOpt.get().getName());
                     node.put(Constants.arrayAttribute, String.valueOf(methodTypeOpt.get().isArray()));
                 }
             }
         }
-        else {
-            if (symbolTable.getImports().contains(targetClassName)){
+        else { // If method isn't called in this context or own class context
+            if (symbolTable.getImports().contains(targetClassName)){ // If calling context is an imported class, assume method is defined there and assume type is correct
                 node.put(Constants.typeAttribute, Constants.autoType);
                 node.put(Constants.arrayAttribute, "false");
             }
-            else {
+            else { // If calling context isn't found
                 reports.add(new Report(
                         ReportType.ERROR,
                         Stage.SEMANTIC,

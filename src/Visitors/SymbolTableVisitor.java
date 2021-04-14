@@ -86,11 +86,14 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
     }
 
     public Boolean dealWithMethodDecl(JmmNode node, List<Report> reports) {
+        var attributes = new HashSet<String>();
+        attributes.add(Constants.methodAttribute);
+        if (node.getOptional(Constants.staticAttribute).isPresent()) attributes.add(Constants.staticAttribute);
+
         OurSymbol symbol = new OurSymbol(
                 node,
-                new HashSet<>(Arrays.asList(Constants.methodAttribute)),
+                attributes,
                 new OurScope());
-
 
         symbol.insertParameterTypes(getParameterTypes(node));
         Optional<Report> insertionError = symbolTable.put(symbol, node);

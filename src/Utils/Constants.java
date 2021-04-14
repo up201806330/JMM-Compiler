@@ -31,6 +31,7 @@ public class Constants {
     public static final String columnAttribute = "column";
     public static final String arrayAttribute = "isArray";
     public static final String thisAttribute = "this";
+    public static final String staticAttribute = "static";
 
     // Types
     public static final String identifierAttribute = "identifier";
