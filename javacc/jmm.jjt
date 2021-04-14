@@ -147,7 +147,7 @@ SimpleNode Program(): {} {
 }
 
 void ImportDeclaration(): { Token t_name; } {
-    <Import> t_name = <Identifier> { jjtThis.put("name", t_name.image); } (ImportDeclarationPackage())* <Semicolon>
+    <Import> t_name = <Identifier> { jjtThis.put("name", t_name.image); jjtThis.put("type", t_name.image); } (ImportDeclarationPackage())* <Semicolon>
 }
 
 void ImportDeclarationPackage(): { Token t_name; } {
@@ -155,7 +155,7 @@ void ImportDeclarationPackage(): { Token t_name; } {
 }
 
 void ClassDeclaration(): { Token t_name; } {
-    <Class> t_name = <Identifier> { jjtThis.put("name", t_name.image); } [ClassInheritance()]
+    <Class> t_name = <Identifier> { jjtThis.put("name", t_name.image); jjtThis.put("type", t_name.image); } [ClassInheritance()]
     <OpenBlock>
         (VarDeclaration() #Field)*
         (MethodDeclaration())*

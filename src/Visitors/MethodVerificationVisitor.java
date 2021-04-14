@@ -22,8 +22,13 @@ public class MethodVerificationVisitor extends PostorderJmmVisitor<List<Report>,
 
     private Boolean dealWithCallExpr(JmmNode node, List<Report> reports){
         var children = node.getChildren();
+
         var target = children.get(0);
-        var targetClassName = target.get(Constants.valueAttribute);
+        var targetClassNameOpt = symbolTable.tryGettingSymbolType(
+                node.getAncestor(Constants.methodDeclNodeName).map(ancestorNode -> ancestorNode.get(Constants.nameAttribute)).orElse("this"),
+                target.get(Constants.valueAttribute));
+        var targetClassName = targetClassNameOpt.isPresent() ? targetClassNameOpt.get().getName() : target.get(Constants.valueAttribute);
+
         var methodName = node.get(Constants.nameAttribute);
 
         var methodTypeOpt = symbolTable.tryGettingSymbolType(
@@ -31,7 +36,7 @@ public class MethodVerificationVisitor extends PostorderJmmVisitor<List<Report>,
                 methodName);
 
         // If method is called on this and class doesn't extend any other class, will check for unresolved method
-        if (targetClassName.equals(Constants.thisAttribute)){
+        if (targetClassName.equals(Constants.thisAttribute) || targetClassName.equals(symbolTable.className)){
             if (methodTypeOpt.isEmpty() && symbolTable.superName == null) {
                 reports.add(new Report(
                         ReportType.WARNING,

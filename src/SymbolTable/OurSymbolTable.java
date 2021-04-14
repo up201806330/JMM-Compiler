@@ -36,7 +36,7 @@ public class OurSymbolTable implements SymbolTable {
     }
 
     public Optional<Type> tryGettingSymbolType(String methodName, String value){
-        // If methodName is provided, search for definition inside that method's scope
+        // If methodName is provided (!= 'this'), search for definition inside that method's scope
         if (!methodName.equals(Constants.thisAttribute)){
             for (OurSymbol entry : table.keySet()) {
                 if (entry.getScope().getName().equals(methodName) &&
