@@ -115,7 +115,7 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
 
         if (!leftVarType.isArray()) {
             reports.add(new Report(
-                    ReportType.WARNING,
+                    ReportType.ERROR,
                     Stage.SEMANTIC,
                     Integer.parseInt(node.get("line")),
                     Integer.parseInt(node.get("column")),
@@ -127,7 +127,7 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
 
         if (!rightVarType.getName().equals(Constants.intType)) {
             reports.add(new Report(
-                    ReportType.WARNING,
+                    ReportType.ERROR,
                     Stage.SEMANTIC,
                     Integer.parseInt(node.get("line")),
                     Integer.parseInt(node.get("column")),

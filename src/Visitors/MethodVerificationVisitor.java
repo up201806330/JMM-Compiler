@@ -39,7 +39,7 @@ public class MethodVerificationVisitor extends PostorderJmmVisitor<List<Report>,
         if (targetClassName.equals(Constants.thisAttribute) || targetClassName.equals(symbolTable.className)){
             if (methodTypeOpt.isEmpty() && symbolTable.superName == null) {
                 reports.add(new Report(
-                        ReportType.WARNING,
+                        ReportType.ERROR,
                         Stage.SEMANTIC,
                         Integer.parseInt(node.get("line")),
                         Integer.parseInt(node.get("column")),
@@ -59,7 +59,7 @@ public class MethodVerificationVisitor extends PostorderJmmVisitor<List<Report>,
                 var method = symbolTable.getMethodWithNParameters(methodName, args.size());
                 if (method.isEmpty()) {
                     reports.add(new Report(
-                            ReportType.WARNING,
+                            ReportType.ERROR,
                             Stage.SEMANTIC,
                             Integer.parseInt(node.get("line")),
                             Integer.parseInt(node.get("column")),
@@ -82,7 +82,7 @@ public class MethodVerificationVisitor extends PostorderJmmVisitor<List<Report>,
             }
             else {
                 reports.add(new Report(
-                        ReportType.WARNING,
+                        ReportType.ERROR,
                         Stage.SEMANTIC,
                         Integer.parseInt(node.get("line")),
                         Integer.parseInt(node.get("column")),
