@@ -86,6 +86,24 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
             return defaultVisit(node, reports);
         }
 
+        var rightOperand = node.getChildren().get(1);
+        if (rightOperand.getKind().equals(Constants.newNodeName)) {
+            var child = rightOperand.getChildren().get(0);
+            if (!child.get(Constants.typeAttribute).equals(Constants.intType)) {
+                reports.add(new Report(
+                        ReportType.WARNING,
+                        Stage.SEMANTIC,
+                        Integer.parseInt(node.get(Constants.lineAttribute)),
+                        Integer.parseInt(node.get(Constants.columnAttribute)),
+                        "Array must be declared with an int size. " +
+                                child.get(Constants.typeAttribute) + " type was given."
+                ));
+                node.put(Constants.typeAttribute, Constants.error);
+                node.put(Constants.arrayAttribute, Constants.error);
+                return defaultVisit(node, reports);
+            }
+        }
+
         return checkChildrenAreOfSameType(node, reports, leftOperandType, rightOperandType);
     }
 
