@@ -54,8 +54,25 @@ public class MethodVerificationVisitor extends PostorderJmmVisitor<List<Report>,
                 node.put(Constants.arrayAttribute, "false");
             }
             else {
-                node.put(Constants.typeAttribute, methodTypeOpt.get().getName());
-                node.put(Constants.arrayAttribute, String.valueOf(methodTypeOpt.get().isArray()));
+                var argsList = children.get(1);
+                var args = argsList.getChildren();
+                var method = symbolTable.getMethodWithNParameters(methodName, args.size());
+                if (method.isEmpty()) {
+                    reports.add(new Report(
+                            ReportType.WARNING,
+                            Stage.SEMANTIC,
+                            Integer.parseInt(node.get("line")),
+                            Integer.parseInt(node.get("column")),
+                            "No definition of " + methodName +
+                                    " has " + args.size() +
+                                    " parameters "
+                    ));
+                    node.put(Constants.typeAttribute, Constants.error);
+                    node.put(Constants.arrayAttribute, Constants.error);
+                } else {
+                    node.put(Constants.typeAttribute, methodTypeOpt.get().getName());
+                    node.put(Constants.arrayAttribute, String.valueOf(methodTypeOpt.get().isArray()));
+                }
             }
         }
         else {

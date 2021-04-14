@@ -30,6 +30,7 @@ public class OurSymbolTable implements SymbolTable {
 
     public OurSymbol getByValue(JmmNode node) {
         for (var entry : table.entrySet()) {
+            System.out.println(entry.getValue());
             if (entry.getValue().equals(node)) return entry.getKey();
         }
         return null;
@@ -50,6 +51,14 @@ public class OurSymbolTable implements SymbolTable {
                     entry.getName().equals(value)) return Optional.ofNullable(entry.getType());
         }
 
+        return Optional.empty();
+    }
+
+    public Optional<OurScope> getMethodWithNParameters(String methodName, int n) {
+        for (OurSymbol entry : table.keySet()) {
+            OurScope method = entry.getScope();
+            if (method.getName().equals(methodName) && method.getNumParameters() == n) return Optional.of(method);
+        }
         return Optional.empty();
     }
 

@@ -61,6 +61,10 @@ public class OurSymbol extends Symbol implements Comparable<OurSymbol> {
         return result.toString();
     }
 
+    public Integer getNumParameters() {
+        return parameterTypes.size();
+    }
+
     public OurScope getScope(){
         return scope;
     }

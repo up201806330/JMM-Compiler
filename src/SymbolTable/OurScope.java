@@ -25,6 +25,10 @@ public class OurScope {
         return functionSymbol != null ? functionSymbol.getName() : "";
     }
 
+    public int getNumParameters() {
+        return functionSymbol.getNumParameters();
+    }
+
     @Override
     public String toString(){
         return scope.toString() + (scope.ordinal() > ScopeEnum.Global.ordinal() ? " -> " + functionSymbol : "");
