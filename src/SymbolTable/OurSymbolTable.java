@@ -36,18 +36,24 @@ public class OurSymbolTable implements SymbolTable {
     }
 
     public Optional<Type> tryGettingSymbolType(String methodName, String value){
+        var symbolOpt = tryGettingSymbol(methodName, value);
+        if (symbolOpt.isEmpty()) return Optional.empty();
+        else return Optional.of(symbolOpt.get().getType());
+    }
+
+    public Optional<OurSymbol> tryGettingSymbol(String methodName, String value){
         // If methodName is provided (!= 'this'), search for definition inside that method's scope
         if (!methodName.equals(Constants.thisAttribute)){
             for (OurSymbol entry : table.keySet()) {
                 if (entry.getScope().getName().equals(methodName) &&
-                        entry.getName().equals(value)) return Optional.ofNullable(entry.getType());
+                        entry.getName().equals(value)) return Optional.of(entry);
             }
         }
 
         // If symbol isn't declared locally, search in the globals
         for (OurSymbol entry : table.keySet()) {
             if (entry.getScope().scope.equals(OurScope.ScopeEnum.Global) &&
-                    entry.getName().equals(value)) return Optional.ofNullable(entry.getType());
+                    entry.getName().equals(value)) return Optional.of(entry);
         }
 
         return Optional.empty();
@@ -136,7 +142,7 @@ public class OurSymbolTable implements SymbolTable {
         Iterator<Map.Entry<OurSymbol, JmmNode>> it = table.entrySet().iterator(); int i = 2;
         while(it.hasNext()){
             Map.Entry<OurSymbol, JmmNode> pair = it.next();
-            OurSymbol symbol = (OurSymbol) pair.getKey();
+            OurSymbol symbol = pair.getKey();
             stringTable[i++] = new String[] { "| " + symbol.getName(), " | " + symbol.getAttributes(), " | " + symbol.getScope(), " |" };
         }
         for (final Object[] row : stringTable) {

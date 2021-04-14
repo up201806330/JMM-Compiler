@@ -38,6 +38,7 @@ public class OurSymbol extends Symbol implements Comparable<OurSymbol> {
     public boolean isMethod() { return attributes.contains(Constants.methodAttribute); }
     public boolean isParameter() { return attributes.contains(Constants.parameterAttribute); }
     public boolean isVariable() { return attributes.contains(Constants.variableAttribute); }
+    public boolean isStatic() { return attributes.contains(Constants.staticAttribute); }
 
     public String getAttributes(){
         StringBuilder result = new StringBuilder(getType().getName() + ((getType().isArray()) ? "[]" : ""));

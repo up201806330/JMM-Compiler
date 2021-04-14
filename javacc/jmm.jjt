@@ -172,8 +172,8 @@ void VarDeclaration(): { Token t_name; } {
 
 void MethodDeclaration(): { Token t_name; } {
     <Public>
-    (
-    Type() [<Static> { jjtThis.put("static", "true"); } ] t_name = <Identifier> { jjtThis.put("name", t_name.image); }
+    ( LOOKAHEAD(2)
+    [<Static> { jjtThis.put("static", "true"); } ] Type() t_name = <Identifier> { jjtThis.put("name", t_name.image); }
     <OpenParenthesis>
         Parameters()
     <CloseParenthesis>
