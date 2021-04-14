@@ -43,6 +43,7 @@ sourceSets {
          srcDir 'src/Stages'
          srcDir 'src/SymbolTable'
          srcDir 'src/Visitors'
+         srcDir 'src/Utils'
          srcDir 'src-lib'
          srcDir 'generated'
       }
