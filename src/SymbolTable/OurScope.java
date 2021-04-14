@@ -27,7 +27,7 @@ public class OurScope {
 
     @Override
     public String toString(){
-        return scope.toString() + (scope.ordinal() > ScopeEnum.Global.ordinal() ? " (" + functionSymbol.getName() + ")" : "");
+        return scope.toString() + (scope.ordinal() > ScopeEnum.Global.ordinal() ? " -> " + functionSymbol : "");
     }
 
     @Override

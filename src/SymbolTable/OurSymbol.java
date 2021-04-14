@@ -9,10 +9,10 @@ import java.util.List;
 
 public class OurSymbol extends Symbol implements Comparable<OurSymbol> {
     private final HashSet<String> attributes;
+    private final List<Type> parameterTypes = new ArrayList<>();
     private final OurScope scope;
     private final Integer line;
     private final Integer column;
-    private final List<Type> parameterTypes = new ArrayList<>();
 
     public OurSymbol(JmmNode node, HashSet<String> attributes, OurScope scope) {
         super(new Type(
@@ -47,6 +47,20 @@ public class OurSymbol extends Symbol implements Comparable<OurSymbol> {
         return result.toString();
     }
 
+    public String getParameterTypes(){
+        StringBuilder result = new StringBuilder();
+        if (parameterTypes.size() > 0) result.append("(");
+        boolean first = true;
+        for(Type parameterType : parameterTypes){
+            if (!first){
+                result.append(", ");
+            } else first = false;
+            result.append(parameterType.getName()).append(parameterType.isArray() ? "[]" : "");
+        }
+        if (parameterTypes.size() > 0) result.append(")");
+        return result.toString();
+    }
+
     public OurScope getScope(){
         return scope;
     }
@@ -57,6 +71,11 @@ public class OurSymbol extends Symbol implements Comparable<OurSymbol> {
 
     public Integer getColumn() {
         return column;
+    }
+
+    @Override
+    public String toString() {
+        return getName() + getParameterTypes();
     }
 
     @Override
@@ -84,6 +103,8 @@ public class OurSymbol extends Symbol implements Comparable<OurSymbol> {
         if (!(getType().getName().equals(other.getType().getName()) && getType().isArray() == other.getType().isArray()))
             return false;
         if (!getAttributes().equals(other.getAttributes()))
+            return false;
+        if (!getParameterTypes().equals(other.getParameterTypes()))
             return false;
         if (!scope.equals(other.scope))
             return false;

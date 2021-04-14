@@ -132,7 +132,7 @@ public class OurSymbolTable implements SymbolTable {
             stringTable[i++] = new String[] { "| " + symbol.getName(), " | " + symbol.getAttributes(), " | " + symbol.getScope(), " |" };
         }
         for (final Object[] row : stringTable) {
-            result.append(String.format("%-25s%-35s%-40s%-1s%n", row));
+            result.append(String.format("%-25s%-35s%-70s%-1s%n", row));
         }
         return result.toString();
     }
