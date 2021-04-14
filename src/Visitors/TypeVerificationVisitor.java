@@ -86,25 +86,8 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
             return defaultVisit(node, reports);
         }
 
-        var rightOperand = node.getChildren().get(1);
-        if (rightOperand.getKind().equals(Constants.newNodeName)) {
-            var child = rightOperand.getChildren().get(0);
-            if (!child.get(Constants.typeAttribute).equals(Constants.intType)) {
-                reports.add(new Report(
-                        ReportType.WARNING,
-                        Stage.SEMANTIC,
-                        Integer.parseInt(node.get(Constants.lineAttribute)),
-                        Integer.parseInt(node.get(Constants.columnAttribute)),
-                        "Array must be declared with an int size. " +
-                                child.get(Constants.typeAttribute) + " type was given."
-                ));
-                node.put(Constants.typeAttribute, Constants.error);
-                node.put(Constants.arrayAttribute, Constants.error);
-                return defaultVisit(node, reports);
-            }
-        }
-
-        return checkChildrenAreOfSameType(node, reports, leftOperandType, rightOperandType);
+        return checkChildrenAreOfSameType(node, reports, leftOperandType, rightOperandType) &&
+                checkArrayDeclSizeIsInt(node, reports);
     }
 
     private Boolean dealWithArrayExpression(JmmNode node, List<Report> reports){
@@ -217,6 +200,35 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
     }
 
     /**
+     * Checks if array size given in instantiation is int (e.g. new int[true] not allowed)
+     * @param node
+     * @param reports
+     * @return
+     */
+    private boolean checkArrayDeclSizeIsInt(JmmNode node, List<Report> reports) {
+        var rightOperand = node.getChildren().get(1);
+        if (rightOperand.getKind().equals(Constants.newNodeName) &&
+                rightOperand.get(Constants.typeAttribute).equals(Constants.intArrayType)) {
+
+            var child = rightOperand.getChildren().get(0);
+            if (!child.get(Constants.typeAttribute).equals(Constants.intType)) {
+                reports.add(new Report(
+                        ReportType.WARNING,
+                        Stage.SEMANTIC,
+                        Integer.parseInt(node.get(Constants.lineAttribute)),
+                        Integer.parseInt(node.get(Constants.columnAttribute)),
+                        "Array must be declared with an 'int' size ; Got '" +
+                                child.get(Constants.typeAttribute) + "'"
+                ));
+                node.put(Constants.typeAttribute, Constants.error);
+                node.put(Constants.arrayAttribute, Constants.error);
+            }
+        }
+
+        return defaultVisit(node, reports);
+    }
+
+    /**
      * Checks if children are of the same type, otherwise creating an error report
      * @param node Binary node to get children from
      * @param reports Accumulated reports
@@ -225,6 +237,9 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
      * @return
      */
     private Boolean checkChildrenAreOfSameType(JmmNode node, List<Report> reports, Type leftOperandType, Type rightOperandType){
+        if (leftOperandType.getName().equals(Constants.autoType)) leftOperandType = rightOperandType;
+        else if (rightOperandType.getName().equals(Constants.autoType)) rightOperandType = leftOperandType;
+
         if (!leftOperandType.equals(rightOperandType)) {
             reports.add(new Report(
                     ReportType.ERROR,
@@ -240,8 +255,8 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
             node.put(Constants.arrayAttribute, Constants.error);
         }
         else {
-            String commonType = (leftOperandType.getName().equals(Constants.autoType) ? leftOperandType.getName() : rightOperandType.getName());
-            boolean commonIsArray = (leftOperandType.getName().equals(Constants.autoType) ? leftOperandType.isArray() : rightOperandType.isArray());
+            String commonType = leftOperandType.getName();
+            boolean commonIsArray = leftOperandType.isArray();
             node.put(Constants.typeAttribute, commonType);
             node.put(Constants.arrayAttribute, String.valueOf(commonIsArray));
         }

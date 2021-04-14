@@ -30,7 +30,6 @@ public class OurSymbolTable implements SymbolTable {
 
     public OurSymbol getByValue(JmmNode node) {
         for (var entry : table.entrySet()) {
-            System.out.println(entry.getValue());
             if (entry.getValue().equals(node)) return entry.getKey();
         }
         return null;

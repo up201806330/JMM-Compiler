@@ -36,7 +36,7 @@ public class MethodVerificationVisitor extends PostorderJmmVisitor<List<Report>,
                 methodName);
 
         // If method is called on this and class doesn't extend any other class, will check for unresolved method
-        if (targetClassName.equals(Constants.thisAttribute) || targetClassName.equals(symbolTable.className)){
+        if (targetClassName.equals(Constants.thisAttribute) || targetClassName.equals(symbolTable.className)){ // TODO must check here if its static
             if (methodTypeOpt.isEmpty() && symbolTable.superName == null) {
                 reports.add(new Report(
                         ReportType.ERROR,
