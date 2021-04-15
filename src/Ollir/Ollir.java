@@ -186,6 +186,12 @@ public class Ollir {
             case Constants.terminalNodeName:
                 stringBuilder.append(terminalToOllir(child0, "")).append(" ");
                 break;
+            case Constants.literalNodeName:
+                stringBuilder.append(literalToOllir(child0, "")).append(" ");
+                break;
+            case Constants.binaryNodeName:
+                stringBuilder.append(binaryToOllir(child0, "", before)).append(" ");
+                break;
             default:
                 System.out.println(child0);
                 break;
@@ -197,6 +203,12 @@ public class Ollir {
         switch (child1.getKind()) {
             case Constants.terminalNodeName :
                 stringBuilder.append(terminalToOllir(child1, "")).append(" ");
+                break;
+            case Constants.literalNodeName:
+                stringBuilder.append(literalToOllir(child1, "")).append(" ");
+                break;
+            case Constants.binaryNodeName:
+                stringBuilder.append(binaryToOllir(child1, "", before)).append(" ");
                 break;
             case Constants.callExprNodeName:
                 before.append("t").append(nextTempVariable).append(typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute)));
