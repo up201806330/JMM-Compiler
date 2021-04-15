@@ -48,7 +48,11 @@ public class OurSymbol extends Symbol implements Comparable<OurSymbol> {
         return result.toString();
     }
 
-    public String getParameterTypes(){
+    public List<Type> getParameterTypes() {
+        return parameterTypes;
+    }
+
+    public static String parameterTypesToString(List<Type> parameterTypes){
         StringBuilder result = new StringBuilder();
         if (parameterTypes.size() > 0) result.append("(");
         boolean first = true;
@@ -80,7 +84,7 @@ public class OurSymbol extends Symbol implements Comparable<OurSymbol> {
 
     @Override
     public String toString() {
-        return getName() + getParameterTypes();
+        return getName() + parameterTypesToString(getParameterTypes());
     }
 
     @Override
@@ -109,7 +113,7 @@ public class OurSymbol extends Symbol implements Comparable<OurSymbol> {
             return false;
         if (!getAttributes().equals(other.getAttributes()))
             return false;
-        if (!getParameterTypes().equals(other.getParameterTypes()))
+        if (!parameterTypesToString(getParameterTypes()).equals(parameterTypesToString(other.getParameterTypes())))
             return false;
         if (!scope.equals(other.scope))
             return false;

@@ -6,7 +6,6 @@ import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.JmmParserResult;
 import pt.up.fe.comp.jmm.analysis.JmmAnalysis;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
-import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp.jmm.report.Stage;
@@ -45,12 +44,8 @@ public class AnalysisStage implements JmmAnalysis {
         OurSymbolTable symbolTable = preorderVisitor.getSymbolTable();
         System.out.println(symbolTable.toString());
 
-        System.out.println("Method verifications...");
-        var methodVerificationVisitor = new MethodVerificationVisitor(symbolTable);
-        methodVerificationVisitor.visit(node, reports);
-
-        System.out.println("Type verifications...");
-        var typeVerificationVisitor = new TypeVerificationVisitor(symbolTable);
+        System.out.println("Type and Method verifications...");
+        var typeVerificationVisitor = new TypeAndMethodVerificationVisitor(symbolTable);
         typeVerificationVisitor.visit(node, reports);
 
         System.out.println("Dump tree with Visitor where you control tree traversal");
