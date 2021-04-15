@@ -23,6 +23,7 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
         addVisit(Constants.ifConditionNodeName, this::dealWithCondition);
         addVisit(Constants.whileConditionNodeName, this::dealWithCondition);
         addVisit(Constants.callExprNodeName, this::dealWithCallExpr);
+        addVisit(Constants.returnNodeName, this::dealWithReturn);
         setDefaultVisit(TypeAndMethodVerificationVisitor::defaultVisit);
     }
 
@@ -123,7 +124,7 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
                     Stage.SEMANTIC,
                     Integer.parseInt(node.get("line")),
                     Integer.parseInt(node.get("column")),
-                    "Array access requires type: 'int[]' ; Got '" + leftVarType.getName() + "'"
+                    "Array access requires type 'int[]' but got '" + leftVarType.getName() + "'"
             ));
         };
 
@@ -135,7 +136,7 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
                     Stage.SEMANTIC,
                     Integer.parseInt(node.get("line")),
                     Integer.parseInt(node.get("column")),
-                    "Array access index requires type: 'int' ; Got '" + rightVarType.getName() + "'"
+                    "Array access index requires type 'int' but got '" + rightVarType.getName() + "'"
             ));
         };
 
@@ -191,7 +192,7 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
                     Stage.SEMANTIC,
                     Integer.parseInt(node.get("line")),
                     Integer.parseInt(node.get("column")),
-                    "Condition requires type: 'boolean' ; Got '" + operation.getName() + "'"
+                    "Condition requires type 'boolean' but got '" + operation.getName() + "'"
             ));
         }
 
@@ -304,6 +305,29 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
         return defaultVisit(node, reports);
     }
 
+    private Boolean dealWithReturn(JmmNode node, List<Report> reports) {
+        var returnType = node.getChildren().size() > 0 ?
+                node.getChildren().get(0).getOptional(Constants.typeAttribute).orElse(Constants.voidType) : Constants.voidType;
+
+        var parentOpt = node.getAncestor(Constants.methodDeclNodeName);
+        if (parentOpt.isEmpty()){
+            System.out.println("Return has no method. How??");
+        }
+        else if (!returnType.equals(parentOpt.get().get("type"))){
+            reports.add(new Report(
+                    ReportType.WARNING,
+                    Stage.SEMANTIC,
+                    Integer.parseInt(node.get(Constants.lineAttribute)),
+                    Integer.parseInt(node.get(Constants.columnAttribute)),
+                    "Return type mismatch; Required '" +
+                            parentOpt.get().get("type") + "' but got '" +
+                            returnType + "'"
+            ));
+        }
+
+        return defaultVisit(node, reports);
+    }
+
     /**
      * Checks if array size given in instantiation is int (e.g. new int[true] not allowed)
      * @param node Binary node to get children from
@@ -322,7 +346,7 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
                         Stage.SEMANTIC,
                         Integer.parseInt(node.get(Constants.lineAttribute)),
                         Integer.parseInt(node.get(Constants.columnAttribute)),
-                        "Array must be declared with an 'int' size ; Got '" +
+                        "Array must be declared with an 'int' size; Got '" +
                                 child.get(Constants.typeAttribute) + "'"
                 ));
                 node.put(Constants.typeAttribute, Constants.error);
@@ -351,10 +375,10 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
                     Stage.SEMANTIC,
                     Integer.parseInt(node.get(Constants.lineAttribute)),
                     Integer.parseInt(node.get(Constants.columnAttribute)),
-                    "Type mismatch (" +
+                    "Type mismatch ('" +
                             leftOperandType.getName() + (leftOperandType.isArray()?"[]":"") +
-                            " != " +
-                            rightOperandType.getName() + (rightOperandType.isArray()?"[]":"") + ")"
+                            "' != '" +
+                            rightOperandType.getName() + (rightOperandType.isArray()?"[]":"") + "')"
             ));
             node.put(Constants.typeAttribute, Constants.error);
             node.put(Constants.arrayAttribute, Constants.error);

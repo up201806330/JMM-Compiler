@@ -26,7 +26,7 @@ public class OurSymbolTable implements SymbolTable {
                                 Stage.SEMANTIC,
                                 symbol.getLine(),
                                 symbol.getColumn(),
-                                "Symbol '" + symbol.getName() + "' is already defined in the scope"));
+                                "Variable '" + symbol.getName() + "' is already defined in the scope"));
         }
 
         // Check for repeat symbols
