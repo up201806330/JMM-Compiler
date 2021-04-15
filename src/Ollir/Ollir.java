@@ -8,6 +8,8 @@ public class Ollir {
     private final String ident = "  ";
     private List<String> methodParameters = new ArrayList<String>();    // All the parameters of the current function
     private List<String> imports = new ArrayList<String>();
+    private boolean explicitConstructor = false;
+    private String className;
     int nextTempVariable = 1;
     public String getCode(JmmNode root) {
         StringBuilder stringBuilder = new StringBuilder();
@@ -34,10 +36,13 @@ public class Ollir {
 
         stringBuilder.append(node.get(Constants.nameAttribute)).append(" {");
 
+        className = node.get(Constants.nameAttribute);
+
+        StringBuilder insideClass = new StringBuilder();
         for (var child: node.getChildren()) {
             switch (child.getKind()) {
                 case Constants.methodDeclNodeName:
-                    stringBuilder.append("\n").append(methodDeclarationToOllir(child, prefix+ ident));
+                    insideClass.append("\n").append(methodDeclarationToOllir(child, prefix+ ident));
                     break;
                 default:
                     System.out.println(child);
@@ -45,6 +50,15 @@ public class Ollir {
             }
         }
 
+        if (!explicitConstructor) {
+            stringBuilder.append("\n").append(ident);
+            stringBuilder.append(".construct ").append(node.get(Constants.nameAttribute));
+            stringBuilder.append("().V {\n").append(ident).append(ident);
+            stringBuilder.append("invokespecial(this, \"<init>\").V;\n");
+            stringBuilder.append(ident).append("}\n");
+        }
+
+        stringBuilder.append(insideClass);
         stringBuilder.append(prefix).append("}");
 
         return stringBuilder.toString();
@@ -56,10 +70,17 @@ public class Ollir {
         methodParameters = new ArrayList<String>();
         nextTempVariable = 1;
 
-        stringBuilder.append(".method public ");
-        Optional<String> staticAttribute = node.getOptional(Constants.staticAttribute);
-        if (staticAttribute.isPresent()) {
-            stringBuilder.append("static ");
+        StringBuilder constructorMethod = new StringBuilder();
+        if (node.get(Constants.nameAttribute).equals(className)) {
+            stringBuilder.append(".constructor");
+            constructorMethod.append("invokespecial(this, \"<init>\").V;\n");
+            explicitConstructor = true;
+        } else {
+            stringBuilder.append(".method public ");
+            Optional<String> staticAttribute = node.getOptional(Constants.staticAttribute);
+            if (staticAttribute.isPresent()) {
+                stringBuilder.append("static ");
+            }
         }
         stringBuilder.append(node.get(Constants.nameAttribute)).append("(");
 
@@ -69,6 +90,9 @@ public class Ollir {
         JmmNode type = null;
 
         StringBuilder insideMethod = new StringBuilder();
+
+        insideMethod.append(constructorMethod);
+
 
         for (var child: children) {
             switch (child.getKind()) {
@@ -229,8 +253,6 @@ public class Ollir {
 
         var children = node.getChildren();
         String type = typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute));
-
-        // TODO: Needs some changes maybe not working on all possible cases
 
         if (imports.contains(children.get(0).get(Constants.typeAttribute))) {
             before.append("invokestatic(");
