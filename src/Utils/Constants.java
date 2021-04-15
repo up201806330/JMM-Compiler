@@ -34,6 +34,7 @@ public class Constants {
     public static final String thisAttribute = "this";
     public static final String staticAttribute = "static";
 
+
     // Types
     public static final String identifierAttribute = "identifier";
     public static final String intArrayType = "intArray";
@@ -41,6 +42,7 @@ public class Constants {
     public static final String booleanType = "boolean";
     public static final String voidType = "void";
     public static final String autoType = "auto"; // Special type that is assigned to method calls where type is assumed to be correct
+    public static final String mainMethod = "main";
 
     public static final String andExpression = "&&";
     public static final String lessThanExpression = "<";
