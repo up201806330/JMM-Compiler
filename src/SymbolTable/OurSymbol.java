@@ -10,6 +10,7 @@ public class OurSymbol extends Symbol implements Comparable<OurSymbol> {
     private final OurScope scope;
     private final Integer line;
     private final Integer column;
+    private boolean initialized;
 
     public OurSymbol(JmmNode node, HashSet<String> attributes, OurScope scope) {
         super(new Type(
@@ -37,6 +38,14 @@ public class OurSymbol extends Symbol implements Comparable<OurSymbol> {
     public boolean isVariable() { return attributes.contains(Constants.variableAttribute); }
     public boolean isStatic() { return attributes.contains(Constants.staticAttribute); }
 
+    public void setInitialized(){
+        initialized = true;
+    }
+
+    public boolean isInitialized() {
+        return initialized;
+    }
+
     public String getAttributes(){
         StringBuilder result = new StringBuilder(getType().getName() + ((getType().isArray()) ? "[]" : ""));
         for(String attribute : attributes){
@@ -45,7 +54,11 @@ public class OurSymbol extends Symbol implements Comparable<OurSymbol> {
         return result.toString();
     }
 
-    public String getParameterTypes(){
+    public List<Type> getParameterTypes() {
+        return parameterTypes;
+    }
+
+    public static String parameterTypesToString(List<Type> parameterTypes){
         StringBuilder result = new StringBuilder();
         if (parameterTypes.size() > 0) result.append("(");
         boolean first = true;
@@ -77,7 +90,7 @@ public class OurSymbol extends Symbol implements Comparable<OurSymbol> {
 
     @Override
     public String toString() {
-        return getName() + getParameterTypes();
+        return getName() + parameterTypesToString(getParameterTypes());
     }
 
     @Override
@@ -106,7 +119,7 @@ public class OurSymbol extends Symbol implements Comparable<OurSymbol> {
             return false;
         if (!getAttributes().equals(other.getAttributes()))
             return false;
-        if (!getParameterTypes().equals(other.getParameterTypes()))
+        if (!parameterTypesToString(getParameterTypes()).equals(parameterTypesToString(other.getParameterTypes())))
             return false;
         if (!scope.equals(other.scope))
             return false;

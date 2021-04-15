@@ -2,13 +2,10 @@ import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
 import pt.up.fe.comp.jmm.report.Report;
-import pt.up.fe.comp.jmm.report.ReportType;
-import pt.up.fe.comp.jmm.report.Stage;
 
 import java.util.*;
 
 public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean> {
-
 
     OurSymbolTable symbolTable = new OurSymbolTable();
 
@@ -69,13 +66,13 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
         );
 
         if (symbol.getScope().scope == OurScope.ScopeEnum.Error){
-            reports.add(
-                    new Report(
-                            ReportType.WARNING,
-                            Stage.SEMANTIC,
-                            symbol.getLine(),
-                            symbol.getColumn(),
-                            "Variable '" + symbol.getName() + "' defined inside method with a lexical error"));
+//            reports.add(
+//                    new Report(
+//                            ReportType.WARNING,
+//                            Stage.SEMANTIC,
+//                            symbol.getLine(),
+//                            symbol.getColumn(),
+//                            "Variable '" + symbol.getName() + "' defined inside method with a lexical error"));
             return defaultVisit(node, reports);
         }
 
@@ -123,13 +120,13 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
         );
 
         if (symbol.getScope().scope == OurScope.ScopeEnum.Error){
-            reports.add(
-                    new Report(
-                            ReportType.WARNING,
-                            Stage.SEMANTIC,
-                            symbol.getLine(),
-                            symbol.getColumn(),
-                            "Parameter '" + symbol.getName() + "' defined for method with a lexical error"));
+//            reports.add(
+//                    new Report(
+//                            ReportType.WARNING,
+//                            Stage.SEMANTIC,
+//                            symbol.getLine(),
+//                            symbol.getColumn(),
+//                            "Parameter '" + symbol.getName() + "' defined for method with a lexical error"));
             return defaultVisit(node, reports);
         }
 

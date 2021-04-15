@@ -5,13 +5,14 @@ import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp.jmm.report.Stage;
 
+import java.util.Arrays;
 import java.util.List;
 
-public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, Boolean> {
+public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<Report>, Boolean> {
 
     OurSymbolTable symbolTable;
 
-    public TypeVerificationVisitor(OurSymbolTable symbolTable){
+    public TypeAndMethodVerificationVisitor(OurSymbolTable symbolTable){
         this.symbolTable = symbolTable;
 
         addVisit(Constants.terminalNodeName, this::dealWithTerminal);
@@ -21,17 +22,20 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
         addVisit(Constants.notExprNodeName, this::dealWithNotExpr);
         addVisit(Constants.ifConditionNodeName, this::dealWithCondition);
         addVisit(Constants.whileConditionNodeName, this::dealWithCondition);
-        setDefaultVisit(TypeVerificationVisitor::defaultVisit);
+        addVisit(Constants.callExprNodeName, this::dealWithCallExpr);
+        addVisit(Constants.returnNodeName, this::dealWithReturn);
+        setDefaultVisit(TypeAndMethodVerificationVisitor::defaultVisit);
     }
 
     private Boolean dealWithTerminal(JmmNode node, List<Report> reports){
         if (!node.get(Constants.typeAttribute).equals(Constants.identifierAttribute)) return defaultVisit(node, reports);
 
-        var variableTypeOptional = symbolTable.tryGettingSymbolType(
+        var variableOpt = symbolTable.tryGettingSymbol(
                 node.getAncestor(Constants.methodDeclNodeName).map(ancestorNode -> ancestorNode.get(Constants.nameAttribute)).orElse("this"),
                 node.get(Constants.valueAttribute));
 
-        if (variableTypeOptional.isEmpty()){
+
+        if (variableOpt.isEmpty()){
             reports.add(new Report(
                     ReportType.WARNING,
                     Stage.SEMANTIC,
@@ -43,8 +47,26 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
             node.put(Constants.arrayAttribute, Constants.error);
         }
         else {
-            node.put(Constants.typeAttribute, variableTypeOptional.get().getName());
-            node.put(Constants.arrayAttribute, String.valueOf(variableTypeOptional.get().isArray()));
+            var variable = variableOpt.get();
+            // Check if its being assigned
+            if (node.getParent().getKind().equals(Constants.assignmentNodeName) && node.getParent().getChildren().get(0).equals(node))
+                variable.setInitialized();
+
+            if (!variable.isInitialized() && !variable.isParameter() && !variable.isClass()){ // If variable isn't parameter or class, must be initialized
+                reports.add(new Report(
+                        ReportType.WARNING,
+                        Stage.SEMANTIC,
+                        Integer.parseInt(node.get(Constants.lineAttribute)),
+                        Integer.parseInt(node.get(Constants.columnAttribute)),
+                        "Variable " + node.get(Constants.valueAttribute) + " must be initialized before being used"
+                ));
+                node.put(Constants.typeAttribute, Constants.error);
+                node.put(Constants.arrayAttribute, Constants.error);
+            }
+            else {
+                node.put(Constants.typeAttribute, variableOpt.get().getType().getName());
+                node.put(Constants.arrayAttribute, String.valueOf(variableOpt.get().getType().isArray()));
+            }
         }
 
         return defaultVisit(node, reports);
@@ -102,7 +124,7 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
                     Stage.SEMANTIC,
                     Integer.parseInt(node.get("line")),
                     Integer.parseInt(node.get("column")),
-                    "Array access requires type: 'int[]' ; Got '" + leftVarType.getName() + "'"
+                    "Array access requires type 'int[]' but got '" + leftVarType.getName() + "'"
             ));
         };
 
@@ -114,7 +136,7 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
                     Stage.SEMANTIC,
                     Integer.parseInt(node.get("line")),
                     Integer.parseInt(node.get("column")),
-                    "Array access index requires type: 'int' ; Got '" + rightVarType.getName() + "'"
+                    "Array access index requires type 'int' but got '" + rightVarType.getName() + "'"
             ));
         };
 
@@ -170,7 +192,7 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
                     Stage.SEMANTIC,
                     Integer.parseInt(node.get("line")),
                     Integer.parseInt(node.get("column")),
-                    "Condition requires type: 'boolean' ; Got '" + operation.getName() + "'"
+                    "Condition requires type 'boolean' but got '" + operation.getName() + "'"
             ));
         }
 
@@ -199,10 +221,130 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
         return defaultVisit(node, reports);
     }
 
+    private Boolean dealWithCallExpr(JmmNode node, List<Report> reports){
+        var children = node.getChildren();
+        var target = children.get(0);
+        var argsList = children.get(1);
+
+        var targetClassSymbolOpt = symbolTable.tryGettingSymbol(
+                node.getAncestor(Constants.methodDeclNodeName).map(ancestorNode -> ancestorNode.get(Constants.nameAttribute)).orElse("this"),
+                target.get(Constants.valueAttribute));
+
+        var targetClass = targetClassSymbolOpt.isPresent() ?
+                targetClassSymbolOpt.get().getType().getName() :
+                target.get(Constants.valueAttribute);
+        var methodName = node.get(Constants.nameAttribute);
+
+        var methodTypeOpt = symbolTable.tryGettingSymbolType(
+                targetClass,
+                methodName);
+
+        if ( targetClass.equals(Constants.thisAttribute) ||   // If method was called on this context ( e.g. this.Foo() || ThisClass a; a.Foo() )
+                targetClass.equals(symbolTable.className) ){  // Or if it was called on this class' static context (e.g. ThisClass.Foo() )
+
+            if (targetClass.equals(Constants.thisAttribute) && // This cannot be used in a static context
+                    node.getAncestor(Constants.methodDeclNodeName).get().getOptional("static").isPresent()){
+                reports.add(new Report(
+                        ReportType.WARNING,
+                        Stage.SEMANTIC,
+                        Integer.parseInt(node.get("line")),
+                        Integer.parseInt(node.get("column")),
+                        "'this' cannot be used in a static context"
+                ));
+                node.put(Constants.typeAttribute, Constants.error);
+                node.put(Constants.arrayAttribute, Constants.error);
+            }
+
+            else if (methodTypeOpt.isEmpty() && symbolTable.superName == null) { // If method name isn't found and there is no inheritance present
+                reports.add(new Report(
+                        ReportType.ERROR,
+                        Stage.SEMANTIC,
+                        Integer.parseInt(node.get("line")),
+                        Integer.parseInt(node.get("column")),
+                        "Cannot resolve method '" + methodName +
+                                "' in class '" + symbolTable.className
+                ));
+                node.put(Constants.typeAttribute, Constants.error);
+                node.put(Constants.arrayAttribute, Constants.error);
+            }
+            else if (target.get(Constants.valueAttribute).equals(symbolTable.className) &&         // If method was called on this class' static context
+                    (targetClassSymbolOpt.isPresent() && !targetClassSymbolOpt.get().isStatic())){ // but function isn't static (e.g. public void Foo(); ThisClass.Foo() )
+
+                reports.add(new Report(
+                        ReportType.WARNING,
+                        Stage.SEMANTIC,
+                        Integer.parseInt(node.get("line")),
+                        Integer.parseInt(node.get("column")),
+                        "Non-static method '" + methodName + "' cannot be referenced from a static context"
+                ));
+                node.put(Constants.typeAttribute, Constants.error);
+                node.put(Constants.arrayAttribute, Constants.error);
+            }
+            else if (symbolTable.superName != null){ // If there is inheritance present, assume method is defined there and assume type is correct
+                node.put(Constants.typeAttribute, Constants.autoType);
+                node.put(Constants.arrayAttribute, "false");
+            }
+            else { // If method name was found in this class
+                List<Type> args = Arrays.asList(argsList.getChildren().stream().map(NodeUtils::extractTypeFromNode).toArray(Type[]::new));
+                var method = symbolTable.getMethod(methodName, args, node, reports);
+                if (method.isEmpty()) { // Check if method signature is correct (number and type of parameters)
+                    node.put(Constants.typeAttribute, Constants.error);
+                    node.put(Constants.arrayAttribute, Constants.error);
+                }
+                else { // Method signature is correct, success!
+                    node.put(Constants.typeAttribute, method.get().getType().getName());
+                    node.put(Constants.arrayAttribute, String.valueOf(method.get().getType().isArray()));
+                }
+            }
+        }
+        else { // If method isn't called in this context or own class context
+            if (symbolTable.getImports().contains(targetClass)){ // If calling context is an imported class, assume method is defined there and assume type is correct
+                node.put(Constants.typeAttribute, Constants.autoType);
+                node.put(Constants.arrayAttribute, "false");
+            }
+            else { // If calling context isn't found
+                reports.add(new Report(
+                        ReportType.ERROR,
+                        Stage.SEMANTIC,
+                        Integer.parseInt(node.get("line")),
+                        Integer.parseInt(node.get("column")),
+                        "Cannot resolve class '" + targetClass + "'"
+                ));
+                node.put(Constants.typeAttribute, Constants.error);
+                node.put(Constants.arrayAttribute, Constants.error);
+            }
+        }
+
+        return defaultVisit(node, reports);
+    }
+
+    private Boolean dealWithReturn(JmmNode node, List<Report> reports) {
+        var returnType = node.getChildren().size() > 0 ?
+                node.getChildren().get(0).getOptional(Constants.typeAttribute).orElse(Constants.voidType) : Constants.voidType;
+
+        var parentOpt = node.getAncestor(Constants.methodDeclNodeName);
+        if (parentOpt.isEmpty()){
+            System.out.println("Return has no method. How??");
+        }
+        else if (!returnType.equals(parentOpt.get().get("type"))){
+            reports.add(new Report(
+                    ReportType.WARNING,
+                    Stage.SEMANTIC,
+                    Integer.parseInt(node.get(Constants.lineAttribute)),
+                    Integer.parseInt(node.get(Constants.columnAttribute)),
+                    "Return type mismatch; Required '" +
+                            parentOpt.get().get("type") + "' but got '" +
+                            returnType + "'"
+            ));
+        }
+
+        return defaultVisit(node, reports);
+    }
+
     /**
      * Checks if array size given in instantiation is int (e.g. new int[true] not allowed)
-     * @param node
-     * @param reports
+     * @param node Binary node to get children from
+     * @param reports Accumulated reports
      * @return
      */
     private boolean checkArrayDeclSizeIsInt(JmmNode node, List<Report> reports) {
@@ -217,7 +359,7 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
                         Stage.SEMANTIC,
                         Integer.parseInt(node.get(Constants.lineAttribute)),
                         Integer.parseInt(node.get(Constants.columnAttribute)),
-                        "Array must be declared with an 'int' size ; Got '" +
+                        "Array must be declared with an 'int' size; Got '" +
                                 child.get(Constants.typeAttribute) + "'"
                 ));
                 node.put(Constants.typeAttribute, Constants.error);
@@ -246,10 +388,10 @@ public class TypeVerificationVisitor extends PostorderJmmVisitor<List<Report>, B
                     Stage.SEMANTIC,
                     Integer.parseInt(node.get(Constants.lineAttribute)),
                     Integer.parseInt(node.get(Constants.columnAttribute)),
-                    "Type mismatch (" +
+                    "Type mismatch ('" +
                             leftOperandType.getName() + (leftOperandType.isArray()?"[]":"") +
-                            " != " +
-                            rightOperandType.getName() + (rightOperandType.isArray()?"[]":"") + ")"
+                            "' != '" +
+                            rightOperandType.getName() + (rightOperandType.isArray()?"[]":"") + "')"
             ));
             node.put(Constants.typeAttribute, Constants.error);
             node.put(Constants.arrayAttribute, Constants.error);

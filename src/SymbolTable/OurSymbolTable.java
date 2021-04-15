@@ -15,12 +15,26 @@ public class OurSymbolTable implements SymbolTable {
     SortedMap<OurSymbol, JmmNode> table = new TreeMap<>();
 
     public Optional<Report> put(OurSymbol symbol, JmmNode node) {
+        // Check for repeat variable names inside scope (e.q. boolean a; int a; gives error)
+        for (OurSymbol entry : table.keySet()) {
+            if (entry.isVariable() &&
+                    entry.getName().equals(symbol.getName()) &&
+                    entry.getScope().equals(symbol.getScope()))
+                return Optional.of(
+                        new Report(
+                                ReportType.WARNING,
+                                Stage.SEMANTIC,
+                                symbol.getLine(),
+                                symbol.getColumn(),
+                                "Variable '" + symbol.getName() + "' is already defined in the scope"));
+        }
+
         // Check for repeat symbols
         var existingEntry = table.putIfAbsent(symbol, node);
         if (existingEntry != null)
             return Optional.of(
                     new Report(
-                        ReportType.ERROR,
+                        ReportType.WARNING,
                         Stage.SEMANTIC,
                         symbol.getLine(),
                         symbol.getColumn(),
@@ -59,11 +73,38 @@ public class OurSymbolTable implements SymbolTable {
         return Optional.empty();
     }
 
-    public Optional<OurScope> getMethodWithNParameters(String methodName, int n) {
+    public Optional<OurSymbol> getMethod(String methodName, List<Type> args, JmmNode node, List<Report> reports) {
+        List<OurSymbol> methodOverloads = new ArrayList<>();
         for (OurSymbol entry : table.keySet()) {
-            OurScope method = entry.getScope();
-            if (method.getName().equals(methodName) && method.getNumParameters() == n) return Optional.of(method);
+            if (entry.isMethod() && entry.getName().equals(methodName) && entry.getParameterTypes().size() == args.size())
+                methodOverloads.add(entry);
         }
+
+        if (methodOverloads.size() == 0){
+            reports.add(new Report(
+                    ReportType.ERROR,
+                    Stage.SEMANTIC,
+                    Integer.parseInt(node.get("line")),
+                    Integer.parseInt(node.get("column")),
+                    "No definition of " + methodName +
+                            " has " + args.size() +
+                            " parameters "
+            ));
+            return Optional.empty();
+        }
+
+        for (OurSymbol methodOverload : methodOverloads){
+            if (methodOverload.getParameterTypes().equals(args)) return Optional.of(methodOverload);
+        }
+
+        reports.add(new Report(
+                ReportType.ERROR,
+                Stage.SEMANTIC,
+                Integer.parseInt(node.get("line")),
+                Integer.parseInt(node.get("column")),
+                "No definition of " + methodName +
+                        " has parameter types " +  OurSymbol.parameterTypesToString(args)
+        ));
         return Optional.empty();
     }
 
