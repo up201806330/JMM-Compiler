@@ -3,6 +3,7 @@ import pt.up.fe.comp.MainAnalysis;
 import pt.up.fe.comp.jmm.JmmParser;
 import pt.up.fe.comp.jmm.JmmParserResult;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
+import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp.jmm.report.Stage;
@@ -54,6 +55,9 @@ public class Main implements JmmParser {
 		JmmSemanticsResult semanticsResults = analysis.semanticAnalysis(parserResults);
 
 		showReports(semanticsResults.getReports());
+
+		OptimizationStage optimization = new OptimizationStage();
+		OllirResult ollirResult = optimization.toOllir(semanticsResults);
 	}
 
 	private static void showReports(List<Report> reports){

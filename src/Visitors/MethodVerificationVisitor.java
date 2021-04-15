@@ -32,7 +32,7 @@ public class MethodVerificationVisitor extends PostorderJmmVisitor<List<Report>,
         var targetClass = targetClassSymbolOpt.isPresent() ?
                 targetClassSymbolOpt.get().getType().getName() :
                 target.get(Constants.valueAttribute);
-        System.out.println(targetClass);
+        //System.out.println(targetClass);
         var methodName = node.get(Constants.nameAttribute);
 
         var methodTypeOpt = symbolTable.tryGettingSymbolType(

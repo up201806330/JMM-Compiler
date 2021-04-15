@@ -39,13 +39,14 @@ compileJavacc {
 sourceSets {
    main {
       java {
-         srcDir 'src'
-         srcDir 'src/Stages'
-         srcDir 'src/SymbolTable'
-         srcDir 'src/Visitors'
-         srcDir 'src/Utils'
-         srcDir 'src-lib'
-         srcDir 'generated'
+          srcDir 'src'
+          srcDir 'src/Ollir'
+          srcDir 'src/Stages'
+          srcDir 'src/SymbolTable'
+          srcDir 'src/Visitors'
+          srcDir 'src/Utils'
+          srcDir 'src-lib'
+          srcDir 'generated'
       }
    }
 	
