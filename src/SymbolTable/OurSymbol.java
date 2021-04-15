@@ -13,6 +13,7 @@ public class OurSymbol extends Symbol implements Comparable<OurSymbol> {
     private final OurScope scope;
     private final Integer line;
     private final Integer column;
+    private boolean initialized;
 
     public OurSymbol(JmmNode node, HashSet<String> attributes, OurScope scope) {
         super(new Type(
@@ -39,6 +40,14 @@ public class OurSymbol extends Symbol implements Comparable<OurSymbol> {
     public boolean isParameter() { return attributes.contains(Constants.parameterAttribute); }
     public boolean isVariable() { return attributes.contains(Constants.variableAttribute); }
     public boolean isStatic() { return attributes.contains(Constants.staticAttribute); }
+
+    public void setInitialized(){
+        initialized = true;
+    }
+
+    public boolean isInitialized() {
+        return initialized;
+    }
 
     public String getAttributes(){
         StringBuilder result = new StringBuilder(getType().getName() + ((getType().isArray()) ? "[]" : ""));

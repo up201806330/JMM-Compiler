@@ -29,11 +29,12 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
     private Boolean dealWithTerminal(JmmNode node, List<Report> reports){
         if (!node.get(Constants.typeAttribute).equals(Constants.identifierAttribute)) return defaultVisit(node, reports);
 
-        var variableTypeOptional = symbolTable.tryGettingSymbolType(
+        var variableOpt = symbolTable.tryGettingSymbol(
                 node.getAncestor(Constants.methodDeclNodeName).map(ancestorNode -> ancestorNode.get(Constants.nameAttribute)).orElse("this"),
                 node.get(Constants.valueAttribute));
 
-        if (variableTypeOptional.isEmpty()){
+
+        if (variableOpt.isEmpty()){
             reports.add(new Report(
                     ReportType.WARNING,
                     Stage.SEMANTIC,
@@ -45,8 +46,26 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
             node.put(Constants.arrayAttribute, Constants.error);
         }
         else {
-            node.put(Constants.typeAttribute, variableTypeOptional.get().getName());
-            node.put(Constants.arrayAttribute, String.valueOf(variableTypeOptional.get().isArray()));
+            var variable = variableOpt.get();
+            // Check if its being assigned
+            if (node.getParent().getKind().equals(Constants.assignmentNodeName) && node.getParent().getChildren().get(0).equals(node))
+                variable.setInitialized();
+
+            if (!variable.isInitialized() && !variable.isParameter() && !variable.isClass()){ // If variable isn't parameter or class, must be initialized
+                reports.add(new Report(
+                        ReportType.WARNING,
+                        Stage.SEMANTIC,
+                        Integer.parseInt(node.get(Constants.lineAttribute)),
+                        Integer.parseInt(node.get(Constants.columnAttribute)),
+                        "Variable " + node.get(Constants.valueAttribute) + " must be initialized before being used"
+                ));
+                node.put(Constants.typeAttribute, Constants.error);
+                node.put(Constants.arrayAttribute, Constants.error);
+            }
+            else {
+                node.put(Constants.typeAttribute, variableOpt.get().getType().getName());
+                node.put(Constants.arrayAttribute, String.valueOf(variableOpt.get().getType().isArray()));
+            }
         }
 
         return defaultVisit(node, reports);
