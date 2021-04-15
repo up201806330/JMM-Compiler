@@ -242,7 +242,20 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
         if ( targetClass.equals(Constants.thisAttribute) ||   // If method was called on this context ( e.g. this.Foo() || ThisClass a; a.Foo() )
                 targetClass.equals(symbolTable.className) ){  // Or if it was called on this class' static context (e.g. ThisClass.Foo() )
 
-            if (methodTypeOpt.isEmpty() && symbolTable.superName == null) { // If method name isn't found and there is no inheritance present
+            if (targetClass.equals(Constants.thisAttribute) && // This cannot be used in a static context
+                    node.getAncestor(Constants.methodDeclNodeName).get().getOptional("static").isPresent()){
+                reports.add(new Report(
+                        ReportType.WARNING,
+                        Stage.SEMANTIC,
+                        Integer.parseInt(node.get("line")),
+                        Integer.parseInt(node.get("column")),
+                        "'this' cannot be used in a static context"
+                ));
+                node.put(Constants.typeAttribute, Constants.error);
+                node.put(Constants.arrayAttribute, Constants.error);
+            }
+
+            else if (methodTypeOpt.isEmpty() && symbolTable.superName == null) { // If method name isn't found and there is no inheritance present
                 reports.add(new Report(
                         ReportType.ERROR,
                         Stage.SEMANTIC,
