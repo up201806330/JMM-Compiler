@@ -337,6 +337,54 @@ public class ExampleTest {
     public void testMissType() {
         String file = SpecsIo.read("test/fixtures/public/fail/semantic/extra/miss_type.jmm");
         JmmSemanticsResult result = TestUtils.analyse(file);
+        try {
+            TestUtils.noErrors(result.getReports());
+            assertEquals(1, TestUtils.getNumReports(result.getReports(), ReportType.WARNING));
+        } catch (RuntimeException | AssertionError e) {
+            fail("Expected 1 warning, got " + TestUtils.getNumReports(result.getReports(), ReportType.WARNING));
+        }
+    }
+
+    @Test
+    public void testRepeatName() {
+        String file = SpecsIo.read("test/fixtures/public/fail/semantic/extra/repeatName.jmm");
+        JmmSemanticsResult result = TestUtils.analyse(file);
+        try{
+            TestUtils.noErrors(result.getReports());
+            assertEquals(1, TestUtils.getNumReports(result.getReports(), ReportType.WARNING));
+        } catch (RuntimeException | AssertionError e) {
+            fail("Expected 1 warning, got " + TestUtils.getNumReports(result.getReports(), ReportType.WARNING));
+        }
+    }
+
+    @Test
+    public void testStatic() {
+        String file = SpecsIo.read("test/fixtures/public/fail/semantic/extra/static.jmm");
+        JmmSemanticsResult result = TestUtils.analyse(file);
+        try{
+            TestUtils.noErrors(result.getReports());
+            assertEquals(1, TestUtils.getNumReports(result.getReports(), ReportType.WARNING));
+        } catch (RuntimeException | AssertionError e) {
+            fail("Expected 1 warning, got " + TestUtils.getNumReports(result.getReports(), ReportType.WARNING));
+        }
+    }
+
+    @Test
+    public void testOverloads() {
+        String file = SpecsIo.read("test/fixtures/public/fail/semantic/extra/overloads.jmm");
+        JmmSemanticsResult result = TestUtils.analyse(file);
+        try{
+            TestUtils.noErrors(result.getReports());
+            assertEquals(0, TestUtils.getNumReports(result.getReports(), ReportType.WARNING));
+        } catch (RuntimeException | AssertionError e) {
+            fail("Expected no warnings or errors, got " + result.getReports().size());
+        }
+    }
+
+    @Test
+    public void testReturnTypeMismatch() {
+        String file = SpecsIo.read("test/fixtures/public/fail/semantic/extra/returns.jmm");
+        JmmSemanticsResult result = TestUtils.analyse(file);
         try{
             TestUtils.noErrors(result.getReports());
             assertEquals(1, TestUtils.getNumReports(result.getReports(), ReportType.WARNING));

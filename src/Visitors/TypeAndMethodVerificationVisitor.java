@@ -231,10 +231,15 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
                 node.getAncestor(Constants.methodDeclNodeName).map(ancestorNode -> ancestorNode.get(Constants.nameAttribute)).orElse("this"),
                 target.get(Constants.valueAttribute));
 
+        var methodName = node.get(Constants.nameAttribute);
+        var methodSymbolOpt = symbolTable.tryGettingSymbol(
+             "this",
+                methodName
+        );
+
         var targetClass = targetClassSymbolOpt.isPresent() ?
                 targetClassSymbolOpt.get().getType().getName() :
                 target.get(Constants.valueAttribute);
-        var methodName = node.get(Constants.nameAttribute);
 
         var methodTypeOpt = symbolTable.tryGettingSymbolType(
                 targetClass,
@@ -269,7 +274,7 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
                 node.put(Constants.arrayAttribute, Constants.error);
             }
             else if (target.get(Constants.valueAttribute).equals(symbolTable.className) &&         // If method was called on this class' static context
-                    (targetClassSymbolOpt.isPresent() && !targetClassSymbolOpt.get().isStatic())){ // but function isn't static (e.g. public void Foo(); ThisClass.Foo() )
+                    (methodSymbolOpt.isPresent() && !methodSymbolOpt.get().isStatic())){ // but function isn't static (e.g. public void Foo(); ThisClass.Foo() )
 
                 reports.add(new Report(
                         ReportType.WARNING,
