@@ -14,15 +14,9 @@ public class Ollir {
 
         for (var node: root.getChildren()) {
             switch (node.getKind()) {
-                case Constants.importDeclNodeName:
-                    imports.add(node.get(Constants.nameAttribute));
-                    break;
-                case Constants.classDeclNodeName:
-                    stringBuilder.append(classDeclarationToOllir(node, ""));
-                    break;
-                default:
-                    System.out.println("getCode: " + node);
-                    break;
+                case Constants.importDeclNodeName -> imports.add(node.get(Constants.nameAttribute));
+                case Constants.classDeclNodeName -> stringBuilder.append(classDeclarationToOllir(node, ""));
+                default -> System.out.println("getCode: " + node);
             }
         }
 
@@ -37,13 +31,8 @@ public class Ollir {
         StringBuilder insideClass = new StringBuilder();
         for (var child: node.getChildren()) {
             switch (child.getKind()) {
-                case Constants.methodDeclNodeName:
-                    insideClass.append("\n").append(prefix).append(ident);
-                    insideClass.append(methodDeclarationToOllir(child, prefix+ ident));
-                    break;
-                default:
-                    System.out.println(child);
-                    break;
+                case Constants.methodDeclNodeName -> insideClass.append("\n").append(methodDeclarationToOllir(child, prefix + ident));
+                default -> System.out.println("classDeclarationToOllir: " + child);
             }
         }
 
@@ -57,7 +46,7 @@ public class Ollir {
     }
 
     private String methodDeclarationToOllir(JmmNode node, String prefix) {
-        StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder stringBuilder = new StringBuilder(prefix);
 
         methodParameters = new ArrayList<String>();
         nextTempVariable = 1;
@@ -83,7 +72,7 @@ public class Ollir {
                 case Constants.typeNodeName -> type = child;
                 case Constants.methodParamNodeName -> { parameters.add(child); methodParameters.add(child.get(Constants.nameAttribute)); }
                 case Constants.assignmentNodeName -> insideMethod.append(assignmentToOllir(child, prefix + ident));
-                case Constants.callExprNodeName -> insideMethod.append(callExpressionToOllir(child, prefix + ident, insideMethod.append(prefix + ident)));
+                case Constants.callExprNodeName -> insideMethod.append(prefix + ident).append(callExpressionToOllir(child, prefix + ident, insideMethod));
                 case Constants.returnNodeName -> insideMethod.append(returnToOllir(child, prefix + ident));
                 case Constants.varDeclNodeName -> {}
                 case Constants.ifStatementNodeName -> insideMethod.append(ifStatementToOllir(child, prefix + ident));
@@ -135,7 +124,7 @@ public class Ollir {
             i++;
         }
 
-        stringBuilder.append(prefix).append("goto endif;\n");
+        stringBuilder.append(prefix).append(ident).append("goto endif;\n");
         stringBuilder.append(prefix).append("else:\n");
 
         stringBuilder.append(elseStatementToOllir(children.get(2), prefix + ident));
@@ -182,7 +171,7 @@ public class Ollir {
             stringBuilder.append("ret").append(type).append(" ");
             stringBuilder.append(child.get(Constants.valueAttribute)).append(type);
         }
-        return stringBuilder.append("\n").toString();
+        return stringBuilder.append(";\n").toString();
     }
 
     private String assignmentToOllir(JmmNode node, String prefix) {
@@ -192,7 +181,7 @@ public class Ollir {
 
         StringBuilder left = new StringBuilder(prefix);
         StringBuilder right = new StringBuilder();
-        StringBuilder before = new StringBuilder();
+        StringBuilder before = new StringBuilder(prefix);
 
         var child = children.get(0);
 
@@ -203,30 +192,22 @@ public class Ollir {
 
         child = children.get(1);
         switch (child.getKind()) {
-            case Constants.terminalNodeName -> right.append(terminalToOllir(child, ""));
-            case Constants.literalNodeName -> right.append(literalToOllir(child, ""));
-            case Constants.newNodeName -> right.append(newToOllir(child, "", before));
-            case Constants.binaryNodeName -> right.append(binaryToOllir(child, prefix, before));
-            case Constants.callExprNodeName -> {
-                String typeToOllir = OllirCodeUtils.typeToOllir(child.get(Constants.typeAttribute), child.getOptional(Constants.arrayAttribute));
-                before.append("t").append(nextTempVariable).append(typeToOllir);
-                before.append(" :=").append(typeToOllir).append(" ");
-                right.append(callExpressionToOllir(child, "", before));
-                right.append("t").append(String.valueOf(nextTempVariable)).append(typeToOllir);
-                nextTempVariable++;
-            }
+            case Constants.terminalNodeName -> right.append(terminalToOllir(child, "")).append(";\n");
+            case Constants.literalNodeName -> right.append(literalToOllir(child, "")).append(";\n");
+            case Constants.newNodeName -> right.append(newToOllir(child, prefix, before)).append(";\n");
+            case Constants.binaryNodeName -> right.append(binaryToOllir(child, prefix, before)).append(";\n");
+            case Constants.callExprNodeName -> right.append(callExpressionToOllir(child, prefix, before));
             default -> System.out.println("assignementToOllir: " + child);
         }
 
-        if (!before.toString().equals("")) {
-            before.insert(0, prefix);
+        if (!before.toString().equals(prefix)) {
             stringBuilder.append(before);
         }
         stringBuilder.append(left);
         stringBuilder.append(":=").append(OllirCodeUtils.typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute))).append(" ");
         stringBuilder.append(right);
 
-        return  stringBuilder.append(";\n").toString();
+        return  stringBuilder.toString();
     }
 
     private String binaryToOllir(JmmNode node, String prefix, StringBuilder before) {
@@ -254,7 +235,7 @@ public class Ollir {
                 String typeToOllir = OllirCodeUtils.typeToOllir(child1.get(Constants.typeAttribute), child1.getOptional(Constants.arrayAttribute));
                 before.append("t").append(nextTempVariable).append(typeToOllir);
                 before.append(" :=").append(typeToOllir).append(" ");
-                stringBuilder.append(callExpressionToOllir(child1, "", before));
+                before.append(callExpressionToOllir(child1, prefix, before));
                 stringBuilder.append("t").append(String.valueOf(nextTempVariable)).append(typeToOllir);
                 nextTempVariable++;
             }
@@ -265,7 +246,7 @@ public class Ollir {
     }
 
     private String callExpressionToOllir(JmmNode node, String prefix, StringBuilder before) {
-        StringBuilder stringBuilder = new StringBuilder(prefix);
+        StringBuilder stringBuilder = new StringBuilder();
 
         var children = node.getChildren();
         String type = OllirCodeUtils.typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute));
@@ -295,7 +276,7 @@ public class Ollir {
                         String typeToOllir = OllirCodeUtils.typeToOllir(arg.get(Constants.typeAttribute), arg.getOptional(Constants.arrayAttribute));
                         before.append("t").append(nextTempVariable).append(typeToOllir);
                         before.append(" :=").append(typeToOllir).append(" ");
-                        stringBuilder.append(callExpressionToOllir(arg, "", before));
+                        before.append(callExpressionToOllir(arg, prefix, before));
                         stringBuilder.append("t").append(nextTempVariable).append(typeToOllir);
                         nextTempVariable++;
                     }
@@ -316,13 +297,13 @@ public class Ollir {
         stringBuilder.append(")").append(OllirCodeUtils.typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute)));
         stringBuilder.append(";\n");
 
-        before.append(stringBuilder);
+        //before.append(stringBuilder);
 
-        return "";
+        return stringBuilder.toString();
     }
 
     private String newToOllir(JmmNode node, String prefix, StringBuilder parentBuilder) {
-        StringBuilder stringBuilder = new StringBuilder(prefix);
+        StringBuilder stringBuilder = new StringBuilder();
 
         stringBuilder.append("new(").append(node.get(Constants.typeAttribute)).append(")");
         stringBuilder.append(OllirCodeUtils.typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute)));
