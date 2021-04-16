@@ -38,6 +38,9 @@ public class Constants {
 
 
     // Types
+    public static final boolean isPrimitiveType(String type) {
+        return type.equals("int") || type.equals("boolean") || type.equals("intArray");
+    }
     public static final String identifierAttribute = "identifier";
     public static final String intArrayType = "intArray";
     public static final String intType = "int";
