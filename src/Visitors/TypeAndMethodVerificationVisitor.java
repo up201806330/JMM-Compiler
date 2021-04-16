@@ -24,6 +24,7 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
         addVisit(Constants.whileConditionNodeName, this::dealWithCondition);
         addVisit(Constants.callExprNodeName, this::dealWithCallExpr);
         addVisit(Constants.returnNodeName, this::dealWithReturn);
+        addVisit(Constants.propertyAccessNodeName, this::dealWithPropertyAccess);
         setDefaultVisit(TypeAndMethodVerificationVisitor::defaultVisit);
     }
 
@@ -262,7 +263,7 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
                         Integer.parseInt(node.get("line")),
                         Integer.parseInt(node.get("column")),
                         "Cannot resolve method '" + methodName +
-                                "' in class '" + symbolTable.className
+                                "' in class '" + symbolTable.className + "'"
                 ));
                 node.put(Constants.typeAttribute, Constants.error);
                 node.put(Constants.arrayAttribute, Constants.error);
@@ -341,6 +342,23 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
         return defaultVisit(node, reports);
     }
 
+    private Boolean dealWithPropertyAccess(JmmNode node, List<Report> reports){
+        var child = node.getChildren().get(0);
+        if (child.get(Constants.arrayAttribute).equals("false")){
+            reports.add(new Report(
+                    ReportType.ERROR,
+                    Stage.SEMANTIC,
+                    Integer.parseInt(node.get("line")),
+                    Integer.parseInt(node.get("column")),
+                    "Cannot access property of type '" + child.get(Constants.typeAttribute) + "'"
+            ));
+            node.put(Constants.typeAttribute, Constants.error);
+            node.put(Constants.arrayAttribute, Constants.error);
+        }
+
+        return defaultVisit(node, reports);
+    }
+
     /**
      * Checks if array size given in instantiation is int (e.g. new int[true] not allowed)
      * @param node Binary node to get children from
@@ -350,12 +368,15 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
     private boolean checkArrayDeclSizeIsInt(JmmNode node, List<Report> reports) {
         var rightOperand = node.getChildren().get(1);
         if (rightOperand.getKind().equals(Constants.newNodeName) &&
-                rightOperand.get(Constants.typeAttribute).equals(Constants.intArrayType)) {
+                rightOperand.get(Constants.typeAttribute).equals(Constants.intType) &&
+                rightOperand.get(Constants.arrayAttribute).equals("true")) {
 
             var child = rightOperand.getChildren().get(0);
-            if (!child.get(Constants.typeAttribute).equals(Constants.intType)) {
+            if (child.get(Constants.typeAttribute).equals(Constants.intType) &&
+                    child.get(Constants.arrayAttribute).equals("false")) return defaultVisit(node, reports);
+            else {
                 reports.add(new Report(
-                        ReportType.WARNING,
+                        ReportType.ERROR,
                         Stage.SEMANTIC,
                         Integer.parseInt(node.get(Constants.lineAttribute)),
                         Integer.parseInt(node.get(Constants.columnAttribute)),

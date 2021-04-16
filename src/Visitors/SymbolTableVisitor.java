@@ -2,6 +2,8 @@ import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
 import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.comp.jmm.report.ReportType;
+import pt.up.fe.comp.jmm.report.Stage;
 
 import java.util.*;
 
@@ -55,6 +57,7 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
         var parentFunction = node.getAncestor(Constants.methodDeclNodeName);
         List<String> attributes = new ArrayList<>(); attributes.add(Constants.variableAttribute);
         if (parentFunction.isEmpty()) attributes.add(Constants.fieldAttribute);
+
         OurSymbol symbol = new OurSymbol(
                 node,
                 new HashSet<>(attributes),
@@ -65,14 +68,21 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
                 )
         );
 
+        if (!Constants.isPrimitiveType(node.get(Constants.typeAttribute)) &&             // Isn't primitive type
+                !symbolTable.getImports().contains(node.get(Constants.typeAttribute)) && // Or of a class that is included
+                !symbolTable.getClassName().equals(node.get(Constants.typeAttribute))) { // Or of this class
+
+            reports.add(new Report(
+                    ReportType.WARNING,
+                    Stage.SEMANTIC,
+                    symbol.getLine(),
+                    symbol.getColumn(),
+                    "Type '" + node.get(Constants.typeAttribute) + "' not found"
+            ));
+        }
+
+
         if (symbol.getScope().scope == OurScope.ScopeEnum.Error){
-//            reports.add(
-//                    new Report(
-//                            ReportType.WARNING,
-//                            Stage.SEMANTIC,
-//                            symbol.getLine(),
-//                            symbol.getColumn(),
-//                            "Variable '" + symbol.getName() + "' defined inside method with a lexical error"));
             return defaultVisit(node, reports);
         }
 
