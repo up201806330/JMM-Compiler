@@ -21,6 +21,8 @@ public class Constants {
     public static final String varDeclNodeName = "VarDeclaration";
     public static final String classInheritNodeName = "ClassInheritance";
     public static final String ifConditionNodeName = "IfCondition";
+    public static final String ifStatementNodeName = "IfStatement";
+    public static final String elseStatementNodeName = "Else";
     public static final String whileConditionNodeName = "WhileCondition";
     public static final String returnNodeName = "Return";
 

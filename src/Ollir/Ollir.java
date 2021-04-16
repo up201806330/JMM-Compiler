@@ -70,17 +70,10 @@ public class Ollir {
         methodParameters = new ArrayList<String>();
         nextTempVariable = 1;
 
-        StringBuilder constructorMethod = new StringBuilder();
-        if (node.get(Constants.nameAttribute).equals(className)) {
-            stringBuilder.append(".constructor");
-            constructorMethod.append("invokespecial(this, \"<init>\").V;\n");
-            explicitConstructor = true;
-        } else {
-            stringBuilder.append(".method public ");
-            Optional<String> staticAttribute = node.getOptional(Constants.staticAttribute);
-            if (staticAttribute.isPresent()) {
-                stringBuilder.append("static ");
-            }
+        stringBuilder.append(".method public ");
+        Optional<String> staticAttribute = node.getOptional(Constants.staticAttribute);
+        if (staticAttribute.isPresent()) {
+            stringBuilder.append("static ");
         }
         stringBuilder.append(node.get(Constants.nameAttribute)).append("(");
 
@@ -91,7 +84,6 @@ public class Ollir {
 
         StringBuilder insideMethod = new StringBuilder();
 
-        insideMethod.append(constructorMethod);
 
 
         for (var child: children) {
@@ -101,6 +93,9 @@ public class Ollir {
                 case Constants.assignmentNodeName -> insideMethod.append(assignmentToOllir(child, prefix + ident));
                 case Constants.callExprNodeName -> insideMethod.append(callExpressionToOllir(child, prefix + ident, insideMethod.append(prefix + ident)));
                 case Constants.returnNodeName -> insideMethod.append(returnToOllir(child, prefix + ident));
+                case Constants.varDeclNodeName -> {}
+                case Constants.ifStatementNodeName -> insideMethod.append(ifStatementToOllir(child, prefix + ident));
+                default -> System.out.println("methodDeclarationToOllir: " + child);
             }
         }
 
@@ -124,6 +119,62 @@ public class Ollir {
         stringBuilder.append(" {\n");
         stringBuilder.append(insideMethod);
         stringBuilder.append(prefix).append("}\n");
+
+        return stringBuilder.toString();
+    }
+
+    private String ifStatementToOllir(JmmNode node, String prefix) {
+        StringBuilder stringBuilder = new StringBuilder(prefix);
+
+        stringBuilder.append("if (");
+
+        var children = node.getChildren();
+        stringBuilder.append(ifConditionToOllir(children.get(0), ""));
+        stringBuilder.append(") goto else;\n");
+
+        var child = children.get(1);
+        int i = 2;
+        while (!child.getKind().equals(Constants.elseStatementNodeName)) {
+            switch (child.getKind()) {
+                case Constants.assignmentNodeName -> stringBuilder.append(assignmentToOllir(child, prefix + ident));
+                default -> System.out.println("ifStatementToOllir: " + child);
+            }
+            child = children.get(i);
+            i++;
+        }
+
+        stringBuilder.append(prefix).append("goto endif;\n");
+        stringBuilder.append(prefix).append("else:\n");
+
+        stringBuilder.append(elseStatementToOllir(children.get(2), prefix + ident));
+
+        stringBuilder.append(prefix).append("endif:\n");
+        return stringBuilder.toString();
+    }
+
+    private String elseStatementToOllir(JmmNode node, String prefix) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        var children = node.getChildren();
+        for (var child: children) {
+            switch (child.getKind()) {
+                case Constants.assignmentNodeName -> stringBuilder.append(assignmentToOllir(child, prefix));
+                default -> System.out.println("elseStatementToOllir: " + child);
+            }
+        }
+
+        return stringBuilder.toString();
+    }
+
+    private String ifConditionToOllir(JmmNode node, String prefix) {
+        StringBuilder stringBuilder = new StringBuilder(prefix);
+        StringBuilder before = new StringBuilder();
+
+        var child = node.getChildren().get(0);
+        switch (child.getKind()) {
+            case Constants.binaryNodeName -> stringBuilder.append(binaryToOllir(child, "", before));
+            default -> System.out.println("ifConditionToOllir: " + child);
+        }
 
         return stringBuilder.toString();
     }
@@ -154,39 +205,24 @@ public class Ollir {
         var child = children.get(0);
 
         switch (child.getKind()) {
-            case Constants.terminalNodeName:
-                left.append(terminalToOllir(child, "")).append(" ");
-                break;
-            default:
-                System.out.println(child);
-                System.out.println("Not yet implemented");
-                break;
+            case Constants.terminalNodeName -> left.append(terminalToOllir(child, "")).append(" ");
+            default -> System.out.println("assignementToOllir: " + child);
         }
 
         child = children.get(1);
         switch (child.getKind()) {
-            case Constants.terminalNodeName:
-                right.append(terminalToOllir(child, ""));
-                break;
-            case Constants.literalNodeName:
-                right.append(literalToOllir(child, ""));
-                break;
-            case Constants.newNodeName:
-                right.append(newToOllir(child, "", before));
-                break;
-            case Constants.binaryNodeName:
-                right.append(binaryToOllir(child, "", before));
-                break;
-            case Constants.callExprNodeName:
+            case Constants.terminalNodeName -> right.append(terminalToOllir(child, ""));
+            case Constants.literalNodeName -> right.append(literalToOllir(child, ""));
+            case Constants.newNodeName -> right.append(newToOllir(child, "", before));
+            case Constants.binaryNodeName -> right.append(binaryToOllir(child, prefix, before));
+            case Constants.callExprNodeName -> {
                 before.append("t").append(nextTempVariable).append(typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute)));
                 before.append(" :=").append(typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute))).append(" ");
                 right.append(callExpressionToOllir(child, "", before));
                 right.append("t").append(String.valueOf(nextTempVariable)).append(typeToOllir(child.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute)));
-                break;
-            default:
-                System.out.println(child);
-                System.out.println("Not yet implemented");
-                break;
+                nextTempVariable++;
+            }
+            default -> System.out.println("assignementToOllir: " + child);
         }
 
         if (!before.toString().equals("")) {
@@ -194,93 +230,98 @@ public class Ollir {
             stringBuilder.append(before);
         }
         stringBuilder.append(left);
-        stringBuilder.append("=").append(typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute))).append(" ");
+        stringBuilder.append(":=").append(typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute))).append(" ");
         stringBuilder.append(right);
 
         return  stringBuilder.append(";\n").toString();
     }
 
     private String binaryToOllir(JmmNode node, String prefix, StringBuilder before) {
-        StringBuilder stringBuilder = new StringBuilder(prefix);
+        StringBuilder stringBuilder = new StringBuilder();
 
         var child0 = node.getChildren().get(0);
         var child1 = node.getChildren().get(1);
 
         switch (child0.getKind()) {
-            case Constants.terminalNodeName:
-                stringBuilder.append(terminalToOllir(child0, "")).append(" ");
-                break;
-            case Constants.literalNodeName:
-                stringBuilder.append(literalToOllir(child0, "")).append(" ");
-                break;
-            case Constants.binaryNodeName:
-                stringBuilder.append(binaryToOllir(child0, "", before)).append(" ");
-                break;
-            default:
-                System.out.println(child0);
-                break;
+            case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(child0, "")).append(" ");
+            case Constants.literalNodeName -> stringBuilder.append(literalToOllir(child0, "")).append(" ");
+            case Constants.binaryNodeName -> stringBuilder.append(binaryToOllir(child0, "", before)).append(" ");
+            default -> System.out.println("binaryToOllir: " + child0);
         }
 
         stringBuilder.append(node.get(Constants.valueAttribute)).append(typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute))).append(" ");
 
 
         switch (child1.getKind()) {
-            case Constants.terminalNodeName :
-                stringBuilder.append(terminalToOllir(child1, "")).append(" ");
-                break;
-            case Constants.literalNodeName:
-                stringBuilder.append(literalToOllir(child1, "")).append(" ");
-                break;
-            case Constants.binaryNodeName:
-                stringBuilder.append(binaryToOllir(child1, "", before)).append(" ");
-                break;
-            case Constants.callExprNodeName:
+            case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(child1, "")).append(" ");
+            case Constants.literalNodeName -> stringBuilder.append(literalToOllir(child1, "")).append(" ");
+            case Constants.binaryNodeName -> stringBuilder.append(binaryToOllir(child1, "", before)).append(" ");
+            case Constants.callExprNodeName -> {
                 before.append("t").append(nextTempVariable).append(typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute)));
                 before.append(" :=").append(typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute))).append(" ");
                 stringBuilder.append(callExpressionToOllir(child1, "", before));
                 stringBuilder.append("t").append(String.valueOf(nextTempVariable)).append(typeToOllir(child1.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute)));
-                break;
-            default:
-                System.out.println(child1);
-                break;
+                nextTempVariable++;
+            }
+            default -> System.out.println("binaryToOllir: " + child1);
         }
 
         return stringBuilder.toString();
     }
 
     private String callExpressionToOllir(JmmNode node, String prefix, StringBuilder before) {
-        StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder stringBuilder = new StringBuilder(prefix);
 
         var children = node.getChildren();
         String type = typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute));
 
         if (imports.contains(children.get(0).get(Constants.typeAttribute))) {
-            before.append("invokestatic(");
-            before.append(children.get(0).get(Constants.typeAttribute));
+            stringBuilder.append("invokestatic(");
+            stringBuilder.append(children.get(0).get(Constants.typeAttribute));
         } else {
-            before.append("invokevirtual(");
+            stringBuilder.append("invokevirtual(");
             if (children.get(0).get(Constants.valueAttribute).equals(Constants.thisAttribute)) {
-                before.append("this");
+                stringBuilder.append("this");
             } else {
-                before.append(children.get(0).get(Constants.valueAttribute));
-                before.append(typeToOllir(children.get(0).get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute)));
+                stringBuilder.append(children.get(0).get(Constants.valueAttribute));
+                stringBuilder.append(typeToOllir(children.get(0).get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute)));
             }
         }
 
-        before.append(", \"").append(node.get(Constants.nameAttribute)).append("\"");
+        stringBuilder.append(", \"").append(node.get(Constants.nameAttribute)).append("\"");
 
         if (children.size() > 1) {
             var args = children.get(1).getChildren();
-            for (int i = 0; i < args.size(); i++) {
-                before.append(", ");
-                before.append(args.get(i).get(Constants.valueAttribute)).append(typeToOllir(args.get(i).get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute)));
+            for (var arg : args) {
+                stringBuilder.append(", ");
+                switch (arg.getKind()) {
+                    case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(arg, ""));
+                    case Constants.callExprNodeName -> {
+                        before.append("t").append(nextTempVariable).append(typeToOllir(arg.get(Constants.typeAttribute), arg.getOptional(Constants.arrayAttribute)));
+                        before.append(" :=").append(typeToOllir(arg.get(Constants.typeAttribute), arg.getOptional(Constants.arrayAttribute))).append(" ");
+                        stringBuilder.append(callExpressionToOllir(arg, "", before));
+                        stringBuilder.append("t").append(nextTempVariable).append(typeToOllir(arg.get(Constants.typeAttribute), arg.getOptional(Constants.arrayAttribute)));
+                        nextTempVariable++;
+                    }
+                    case Constants.literalNodeName -> stringBuilder.append(literalToOllir(arg, ""));
+                    case Constants.binaryNodeName -> {
+                        before.append(binaryToOllir(arg, "", before)).append(";\n");
+                        stringBuilder.append("t").append(nextTempVariable).append(typeToOllir(arg.get(Constants.typeAttribute), arg.getOptional(Constants.arrayAttribute)));
+                        nextTempVariable++;
+                        before.append(prefix).append("t").append(nextTempVariable).append(typeToOllir(arg.get(Constants.typeAttribute), arg.getOptional(Constants.arrayAttribute)));
+                        before.append(" :=").append(typeToOllir(arg.get(Constants.typeAttribute), arg.getOptional(Constants.arrayAttribute))).append(" ");
+                    }
+                    default -> System.out.println("callExpressionToOllir: " + arg);
+                }
             }
         }
 
-        before.append(")").append(typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute)));
-        before.append(";\n");
+        stringBuilder.append(")").append(typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute)));
+        stringBuilder.append(";\n");
 
-        return stringBuilder.toString();
+        before.append(stringBuilder);
+
+        return "";
     }
 
     private String newToOllir(JmmNode node, String prefix, StringBuilder parentBuilder) {
@@ -298,6 +339,7 @@ public class Ollir {
         String type = node.get(Constants.typeAttribute);
         switch (type) {
             case Constants.intType -> stringBuilder.append(node.get(Constants.valueAttribute)).append(typeToOllir(type, node.getOptional(Constants.arrayAttribute)));
+            default -> System.out.println(type);
         }
 
         return stringBuilder.toString();
@@ -336,17 +378,12 @@ public class Ollir {
         StringBuilder stringBuilder = new StringBuilder();
         if (array)
             stringBuilder.append(".array");
-        switch (type) {
-            case "int":
-                return stringBuilder.append(".i32").toString();
-            case "boolean":
-                return stringBuilder.append(".bool").toString();
-            case "void":
-            case "auto":
-                return stringBuilder.append(".V").toString();
-            default:
-                return stringBuilder.append(".").append(type).toString();
-        }
+        return switch (type) {
+            case "int" -> stringBuilder.append(".i32").toString();
+            case "boolean" -> stringBuilder.append(".bool").toString();
+            case "void", "auto" -> stringBuilder.append(".V").toString();
+            default -> stringBuilder.append(".").append(type).toString();
+        };
     }
 
 
