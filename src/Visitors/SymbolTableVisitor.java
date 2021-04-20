@@ -42,14 +42,24 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
     }
 
     public Boolean dealWithImportDecl(JmmNode node, List<Report> reports){
-        OurSymbol symbol = new OurSymbol(
-                node,
-                new HashSet<>(Arrays.asList(Constants.importAttribute, Constants.classAttribute)),
-                new OurScope()
-        );
+        OurSymbol symbol;
+        if (node.getChildren().size() != 0){
+                symbol = new OurSymbol(
+                        node.getChildren().get(node.getNumChildren() - 1),
+                        new HashSet<>(Arrays.asList(Constants.importAttribute, Constants.classAttribute)),
+                        new OurScope()
+                );
+        }
+        else {
+            symbol = new OurSymbol(
+                    node,
+                    new HashSet<>(Arrays.asList(Constants.importAttribute, Constants.classAttribute)),
+                    new OurScope()
+            );
+        }
+
         Optional<Report> insertionError = symbolTable.put(symbol, node);
         insertionError.ifPresent(reports::add);
-
         return defaultVisit(node, reports);
     }
 

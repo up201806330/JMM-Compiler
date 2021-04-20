@@ -151,7 +151,7 @@ void ImportDeclaration(): { Token t_name; } {
 }
 
 void ImportDeclarationPackage(): { Token t_name; } {
-    <Dot> t_name = <Identifier> { jjtThis.put("name", t_name.image); }
+    <Dot> t_name = <Identifier> { jjtThis.put("name", t_name.image); jjtThis.put("type", t_name.image); }
 }
 
 void ClassDeclaration(): { Token t_name; } {
