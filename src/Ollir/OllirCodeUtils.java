@@ -1,3 +1,6 @@
+import pt.up.fe.comp.jmm.JmmNode;
+
+import java.util.List;
 import java.util.Optional;
 
 public class OllirCodeUtils {
@@ -20,5 +23,35 @@ public class OllirCodeUtils {
             case "void", "auto" -> stringBuilder.append(".V").toString();
             default -> stringBuilder.append(".").append(type).toString();
         };
+    }
+
+    public static String parametersToOllir(List<JmmNode> parameters, String prefix, String functionName) {
+        StringBuilder paramsOllir = new StringBuilder(prefix);
+
+        if (parameters.size() > 0) {
+            for (int i = 0; i < parameters.size(); i++) {
+                paramsOllir.append(methodParameterToOllir(parameters.get(i), ""));
+                if (i != parameters.size() - 1) {
+                    paramsOllir.append(", ");
+                }
+            }
+        } else if (functionName.equals(Constants.mainMethod)){
+            paramsOllir.append("args.array.String");
+        }
+
+        return paramsOllir.toString();
+    }
+
+    public static String methodParameterToOllir(JmmNode node, String prefix) {
+        StringBuilder stringBuilder = new StringBuilder(prefix);
+
+        stringBuilder.append(node.get(Constants.nameAttribute));
+
+        Optional<String> type = node.getOptional(Constants.typeAttribute);
+        Optional<String> isArray = node.getOptional(Constants.arrayAttribute);
+
+        if (type.isPresent() && isArray.isPresent()) stringBuilder.append(OllirCodeUtils.typeToOllir(type.get(), isArray));
+
+        return stringBuilder.toString();
     }
 }

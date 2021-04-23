@@ -18,6 +18,7 @@ public class Constants {
     public static final String methodDeclNodeName = "MethodDeclaration";
     public static final String classDeclNodeName = "ClassDeclaration";
     public static final String importDeclNodeName = "ImportDeclaration";
+    public static final String fieldDeclNodeName = "Field";
     public static final String varDeclNodeName = "VarDeclaration";
     public static final String classInheritNodeName = "ClassInheritance";
     public static final String ifConditionNodeName = "IfCondition";
