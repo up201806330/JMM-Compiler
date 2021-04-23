@@ -24,6 +24,7 @@ public class Constants {
     public static final String ifConditionNodeName = "IfCondition";
     public static final String ifStatementNodeName = "IfStatement";
     public static final String elseStatementNodeName = "Else";
+    public static final String whileStatementNodeName = "WhileStatement";
     public static final String whileConditionNodeName = "WhileCondition";
     public static final String returnNodeName = "Return";
 
@@ -49,6 +50,7 @@ public class Constants {
     public static final String voidType = "void";
     public static final String autoType = "auto"; // Special type that is assigned to method calls where type is assumed to be correct
     public static final String mainMethod = "main";
+    public static final String lengthProperty = "length";
 
     public static final String andExpression = "&&";
     public static final String lessThanExpression = "<";
