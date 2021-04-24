@@ -219,6 +219,8 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
             node.put(Constants.arrayAttribute, Constants.error);
         }
 
+        node.put(Constants.typeAttribute, Constants.booleanType);
+        node.put(Constants.arrayAttribute, "false");
         return defaultVisit(node, reports);
     }
 
