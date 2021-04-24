@@ -5,10 +5,10 @@
 class T {
     public static void main(String[] a) { 
         int i;
-        int[] a;
-        a = new int[10];
+        int[] x;
+        x = new int[10];
         i = 0.length; // error
         i = true.length; // error
-        i = a.length;
+        i = x.length;
     }
 }

@@ -45,7 +45,9 @@ public class Constants {
     }
     public static final String identifierAttribute = "identifier";
     public static final String intArrayType = "intArray";
+    public static final String stringArrayType = "StringArray";
     public static final String intType = "int";
+    public static final String stringType = "String";
     public static final String booleanType = "boolean";
     public static final String voidType = "void";
     public static final String autoType = "auto"; // Special type that is assigned to method calls where type is assumed to be correct

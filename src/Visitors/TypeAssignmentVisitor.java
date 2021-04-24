@@ -22,6 +22,10 @@ public class TypeAssignmentVisitor extends PostorderJmmVisitor<List<Report>, Boo
             node.put(Constants.arrayAttribute, "true");
             node.put(Constants.typeAttribute, Constants.intType);
         }
+        else if (node.get(Constants.typeAttribute).equals(Constants.stringArrayType)) {
+            node.put(Constants.arrayAttribute, "true");
+            node.put(Constants.typeAttribute, Constants.stringType);
+        }
         else
             node.put(Constants.arrayAttribute, "false");
     }

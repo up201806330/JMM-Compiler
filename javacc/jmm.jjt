@@ -182,8 +182,10 @@ void MethodDeclaration(): { Token t_name; } {
         Return()
     <CloseBlock>
     |
-    <Static> <Void> t_name = <Main> { jjtThis.put("name", t_name.image); jjtThis.put("static", "true"); } <OpenParenthesis> <TypeString> <OpenArray> <CloseArray>
-    <Identifier> <CloseParenthesis> <OpenBlock>
+    <Static> <Void> t_name = <Main> { jjtThis.put("name", t_name.image); jjtThis.put("static", "true"); } <OpenParenthesis>
+        MainParameter()
+    <CloseParenthesis>
+    <OpenBlock>
         (LOOKAHEAD(2) VarDeclaration() | Statement())* // Allowed for now
     <CloseBlock>
     )
@@ -195,6 +197,10 @@ void Parameters() #void: {} {
 
 void Parameter(): { Token t_name; } {
     Type() t_name = <Identifier> { jjtThis.put("name", t_name.image); }
+}
+
+void MainParameter() #Parameter: { Token t_name; } {
+    (<TypeString> <OpenArray> <CloseArray> { jjtThis.put("type", "StringArray"); }) #Type t_name = <Identifier> { jjtThis.put("name", t_name.image); }
 }
 
 void Type(): { Token t_type; } {
