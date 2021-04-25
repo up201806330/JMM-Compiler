@@ -317,7 +317,10 @@ public class Ollir {
             default -> System.out.println("binaryToOllir: " + child0);
         }
 
-        stringBuilder.append(node.get(Constants.valueAttribute));
+        stringBuilder.append(
+                node.get(Constants.valueAttribute).equals(Constants.lessThanExpression) ?
+                        ">=" :
+                        node.get(Constants.valueAttribute));
         stringBuilder.append(OllirCodeUtils.typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute))).append(" ");
 
 
