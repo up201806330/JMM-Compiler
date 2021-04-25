@@ -119,6 +119,10 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
 
         var leftVarType = childrenTypesOpt.get().get(0);
 
+
+        if (leftVarType.getName().equals(Constants.error))
+            return defaultVisit(node ,reports);
+
         if (!leftVarType.isArray()) {
             reports.add(new Report(
                     ReportType.ERROR,
@@ -130,6 +134,9 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
         };
 
         var rightVarType = childrenTypesOpt.get().get(1);
+
+        if (rightVarType.getName().equals(Constants.error))
+            return defaultVisit(node ,reports);
 
         if (!rightVarType.getName().equals(Constants.intType)) {
             reports.add(new Report(

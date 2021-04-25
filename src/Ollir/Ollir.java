@@ -230,7 +230,7 @@ public class Ollir {
             stringBuilder.append("ret.V");
         } else {
             var child = node.getChildren().get(0);
-            String type = OllirCodeUtils.typeToOllir(child.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute));
+            String type = OllirCodeUtils.typeToOllir(child.get(Constants.typeAttribute), child.getOptional(Constants.arrayAttribute));
             stringBuilder.append("ret").append(type).append(" ");
             stringBuilder.append(child.get(Constants.valueAttribute)).append(type);
         }
