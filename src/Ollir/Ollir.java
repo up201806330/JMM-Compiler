@@ -428,7 +428,8 @@ public class Ollir {
     private String newToOllir(JmmNode node, String prefix, StringBuilder parentBuilder) {
         StringBuilder stringBuilder = new StringBuilder();
 
-        stringBuilder.append("new(").append(node.get(Constants.typeAttribute));
+        var isArray = node.getOptional(Constants.arrayAttribute);
+        stringBuilder.append("new(").append(isArray.isPresent() && isArray.get().equals("true") ? "array" : node.get(Constants.typeAttribute));
 
         var children = node.getChildren();
         if (children.size() > 0) {
