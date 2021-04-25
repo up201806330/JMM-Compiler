@@ -258,7 +258,12 @@ public class Ollir {
         switch (child.getKind()) {
             case Constants.terminalNodeName -> right.append(terminalToOllir(child, "")).append(";\n");
             case Constants.literalNodeName -> right.append(literalToOllir(child, "")).append(";\n");
-            case Constants.newNodeName -> right.append(newToOllir(child, prefix, before)).append(";\n").append(prefix).append("invokespecial(").append(left).append(", \"<init>\").V;\n");
+            case Constants.newNodeName -> {
+                right.append(newToOllir(child, prefix, before)).append(";\n");
+                var isArray = child.getOptional(Constants.arrayAttribute);
+                if (isArray.isEmpty() || isArray.get().equals("false"))
+                    right.append(prefix).append("invokespecial(").append(left).append(", \"<init>\").V;\n");
+            }
             case Constants.binaryNodeName -> right.append(binaryToOllir(child, prefix, before)).append(";\n");
             case Constants.callExprNodeName -> right.append(callExpressionToOllir(child, prefix, before));
             case Constants.arrayExprNodeName -> right.append(arrayExpressionToOllir(child, "")).append(";\n");
