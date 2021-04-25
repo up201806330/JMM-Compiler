@@ -41,6 +41,7 @@ sourceSets {
       java {
           srcDir 'src'
           srcDir 'src/Ollir'
+          srcDir 'src/Jasmin'
           srcDir 'src/Stages'
           srcDir 'src/SymbolTable'
           srcDir 'src/Visitors'

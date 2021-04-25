@@ -48,14 +48,9 @@ public class AnalysisStage implements JmmAnalysis {
         var typeVerificationVisitor = new TypeAndMethodVerificationVisitor(symbolTable);
         typeVerificationVisitor.visit(node, reports);
 
-        //System.out.println("Dump tree with Visitor where you control tree traversal");
+        //System.out.println("Dump tree after semantic verifications");
         var anotherVisitor = new OurVisitor();
-        //System.out.println(anotherVisitor.visit(node, ""));
-
-//         System.out.println(
-//                 "Print variables name and line, and their corresponding parent with Visitor that automatically performs preorder tree traversal");
-//         var varPrinter = new ExamplePrintVariables("Variable", "name", "line");
-//         varPrinter.visit(node, null);
+        System.out.println(anotherVisitor.visit(node, ""));
 
         return new JmmSemanticsResult(parserResult, symbolTable, reports);
 

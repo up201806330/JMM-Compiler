@@ -242,14 +242,14 @@ public class Ollir {
 
         var children = node.getChildren();
 
-        StringBuilder left = new StringBuilder(prefix);
+        StringBuilder left = new StringBuilder();
         StringBuilder right = new StringBuilder();
         StringBuilder before = new StringBuilder(prefix);
 
         var child = children.get(0);
 
         switch (child.getKind()) {
-            case Constants.terminalNodeName -> left.append(terminalToOllir(child, "")).append(" ");
+            case Constants.terminalNodeName -> left.append(terminalToOllir(child, ""));
             case Constants.arrayExprNodeName -> left.append(arrayExpressionToOllir(child, "")).append(" ");
             default -> System.out.println("assignementToOllir: " + child);
         }
@@ -258,7 +258,7 @@ public class Ollir {
         switch (child.getKind()) {
             case Constants.terminalNodeName -> right.append(terminalToOllir(child, "")).append(";\n");
             case Constants.literalNodeName -> right.append(literalToOllir(child, "")).append(";\n");
-            case Constants.newNodeName -> right.append(newToOllir(child, prefix, before)).append(";\n");
+            case Constants.newNodeName -> right.append(newToOllir(child, prefix, before)).append(";\n").append(prefix).append("invokespecial(").append(left).append(", \"<init>\").V;\n");
             case Constants.binaryNodeName -> right.append(binaryToOllir(child, prefix, before)).append(";\n");
             case Constants.callExprNodeName -> right.append(callExpressionToOllir(child, prefix, before));
             case Constants.arrayExprNodeName -> right.append(arrayExpressionToOllir(child, "")).append(";\n");
@@ -268,7 +268,7 @@ public class Ollir {
         if (!before.toString().equals(prefix)) {
             stringBuilder.append(before);
         }
-        stringBuilder.append(left);
+        stringBuilder.append(prefix).append(left).append(" ");
         stringBuilder.append(":=").append(OllirCodeUtils.typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute))).append(" ");
         stringBuilder.append(right);
 
