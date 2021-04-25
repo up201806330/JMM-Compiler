@@ -64,4 +64,5 @@ public class Constants {
     public static final String parameterAttribute = "parameter";
     public static final String fieldAttribute = "field";
     public static final String classAttribute = "class";
+    public static final String superAttribute = "super";
 }

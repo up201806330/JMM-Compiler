@@ -314,7 +314,7 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
             }
         }
         else { // If method isn't called in this context or own class context
-            if (symbolTable.getImports().contains(targetClass)){ // If calling context is an imported class, assume method is defined there and assume type is correct
+            if (symbolTable.getImports().contains(targetClass) || symbolTable.superName.equals(targetClass)){ // If calling context is an imported class or the super class, assume method is defined there and assume type is correct
                 node.put(Constants.typeAttribute, Constants.autoType);
                 node.put(Constants.arrayAttribute, "false");
             }
@@ -343,7 +343,7 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
         if (parentOpt.isEmpty()){
             System.out.println("Return has no method. How??");
         }
-        else if (returningType.equals(Constants.autoType)){
+        else if (returningType.equals(Constants.autoType) || returningType.equals(Constants.error)){
             return defaultVisit(node, reports);
         }
         else if (!returningType.equals(parentOpt.get().get("type"))){

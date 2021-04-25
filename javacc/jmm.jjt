@@ -163,7 +163,7 @@ void ClassDeclaration(): { Token t_name; } {
 }
 
 void ClassInheritance(): { Token t_type; } {
-    <Extends> t_type = <Identifier> { jjtThis.put("type", t_type.image); }
+    <Extends> t_type = <Identifier> { jjtThis.put("type", t_type.image); jjtThis.put("name", t_type.image); }
 }
 
 void VarDeclaration(): { Token t_name; } {

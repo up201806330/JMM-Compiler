@@ -37,6 +37,14 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
     }
 
     private Boolean dealWithClassInheritance(JmmNode node, List<Report> reports){
+        OurSymbol symbol = new OurSymbol(
+                node,
+                new HashSet<>(Arrays.asList(Constants.superAttribute, Constants.classAttribute)),
+                new OurScope()
+        );
+        Optional<Report> insertionError = symbolTable.put(symbol, node);
+        insertionError.ifPresent(reports::add);
+
         symbolTable.superName = node.get(Constants.typeAttribute);
         return defaultVisit(node, reports);
     }
