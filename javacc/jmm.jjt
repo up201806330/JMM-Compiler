@@ -303,6 +303,6 @@ void New() : { Token t_type; } {
     <New>
     (
     ( <TypeInt> <OpenArray> Expression() <CloseArray>  { jjtThis.put("type", "intArray"); })
-    | ( t_type = <Identifier> { jjtThis.put("type", t_type.image); } <OpenParenthesis> <CloseParenthesis> )
+    | ( t_type = <Identifier> { jjtThis.put("type", t_type.image); jjtThis.put("value", t_type.image); } <OpenParenthesis> <CloseParenthesis> )
     )
 }

@@ -282,8 +282,9 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
                 node.put(Constants.typeAttribute, Constants.error);
                 node.put(Constants.arrayAttribute, Constants.error);
             }
-            else if (target.get(Constants.valueAttribute).equals(symbolTable.className) &&         // If method was called on this class' static context
-                    (methodSymbolOpt.isPresent() && !methodSymbolOpt.get().isStatic())){ // but function isn't static (e.g. public void Foo(); ThisClass.Foo() )
+            else if (target.get(Constants.valueAttribute).equals(symbolTable.className) && // If method was called on this class' static context
+                    (methodSymbolOpt.isPresent() && !methodSymbolOpt.get().isStatic()) &&  // but function isn't static (e.g. public void Foo(); ThisClass.Foo() )
+                    (!target.getKind().equals(Constants.newNodeName))){                    // or a new object (e.g. new ThisClass().Foo(); )
 
                 reports.add(new Report(
                         ReportType.WARNING,
@@ -334,14 +335,18 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
     }
 
     private Boolean dealWithReturn(JmmNode node, List<Report> reports) {
-        var returnType = node.getChildren().size() > 0 ?
+        var returningType = node.getChildren().size() > 0 ?
                 node.getChildren().get(0).getOptional(Constants.typeAttribute).orElse(Constants.voidType) : Constants.voidType;
 
         var parentOpt = node.getAncestor(Constants.methodDeclNodeName);
+
         if (parentOpt.isEmpty()){
             System.out.println("Return has no method. How??");
         }
-        else if (!returnType.equals(parentOpt.get().get("type"))){
+        else if (returningType.equals(Constants.autoType)){
+            return defaultVisit(node, reports);
+        }
+        else if (!returningType.equals(parentOpt.get().get("type"))){
             reports.add(new Report(
                     ReportType.WARNING,
                     Stage.SEMANTIC,
@@ -349,7 +354,7 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
                     Integer.parseInt(node.get(Constants.columnAttribute)),
                     "Return type mismatch; Required '" +
                             parentOpt.get().get("type") + "' but got '" +
-                            returnType + "'"
+                            returningType + "'"
             ));
         }
 
