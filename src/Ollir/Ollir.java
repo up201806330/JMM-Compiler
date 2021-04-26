@@ -93,7 +93,10 @@ public class Ollir {
                 case Constants.callExprNodeName -> insideMethod.append(callExpressionToOllir(child, prefix + ident, insideMethod, true)).append(";\n");
                 case Constants.returnNodeName -> insideMethod.append(returnToOllir(child, prefix + ident));
                 case Constants.varDeclNodeName -> {}
-                case Constants.ifStatementNodeName -> insideMethod.append(ifStatementToOllir(child, prefix + ident));
+                case Constants.ifStatementNodeName -> {
+                    insideMethod.append(ifStatementToOllir(child, prefix + ident));
+                    prefix += ident;
+                }
                 case Constants.whileStatementNodeName -> insideMethod.append("\n").append(whileStatementToOllir(child, prefix + ident));
                 default -> System.out.println("methodDeclarationToOllir: " + child);
             }
@@ -134,7 +137,10 @@ public class Ollir {
         for (var child: node.getChildren()) {
             switch (child.getKind()) {
                 case Constants.assignmentNodeName -> stringBuilder.append(assignmentToOllir(child, prefix + ident));
-                case Constants.ifStatementNodeName -> stringBuilder.append(ifStatementToOllir(child, prefix + ident));
+                case Constants.ifStatementNodeName -> {
+                    stringBuilder.append(ifStatementToOllir(child, prefix + ident));
+                    prefix += ident;
+                }
                 case Constants.callExprNodeName -> stringBuilder.append(callExpressionToOllir(child, prefix + ident, before, false));
                 default -> System.out.println("whileBodyToOllir: " + child);
             }
@@ -232,7 +238,7 @@ public class Ollir {
             var child = node.getChildren().get(0);
             String type = OllirCodeUtils.typeToOllir(child.get(Constants.typeAttribute), child.getOptional(Constants.arrayAttribute));
             stringBuilder.append("ret").append(type).append(" ");
-            stringBuilder.append(child.getOptional(Constants.valueAttribute)).append(type);
+            stringBuilder.append(child.getOptional(Constants.valueAttribute).orElse("")).append(type);
         }
         return stringBuilder.append(";\n").toString();
     }
