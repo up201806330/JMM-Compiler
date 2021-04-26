@@ -1,6 +1,6 @@
 class NestedLoop extends Loop{
 	public static void main(String[] args) {
         int a;
-        a = 1 * 3 - 4 / 5;
+        a = 1 * 3 - 4 / 5 * (2-5);
 	}
 }
