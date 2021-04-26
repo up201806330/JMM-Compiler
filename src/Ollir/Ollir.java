@@ -6,8 +6,8 @@ import java.util.Optional;
 
 public class Ollir {
     private final String ident = "  ";
-    private List<String> methodParameters = new ArrayList<String>();    // All the parameters of the current function
-    private List<String> imports = new ArrayList<String>();
+    private List<String> methodParameters = new ArrayList<>(); // All the parameters of the current function
+    private List<String> imports = new ArrayList<>();
     int nextTempVariable = 1;
     public String getCode(JmmNode root) {
         StringBuilder stringBuilder = new StringBuilder();
@@ -330,8 +330,9 @@ public class Ollir {
         }
 
         stringBuilder.append(node.get(Constants.valueAttribute));
-        stringBuilder.append(OllirCodeUtils.typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute))).append(" ");
-
+        stringBuilder.append(node.get(Constants.valueAttribute).equals(Constants.lessThanExpression) ? // Hardcoded because at this point, all operations' types have been checked
+                OllirCodeUtils.typeToOllir(Constants.intType, Optional.empty()) :
+                OllirCodeUtils.typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute))).append(" ");
 
         switch (child1.getKind()) {
             case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(child1, ""));
