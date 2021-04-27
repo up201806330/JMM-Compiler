@@ -1,5 +1,6 @@
 import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.analysis.table.Type;
+import pt.up.fe.comp.jmm.ast.JmmNodeImpl;
 import pt.up.fe.comp.jmm.ast.PostorderJmmVisitor;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.ReportType;
@@ -7,6 +8,7 @@ import pt.up.fe.comp.jmm.report.Stage;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<Report>, Boolean> {
 
@@ -25,6 +27,7 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
         addVisit(Constants.callExprNodeName, this::dealWithCallExpr);
         addVisit(Constants.returnNodeName, this::dealWithReturn);
         addVisit(Constants.propertyAccessNodeName, this::dealWithPropertyAccess);
+        addVisit(Constants.methodDeclNodeName, this::dealWithMethDecl);
         setDefaultVisit(TypeAndMethodVerificationVisitor::defaultVisit);
     }
 
@@ -378,6 +381,19 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
         return defaultVisit(node, reports);
     }
 
+    private Boolean dealWithMethDecl(JmmNode node, List<Report> reports) {
+        // Ensures void methods have a return ; present
+        AtomicBoolean hasReturn = new AtomicBoolean(false);
+        node.getChildren().forEach(child -> {
+            if (child.getKind().equals(Constants.returnNodeName)) hasReturn.set(true);
+        });
+
+        if (!hasReturn.get()){
+            node.add(new JmmNodeImpl(Constants.returnNodeName), node.getNumChildren());
+        }
+
+        return defaultVisit(node, reports);
+    }
     /**
      * Checks if array size given in instantiation is int (e.g. new int[true] not allowed)
      * @param node Binary node to get children from

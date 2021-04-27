@@ -35,7 +35,7 @@ public class OptimizationStage implements JmmOptimization {
         // More reports from this stage
         System.out.println(ollirCode);
 
-        return null; // new OllirResult(semanticsResult, ollirCode, reports);
+        return new OllirResult(semanticsResult, ollirCode, reports);
     }
 
     @Override

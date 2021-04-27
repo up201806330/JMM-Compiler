@@ -64,5 +64,4 @@ public class Main implements JmmParser {
 			if (reports.size() > 10) System.out.println("Aditional errors hidden");
 		}
 	}
-
 }
