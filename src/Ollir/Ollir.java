@@ -127,7 +127,7 @@ public class Ollir {
         var children = node.getChildren();
         // nextTempVariable = 1; // We need a better way of doing this
 
-        stringBuilder.append(prefix + ident).append("goto Test;\n");
+        stringBuilder.append("goto Test;\n");
         stringBuilder.append(prefix).append("Loop:\n");
         stringBuilder.append(whileBodyToOllir(children.get(1), prefix + ident));
         stringBuilder.append(prefix).append("Test:\n");
@@ -147,7 +147,7 @@ public class Ollir {
                     stringBuilder.append(ifStatementToOllir(child, prefix + ident));
                     prefix += ident;
                 }
-                case Constants.callExprNodeName -> stringBuilder.append(callExpressionToOllir(child, prefix + ident, before, false));
+                case Constants.callExprNodeName -> stringBuilder.append(prefix + ident).append(callExpressionToOllir(child, prefix + ident, before, false)).append(";\n");
                 default -> System.out.println("whileBodyToOllir: " + child);
             }
         }
