@@ -178,7 +178,6 @@ public class Ollir {
         StringBuilder before = new StringBuilder();
         StringBuilder ifStatement = new StringBuilder();
         StringBuilder elseStatement = new StringBuilder();
-        StringBuilder before = new StringBuilder();
 
         // Since an else is always necessary I changed if and else order to simplify code.
 
@@ -251,7 +250,9 @@ public class Ollir {
             switch (child.getKind()) {
                 case Constants.literalNodeName -> stringBuilder.append(literalToOllir(child, ""));
                 case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(child, ""));
-                case Constants.callExprNodeName -> stringBuilder.append(callExpressionToOllir(child, prefix, before, false));
+                case Constants.callExprNodeName, Constants.propertyAccessNodeName,
+                        Constants.binaryNodeName, Constants.arrayExprNodeName, Constants.newNodeName ->
+                        stringBuilder.append(makeLocalVar(child, prefix, before)).append(" ");
                 default -> System.out.println("returnToOllir: " + child);
             }
         }
