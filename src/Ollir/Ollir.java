@@ -20,6 +20,7 @@ public class Ollir {
             }
         }
 
+        System.out.println(stringBuilder);
         return stringBuilder.toString();
     }
 
@@ -27,15 +28,13 @@ public class Ollir {
         StringBuilder classOllir = new StringBuilder();
 
         classOllir.append(node.get(Constants.nameAttribute));
-//        if ()
-//            classOllir.append(" extends ").append();
 
         StringBuilder methodsOllir = new StringBuilder();
         StringBuilder fieldsOllir = new StringBuilder();
         for (var child: node.getChildren()) {
             switch (child.getKind()) {
                 case Constants.methodDeclNodeName -> methodsOllir.append("\n").append(methodDeclarationToOllir(child, prefix + ident));
-                case Constants.fieldDeclNodeName -> fieldsOllir.append("\n").append(fieldDeclarationToOllir(child, prefix + ident));
+                case Constants.fieldDeclNodeName -> fieldsOllir.append(fieldDeclarationToOllir(child, prefix + ident));
                 case Constants.classInheritNodeName -> classOllir.append(" extends ").append(child.get(Constants.typeAttribute));
                 default -> System.out.println("classDeclarationToOllir: " + child);
             }
@@ -62,7 +61,7 @@ public class Ollir {
             case Constants.varDeclNodeName -> {
                 fieldOllir.append(".field private ").append(child.get(Constants.nameAttribute));
                 fieldOllir.append(OllirCodeUtils.typeToOllir(child.get(Constants.typeAttribute), child.getOptional(Constants.arrayAttribute)));
-                fieldOllir.append("\n");
+                fieldOllir.append(";\n");
             }
             default -> System.out.println("fieldDeclarationToOllir: " + child);
         }
@@ -501,6 +500,11 @@ public class Ollir {
     private String terminalToOllir(JmmNode node, String prefix) {
         StringBuilder stringBuilder = new StringBuilder(prefix);
 
+        if (node.get(Constants.valueAttribute).equals(Constants.thisAttribute)){
+            stringBuilder.append("$0.").append(Constants.thisAttribute);
+            stringBuilder.append(OllirCodeUtils.typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute)));
+            return stringBuilder.toString();
+        }
         for (int i = 0; i < methodParameters.size(); i++) {
             if (methodParameters.get(i).equals(node.get(Constants.valueAttribute))) {
                 stringBuilder.append("$").append(i + 1).append(".");

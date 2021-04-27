@@ -1,7 +1,5 @@
 import org.specs.comp.ollir.*;
 
-import java.util.Locale;
-
 public class Jasmin {
     private final String ident = "  ";
 
@@ -21,16 +19,15 @@ public class Jasmin {
         if (!classUnit.getSuperClass().equals(""))
             stringBuilder.append(".super ").append(classUnit.getSuperClass()).append("\n\n");
 
+        classUnit.getFields().forEach(x -> stringBuilder.append(fieldToString(x)));
+        stringBuilder.append("\n");
+
         classUnit.getMethods().forEach(x -> stringBuilder.append(methodToString(x)));
 
         return stringBuilder.toString();
     }
 
-    private String accessModifierToString(AccessModifiers classAccessModifier) {
-        return String.valueOf(classAccessModifier.equals(AccessModifiers.DEFAULT) ? AccessModifiers.PUBLIC : classAccessModifier).toLowerCase();
-    }
-
-    public String methodToString(Method method){
+    private String methodToString(Method method){
         StringBuilder result = new StringBuilder();
         result.append(".method ")
             .append(accessModifierToString(method.getMethodAccessModifier()))
@@ -48,7 +45,11 @@ public class Jasmin {
         return result.toString();
     }
 
-    String typeToString(Type type){
+    private String fieldToString(Field field) {
+        return ".field " + accessModifierToString(field.getFieldAccessModifier()) + " " + field.getFieldName() + " " + typeToString(field.getFieldType()) + "\n";
+    }
+
+    private String typeToString(Type type){
         switch (type.getTypeOfElement()){
             case INT32 -> {
                 return "I";
@@ -80,5 +81,7 @@ public class Jasmin {
         }
     }
 
-
+    private String accessModifierToString(AccessModifiers classAccessModifier) {
+        return String.valueOf(classAccessModifier.equals(AccessModifiers.DEFAULT) ? AccessModifiers.PUBLIC : classAccessModifier).toLowerCase();
+    }
 }

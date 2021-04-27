@@ -32,7 +32,8 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
     }
 
     private Boolean dealWithTerminal(JmmNode node, List<Report> reports){
-        if (!node.get(Constants.typeAttribute).equals(Constants.identifierAttribute)) return defaultVisit(node, reports);
+        if (!node.get(Constants.typeAttribute).equals(Constants.identifierAttribute) &&
+            !node.get(Constants.valueAttribute).equals(Constants.thisAttribute)) return defaultVisit(node, reports);
 
         var variableOpt = symbolTable.tryGettingSymbol(
                 node.getAncestor(Constants.methodDeclNodeName).map(ancestorNode -> ancestorNode.get(Constants.nameAttribute)).orElse("this"),
