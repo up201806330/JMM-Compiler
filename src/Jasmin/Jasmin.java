@@ -1,8 +1,9 @@
-import org.specs.comp.ollir.ClassUnit;
-import org.specs.comp.ollir.ElementType;
-import org.specs.comp.ollir.OllirErrorException;
+import org.specs.comp.ollir.*;
+
+import java.util.Locale;
 
 public class Jasmin {
+    private final String ident = "  ";
 
 //    Example of what you can do with the OLLIR class
 //    ollirClass.checkMethodLabels(); // check the use of labels in the OLLIR loaded
@@ -14,18 +15,41 @@ public class Jasmin {
     public String getByteCode(ClassUnit classUnit) throws OllirErrorException {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(".class ")
-                .append(classUnit.getClassAccessModifier()).append(" ")
+                .append(accessModifierToString(classUnit.getClassAccessModifier())).append(" ")
                 .append(classUnit.getClassName()).append("\n");
 
-        stringBuilder.append(".super ").append(classUnit.getPackage()).append("\n"); // Need to check if its this package
+        if (!classUnit.getSuperClass().equals(""))
+            stringBuilder.append(".super ").append(classUnit.getSuperClass()).append("\n\n");
 
-
+        classUnit.getMethods().forEach(x -> stringBuilder.append(methodToString(x)));
 
         return stringBuilder.toString();
     }
 
-    String Type(ElementType type){
-        switch (type){
+    private String accessModifierToString(AccessModifiers classAccessModifier) {
+        return String.valueOf(classAccessModifier.equals(AccessModifiers.DEFAULT) ? AccessModifiers.PUBLIC : classAccessModifier).toLowerCase();
+    }
+
+    public String methodToString(Method method){
+        StringBuilder result = new StringBuilder();
+        result.append(".method ")
+            .append(accessModifierToString(method.getMethodAccessModifier()))
+            .append(method.isStaticMethod() ? " static " : " ")
+            .append(method.isConstructMethod() ? "<init>" : method.getMethodName()).append("()")
+            .append(typeToString(method.getReturnType())).append("\n")
+
+                .append(ident).append(".limit stack 99").append("\n")   // For checkpoint 2 is allowed
+                .append(ident).append(".limit locals 99").append("\n");
+
+            method.getInstructions().forEach(x -> result.append(ident).append(x).append("\n"));
+
+        result.append(".end method").append("\n\n");
+
+        return result.toString();
+    }
+
+    String typeToString(Type type){
+        switch (type.getTypeOfElement()){
             case INT32 -> {
                 return "I";
             }
