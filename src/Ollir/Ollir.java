@@ -177,6 +177,7 @@ public class Ollir {
         StringBuilder stringBuilder = new StringBuilder(prefix);
         StringBuilder ifStatement = new StringBuilder();
         StringBuilder elseStatement = new StringBuilder();
+        StringBuilder before = new StringBuilder();
 
         // Since an else is always necessary I changed if and else order to simplify code.
 
@@ -187,6 +188,7 @@ public class Ollir {
         while (!child.getKind().equals(Constants.elseStatementNodeName)) {
             switch (child.getKind()) {
                 case Constants.assignmentNodeName -> ifStatement.append(assignmentToOllir(child, prefix + ident));
+                case Constants.callExprNodeName -> ifStatement.append(callExpressionToOllir(child, prefix + ident, before, true)).append(";\n");
                 default -> System.out.println("ifStatementToOllir: " + child);
             }
             i++;
@@ -201,6 +203,7 @@ public class Ollir {
         stringBuilder.append(elseStatement);
         stringBuilder.append(prefix).append(ident).append("goto endif;\n");
         stringBuilder.append(prefix).append("else:\n");
+        stringBuilder.append(before);
         stringBuilder.append(ifStatement);
         stringBuilder.append(prefix).append("endif:\n");
 
@@ -236,6 +239,7 @@ public class Ollir {
 
     private String returnToOllir(JmmNode node, String prefix) {
         StringBuilder stringBuilder = new StringBuilder(prefix);
+        StringBuilder before = new StringBuilder();
 
         if (node.getChildren().size() == 0) {
             stringBuilder.append("ret.V");
@@ -243,9 +247,14 @@ public class Ollir {
             var child = node.getChildren().get(0);
             String type = OllirCodeUtils.typeToOllir(child.get(Constants.typeAttribute), child.getOptional(Constants.arrayAttribute));
             stringBuilder.append("ret").append(type).append(" ");
-            stringBuilder.append(child.getOptional(Constants.valueAttribute).orElse("")).append(type);
+            switch (child.getKind()) {
+                case Constants.literalNodeName -> stringBuilder.append(literalToOllir(child, ""));
+                case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(child, ""));
+                case Constants.callExprNodeName -> stringBuilder.append(callExpressionToOllir(child, prefix, before, false));
+                default -> System.out.println("returnToOllir: " + child);
+            }
         }
-        return stringBuilder.append(";\n").toString();
+        return before.append(stringBuilder).append(";\n").toString();
     }
 
     private String assignmentToOllir(JmmNode node, String prefix) {
@@ -473,7 +482,7 @@ public class Ollir {
 
         String type = node.get(Constants.typeAttribute);
         switch (type) {
-            case Constants.intType -> {
+            case Constants.intType, Constants.booleanType -> {
                 stringBuilder.append(node.get(Constants.valueAttribute));
                 stringBuilder.append(OllirCodeUtils.typeToOllir(type, node.getOptional(Constants.arrayAttribute)));
             }
