@@ -3,7 +3,4 @@ class NestedLoop extends Loop{
         int a;
         a = 1 * 3 - 4 / 5 * (2-5);
 	}
-	public NestedLoop x(){
-	    return this;
-	}
 }
