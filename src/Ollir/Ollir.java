@@ -127,10 +127,11 @@ public class Ollir {
         var children = node.getChildren();
         // nextTempVariable = 1; // We need a better way of doing this
 
-        stringBuilder.append("Loop:\n");
-        stringBuilder.append(whileConditionToOllir(children.get(0), prefix + ident, before)).append("\n");
+        stringBuilder.append(prefix + ident).append("goto Test;\n");
+        stringBuilder.append(prefix).append("Loop:\n");
         stringBuilder.append(whileBodyToOllir(children.get(1), prefix + ident));
-        stringBuilder.append(prefix + ident + ident).append("goto Loop;\n");
+        stringBuilder.append(prefix).append("Test:\n");
+        stringBuilder.append(whileConditionToOllir(children.get(0), prefix + ident, before)).append("\n");
 
         return stringBuilder.append(prefix).append("End:\n").toString();
     }
@@ -167,7 +168,7 @@ public class Ollir {
         }
 
         stringBuilder.append(before);
-        stringBuilder.append(prefix).append("if (").append(ifCondition).append(") goto End;");
+        stringBuilder.append(prefix).append("if (").append(ifCondition).append(") goto Loop;");
 
         return stringBuilder.toString();
     }
