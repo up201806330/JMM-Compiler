@@ -26,7 +26,9 @@ public class Ollir {
     private String classDeclarationToOllir(JmmNode node, String prefix) {
         StringBuilder classOllir = new StringBuilder();
 
-        classOllir.append(node.get(Constants.nameAttribute)).append(" {");
+        classOllir.append(node.get(Constants.nameAttribute));
+//        if ()
+//            classOllir.append(" extends ").append();
 
         StringBuilder methodsOllir = new StringBuilder();
         StringBuilder fieldsOllir = new StringBuilder();
@@ -34,10 +36,12 @@ public class Ollir {
             switch (child.getKind()) {
                 case Constants.methodDeclNodeName -> methodsOllir.append("\n").append(methodDeclarationToOllir(child, prefix + ident));
                 case Constants.fieldDeclNodeName -> fieldsOllir.append("\n").append(fieldDeclarationToOllir(child, prefix + ident));
+                case Constants.classInheritNodeName -> classOllir.append(" extends ").append(child.get(Constants.typeAttribute));
                 default -> System.out.println("classDeclarationToOllir: " + child);
             }
         }
 
+        classOllir.append(" {");
         // Put everything in order, first fields, then constructor, then methods.
 
         classOllir.append(fieldsOllir);

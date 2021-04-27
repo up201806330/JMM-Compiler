@@ -323,7 +323,7 @@ public class ExampleTest {
 
     @Test
     public void testNotInit() {
-        String file = SpecsIo.read("test/fixtures/public/fail/semantic/varNotInit.jmm");
+        String file = SpecsIo.read("test/fixtures/public/fail/semantic/extra/varNotInit.jmm");
         JmmSemanticsResult result = TestUtils.analyse(file);
         try{
             TestUtils.noErrors(result.getReports());

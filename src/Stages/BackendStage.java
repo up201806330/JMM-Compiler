@@ -32,16 +32,9 @@ public class BackendStage implements JasminBackend {
         ClassUnit ollirClass = ollirResult.getOllirClass();
 
         try {
-
-            // Example of what you can do with the OLLIR class
-            ollirClass.checkMethodLabels(); // check the use of labels in the OLLIR loaded
-            ollirClass.buildCFGs(); // build the CFG of each method
-            ollirClass.outputCFGs(); // output to .dot files the CFGs, one per method
-            ollirClass.buildVarTables(); // build the table of variables for each method
-            ollirClass.show(); // print to console main information about the input OLLIR
-
+            Jasmin jasmin = new Jasmin();
             // Convert the OLLIR to a String containing the equivalent Jasmin code
-            String jasminCode = ""; // Convert node ...
+            String jasminCode = jasmin.getByteCode(ollirClass); // Convert node ...
 
             // More reports from this stage
             List<Report> reports = new ArrayList<>();
