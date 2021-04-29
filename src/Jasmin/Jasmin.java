@@ -32,7 +32,7 @@ public class Jasmin {
 
     private String methodToString(Method method){
         StringBuilder result = new StringBuilder();
-        var varTable = OllirAccesser.getVarTable(method);
+        var varTable = method.getVarTable();
 
         result.append(".method ")
             .append(accessModifierToString(method.getMethodAccessModifier()))
@@ -69,10 +69,6 @@ public class Jasmin {
                 Element caller = callInstruction.getFirstArg();
                 if (callInstruction.getNumOperands() > 1) {
                     if (!callInstruction.getInvocationType().equals(CallType.invokestatic)){
-//                        before.append(ident)
-//                              .append(Constants.loadLocalVar)
-//                              .append(varTable.get(caller.getName()).getVirtualReg())
-//                              .append("\n");
                         before.append(ident)
                               .append(pushElementToStack(caller, varTable))
                               .append("\n");
@@ -80,10 +76,17 @@ public class Jasmin {
 
                     Element secondArg = callInstruction.getSecondArg();
                     if (secondArg != null){
-                        before.append(ident)
+                        var method = varTable.get(((LiteralElement) secondArg).getLiteral());
+                        result.append(ident)
                               .append(pushElementToStack(secondArg, varTable))
                               .append("\n");
                     }
+
+                    callInstruction.getListOfOperands().forEach(op ->
+                        before.append(ident)
+                               .append(pushElementToStack(op, varTable))
+                               .append("\n")
+                    );
                 }
             }
             case GOTO -> {
@@ -108,42 +111,57 @@ public class Jasmin {
     }
 
     private String pushElementToStack(Element element, HashMap<String, Descriptor> varTable) {
+        Operand operand = (Operand) element;
+        LiteralElement literal = (LiteralElement) element;
+
         switch (element.getType().getTypeOfElement()){
             case INT32 -> {
-                LiteralElement elem = (LiteralElement) element;
-                if (Integer.parseInt(elem.getLiteral()) == -1) {
-                    return Constants.constantMinus1;
-                }
-                else if (Integer.parseInt(elem.getLiteral()) >= 0 && Integer.parseInt(elem.getLiteral()) <= 5){
-                    return Constants.constant1B + elem.getLiteral();
-                }
-                else if (Integer.parseInt(elem.getLiteral()) >= -128 && Integer.parseInt(elem.getLiteral()) <= 127){
-                    return Constants.constant2B + elem.getLiteral();
-                }
-                else if (Integer.parseInt(elem.getLiteral()) >= -32768 && Integer.parseInt(elem.getLiteral()) <= 32767){
-                    return Constants.constant3B + elem.getLiteral();
+                if (element.isLiteral()){
+                    if (Integer.parseInt(literal.getLiteral()) == -1) {
+                        return Constants.constantMinus1;
+                    }
+                    else if (Integer.parseInt(literal.getLiteral()) >= 0 && Integer.parseInt(literal.getLiteral()) <= 5){
+                        return Constants.constant1B + literal.getLiteral();
+                    }
+                    else if (Integer.parseInt(literal.getLiteral()) >= -128 && Integer.parseInt(literal.getLiteral()) <= 127){
+                        return Constants.constant2B + literal.getLiteral();
+                    }
+                    else if (Integer.parseInt(literal.getLiteral()) >= -32768 && Integer.parseInt(literal.getLiteral()) <= 32767){
+                        return Constants.constant3B + literal.getLiteral();
+                    }
+                    else {
+                        // ldc or ldc_w
+                    }
                 }
                 else {
-                    // ldc or ldc_w
+                    return Constants.loadLocalVar + varTable.get(operand.getName()).getVirtualReg();
                 }
+
             }
             case BOOLEAN -> {
+                return Constants.constant1B + (operand.getName().equals("false") ? 0 : 1);
             }
             case ARRAYREF -> {
+                // TODO
             }
             case OBJECTREF -> {
+                return Constants.loadObjectRef + varTable.get(operand.getName()).getVirtualReg();
             }
             case CLASS -> {
+                return "";
             }
             case THIS -> {
-                return Constants.loadLocalVar + "0";
+                return Constants.loadObjectRef + "0";
             }
             case STRING -> {
+                // TODO how
             }
             case VOID -> {
                 System.out.println("Cant push void");
             }
         }
+
+
         return null;
     }
 
