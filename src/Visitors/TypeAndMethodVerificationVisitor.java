@@ -351,19 +351,24 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
         if (parentOpt.isEmpty()){
             System.out.println("Return has no method. How??");
         }
-        else if (returningType.equals(Constants.autoType) || returningType.equals(Constants.error)){
+        else if (returningType.equals(Constants.error)){
             return defaultVisit(node, reports);
         }
         else if (!returningType.equals(parentOpt.get().get("type"))){
-            reports.add(new Report(
-                    ReportType.WARNING,
-                    Stage.SEMANTIC,
-                    Integer.parseInt(node.get(Constants.lineAttribute)),
-                    Integer.parseInt(node.get(Constants.columnAttribute)),
-                    "Return type mismatch; Required '" +
-                            parentOpt.get().get("type") + "' but got '" +
-                            returningType + "'"
-            ));
+            if (returningType.equals(Constants.autoType)){
+                node.getChildren().get(0).put(Constants.typeAttribute, parentOpt.get().get("type"));
+            }
+            else {
+                reports.add(new Report(
+                        ReportType.WARNING,
+                        Stage.SEMANTIC,
+                        Integer.parseInt(node.get(Constants.lineAttribute)),
+                        Integer.parseInt(node.get(Constants.columnAttribute)),
+                        "Return type mismatch; Required '" +
+                                parentOpt.get().get("type") + "' but got '" +
+                                returningType + "'"
+                ));
+            }
         }
 
         return defaultVisit(node, reports);
