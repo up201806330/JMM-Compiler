@@ -1,6 +1,5 @@
 import org.specs.comp.ollir.*;
 
-import java.awt.*;
 import java.util.HashMap;
 
 public class Jasmin {
@@ -39,13 +38,15 @@ public class Jasmin {
             .append(accessModifierToString(method.getMethodAccessModifier()))
             .append(method.isStaticMethod() ? " static " : " ")
             .append(method.isConstructMethod() ? "<init>" : method.getMethodName()).append("()")
-            .append(typeToString(method.getReturnType())).append("\n")
+            .append(typeToString(method.getReturnType())).append("\n");
 
-                .append(ident).append(".limit stack 99").append("\n")   // For checkpoint 2 is allowed
-                .append(ident).append(".limit locals 99").append("\n");
+            if (!method.isConstructMethod()){
+                result.append(ident).append(".limit stack 99").append("\n")   // For checkpoint 2 is allowed
+                      .append(ident).append(".limit locals 99").append("\n");
+            }
 
-            method.getInstructions().forEach(x -> result.append(instructionToString(x, varTable)).append("\n"));
-//              method.getInstructions().forEach(Instruction::show);
+//            method.getInstructions().forEach(x -> result.append(instructionToString(x, varTable)).append("\n"));
+              method.getInstructions().forEach(Instruction::show);
 
         result.append(".end method").append("\n\n");
 
@@ -53,7 +54,7 @@ public class Jasmin {
     }
 
     private String instructionToString(Instruction instruction, HashMap<String, Descriptor> varTable) {
-        StringBuilder before = new StringBuilder(ident);
+        StringBuilder before = new StringBuilder();
         StringBuilder result = new StringBuilder();
 
         switch (instruction.getInstType()){
@@ -65,10 +66,24 @@ public class Jasmin {
                     System.out.println("CALLER IS LITERAL");
                     callInstruction.getFirstArg().show();
                 }
-                Operand caller = (Operand) callInstruction.getFirstArg();
-                System.out.println(varTable.get(caller.getName()).getVirtualReg());
-                if (callInstruction.getNumOperands() == 1) {
+                Element caller = callInstruction.getFirstArg();
+                if (callInstruction.getNumOperands() > 1) {
+                    if (!callInstruction.getInvocationType().equals(CallType.invokestatic)){
+//                        before.append(ident)
+//                              .append(Constants.loadLocalVar)
+//                              .append(varTable.get(caller.getName()).getVirtualReg())
+//                              .append("\n");
+                        before.append(ident)
+                              .append(pushElementToStack(caller, varTable))
+                              .append("\n");
+                    }
 
+                    Element secondArg = callInstruction.getSecondArg();
+                    if (secondArg != null){
+                        before.append(ident)
+                              .append(pushElementToStack(secondArg, varTable))
+                              .append("\n");
+                    }
                 }
             }
             case GOTO -> {
@@ -89,8 +104,47 @@ public class Jasmin {
             }
         }
 
-        before.append(result);
-        return before.toString();
+        return before.append(result).toString();
+    }
+
+    private String pushElementToStack(Element element, HashMap<String, Descriptor> varTable) {
+        switch (element.getType().getTypeOfElement()){
+            case INT32 -> {
+                LiteralElement elem = (LiteralElement) element;
+                if (Integer.parseInt(elem.getLiteral()) == -1) {
+                    return Constants.constantMinus1;
+                }
+                else if (Integer.parseInt(elem.getLiteral()) >= 0 && Integer.parseInt(elem.getLiteral()) <= 5){
+                    return Constants.constant1B + elem.getLiteral();
+                }
+                else if (Integer.parseInt(elem.getLiteral()) >= -128 && Integer.parseInt(elem.getLiteral()) <= 127){
+                    return Constants.constant2B + elem.getLiteral();
+                }
+                else if (Integer.parseInt(elem.getLiteral()) >= -32768 && Integer.parseInt(elem.getLiteral()) <= 32767){
+                    return Constants.constant3B + elem.getLiteral();
+                }
+                else {
+                    // ldc or ldc_w
+                }
+            }
+            case BOOLEAN -> {
+            }
+            case ARRAYREF -> {
+            }
+            case OBJECTREF -> {
+            }
+            case CLASS -> {
+            }
+            case THIS -> {
+                return Constants.loadLocalVar + "0";
+            }
+            case STRING -> {
+            }
+            case VOID -> {
+                System.out.println("Cant push void");
+            }
+        }
+        return null;
     }
 
     private String fieldToString(Field field) {
@@ -106,7 +160,7 @@ public class Jasmin {
                 return "Z";
             }
             case ARRAYREF -> {
-                return "";
+                return "[I";
             }
             case OBJECTREF -> {
                 return "";

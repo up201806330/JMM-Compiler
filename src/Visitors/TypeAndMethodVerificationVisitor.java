@@ -262,6 +262,9 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
                 targetClass,
                 methodName);
 
+        if (methodSymbolOpt.isPresent() && methodSymbolOpt.get().isStatic())
+            node.put(Constants.staticAttribute, "true");
+
         if ( targetClass.equals(Constants.thisAttribute) ||   // If method was called on this context ( e.g. this.Foo() || ThisClass a; a.Foo() )
                 targetClass.equals(symbolTable.className) ){  // Or if it was called on this class' static context (e.g. ThisClass.Foo() )
 
