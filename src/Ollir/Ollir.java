@@ -20,7 +20,6 @@ public class Ollir {
             }
         }
 
-        System.out.println(stringBuilder);
         return stringBuilder.toString();
     }
 
@@ -125,7 +124,6 @@ public class Ollir {
 
     private String whileStatementToOllir(JmmNode node, String prefix) {
         StringBuilder stringBuilder = new StringBuilder(prefix);
-        StringBuilder before = new StringBuilder();
 
         var children = node.getChildren();
         // nextTempVariable = 1; // We need a better way of doing this
@@ -134,7 +132,7 @@ public class Ollir {
         stringBuilder.append(prefix).append("Loop:\n");
         stringBuilder.append(whileBodyToOllir(children.get(1), prefix + ident));
         stringBuilder.append(prefix).append("Test:\n");
-        stringBuilder.append(whileConditionToOllir(children.get(0), prefix + ident, before)).append("\n");
+        stringBuilder.append(whileConditionToOllir(children.get(0), prefix + ident)).append("\n");
 
         return stringBuilder.append(prefix).append("End:\n").toString();
     }
@@ -158,27 +156,33 @@ public class Ollir {
         return before.append(stringBuilder).toString();
     }
 
-    private String whileConditionToOllir(JmmNode node, String prefix, StringBuilder before) {
+    private String whileConditionToOllir(JmmNode node, String prefix) {
         StringBuilder stringBuilder = new StringBuilder();
         StringBuilder ifCondition = new StringBuilder();
+        StringBuilder before = new StringBuilder();
 
         var child = node.getChildren().get(0);
 
 
         switch (child.getKind()) {
-            case Constants.binaryNodeName -> ifCondition.append(binaryToOllir(child, prefix, before));
+            case Constants.terminalNodeName -> ifCondition.append(terminalToOllir(child, ""));
+            case Constants.literalNodeName -> ifCondition.append(literalToOllir(child, ""));
+            case Constants.callExprNodeName, Constants.propertyAccessNodeName,
+                    Constants.binaryNodeName, Constants.arrayExprNodeName, Constants.newNodeName ->
+                    ifCondition.append(makeLocalVar(child, prefix, before));
             default -> System.out.println("whileConditionToOllir: " + child);
         }
 
-        stringBuilder.append(before);
+
         stringBuilder.append(prefix).append("if (").append(ifCondition).append(") goto Loop;");
 
-        return stringBuilder.toString();
+        return before.append(stringBuilder).toString();
     }
 
     private String ifStatementToOllir(JmmNode node, String prefix) {
         StringBuilder stringBuilder = new StringBuilder(prefix);
-        StringBuilder before = new StringBuilder();
+        StringBuilder beforeStatement = new StringBuilder();
+        StringBuilder beforeCond = new StringBuilder();
         StringBuilder ifStatement = new StringBuilder();
         StringBuilder elseStatement = new StringBuilder();
 
@@ -191,7 +195,7 @@ public class Ollir {
         while (!child.getKind().equals(Constants.elseStatementNodeName)) {
             switch (child.getKind()) {
                 case Constants.assignmentNodeName -> ifStatement.append(assignmentToOllir(child, prefix + ident));
-                case Constants.callExprNodeName -> ifStatement.append(prefix+ ident).append(callExpressionToOllir(child, prefix + ident, before, false)).append(";\n");
+                case Constants.callExprNodeName -> ifStatement.append(prefix+ ident).append(callExpressionToOllir(child, prefix + ident, beforeStatement, false)).append(";\n");
                 default -> System.out.println("ifStatementToOllir: " + child);
             }
             i++;
@@ -201,16 +205,16 @@ public class Ollir {
         elseStatement.append(elseStatementToOllir(child, prefix + ident));
 
         stringBuilder.append("if (");
-        stringBuilder.append(ifConditionToOllir(children.get(0), ""));
+        stringBuilder.append(ifConditionToOllir(children.get(0), prefix, beforeCond));
         stringBuilder.append(") goto ifbody;\n");
         stringBuilder.append(elseStatement);
         stringBuilder.append(prefix).append(ident).append("goto endif;\n");
         stringBuilder.append(prefix).append("ifbody:\n");
-        stringBuilder.append(before);
+        stringBuilder.append(beforeStatement);
         stringBuilder.append(ifStatement);
         stringBuilder.append(prefix).append("endif:\n");
 
-        return stringBuilder.toString();
+        return beforeCond.append(stringBuilder).toString();
     }
 
     private String elseStatementToOllir(JmmNode node, String prefix) {
@@ -227,17 +231,20 @@ public class Ollir {
         return stringBuilder.toString();
     }
 
-    private String ifConditionToOllir(JmmNode node, String prefix) {
-        StringBuilder stringBuilder = new StringBuilder(prefix);
-        StringBuilder before = new StringBuilder();
+    private String ifConditionToOllir(JmmNode node, String prefix, StringBuilder before) {
+        StringBuilder stringBuilder = new StringBuilder();
 
         var child = node.getChildren().get(0);
         switch (child.getKind()) {
-            case Constants.binaryNodeName -> stringBuilder.append(binaryToOllir(child, "", before));
+            case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(child, ""));
+            case Constants.literalNodeName -> stringBuilder.append(literalToOllir(child, ""));
+            case Constants.callExprNodeName, Constants.propertyAccessNodeName,
+                    Constants.binaryNodeName, Constants.arrayExprNodeName, Constants.newNodeName ->
+                    stringBuilder.append(makeLocalVar(child, prefix, before));
             default -> System.out.println("ifConditionToOllir: " + child);
         }
 
-        return stringBuilder.toString();
+        return stringBuilder.append(" &&.bool true.bool").toString();
     }
 
     private String returnToOllir(JmmNode node, String prefix) {

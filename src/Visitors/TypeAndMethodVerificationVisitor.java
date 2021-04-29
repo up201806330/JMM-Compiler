@@ -193,6 +193,10 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
     }
 
     private Boolean dealWithCondition(JmmNode node, List<Report> reports){
+        if (node.getChildren().get(0).get(Constants.typeAttribute).equals(Constants.autoType)){
+            node.getChildren().get(0).put(Constants.typeAttribute, Constants.booleanType);
+        }
+
         var childrenTypesOpt = NodeUtils.childrenTypes(node, reports);
         if (childrenTypesOpt.isEmpty()) return defaultVisit(node, reports);
         var childrenTypes = childrenTypesOpt.get();

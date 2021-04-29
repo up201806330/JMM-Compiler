@@ -33,7 +33,7 @@ public class OptimizationStage implements JmmOptimization {
         Ollir ollir = new Ollir();
         String ollirCode = ollir.getCode(node);
         // More reports from this stage
-        //System.out.println(ollirCode);
+        System.out.println(ollirCode);
 
         return new OllirResult(semanticsResult, ollirCode, reports);
     }
