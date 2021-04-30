@@ -66,7 +66,7 @@ public class Jasmin {
                 result.append(ident);
                 switch (dest.getType().getTypeOfElement()){
                     case INT32, BOOLEAN -> {
-                        result.append(Constants.storeInt);
+                        result.append(Constants.storeInt).append(vreg).append("\n");
                     }
                     case ARRAYREF -> {
                         // Hardcoded because all arrays are int[]
@@ -76,7 +76,7 @@ public class Jasmin {
                         result.append(Constants.storeArrayElem).append("\n");
                     }
                     case OBJECTREF -> {
-                        return (vreg >= 0 && vreg <= 3 ? Constants.storeObjRefSM : Constants.storeObjRef) + vreg;
+                        result.append(vreg >= 0 && vreg <= 3 ? Constants.storeObjRefSM : Constants.storeObjRef).append(vreg).append("\n");
                     }
                     case CLASS -> {
                         System.out.println("CANT ASSIGN VALUE TO CLASS");
@@ -91,7 +91,6 @@ public class Jasmin {
                         System.out.println("CANT ASSIGN VALUE TO VOID");
                     }
                 }
-                result.append(vreg);
 
                 before.append(instructionToString(assignInstruction.getRhs(), varTable));
             }
