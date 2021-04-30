@@ -167,8 +167,12 @@ public class Ollir {
         switch (child.getKind()) {
             case Constants.terminalNodeName -> ifCondition.append(terminalToOllir(child, ""));
             case Constants.literalNodeName -> ifCondition.append(literalToOllir(child, ""));
+            case Constants.binaryNodeName -> {
+                stringBuilder.append(binaryToOllir(child, "", before));
+                return stringBuilder.toString();
+            }
             case Constants.callExprNodeName, Constants.propertyAccessNodeName,
-                    Constants.binaryNodeName, Constants.arrayExprNodeName, Constants.newNodeName ->
+                    Constants.arrayExprNodeName, Constants.newNodeName ->
                     ifCondition.append(makeLocalVar(child, prefix, before));
             default -> System.out.println("whileConditionToOllir: " + child);
         }
@@ -238,8 +242,12 @@ public class Ollir {
         switch (child.getKind()) {
             case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(child, ""));
             case Constants.literalNodeName -> stringBuilder.append(literalToOllir(child, ""));
+            case Constants.binaryNodeName -> {
+                stringBuilder.append(binaryToOllir(child, "", before));
+                return stringBuilder.toString();
+            }
             case Constants.callExprNodeName, Constants.propertyAccessNodeName,
-                    Constants.binaryNodeName, Constants.arrayExprNodeName, Constants.newNodeName ->
+                    Constants.arrayExprNodeName, Constants.newNodeName ->
                     stringBuilder.append(makeLocalVar(child, prefix, before));
             default -> System.out.println("ifConditionToOllir: " + child);
         }
@@ -286,7 +294,7 @@ public class Ollir {
 
         switch (child0.getKind()) {
             case Constants.terminalNodeName -> left.append(terminalToOllir(child0, ""));
-            case Constants.arrayExprNodeName -> left.append(arrayExpressionToOllir(child0, "", before));
+            case Constants.arrayExprNodeName -> left.append(arrayExpressionToOllir(child0, prefix, before));
             default -> System.out.println("assignementToOllir: " + child0);
         }
 
@@ -327,11 +335,10 @@ public class Ollir {
 
         child = children.get(1);
         switch (child.getKind()) {
-            case Constants.literalNodeName -> stringBuilder.append(literalToOllir(child, ""));
-            case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(child, ""));
-            case Constants.callExprNodeName, Constants.propertyAccessNodeName,
+            case Constants.literalNodeName, Constants.terminalNodeName,
+                    Constants.callExprNodeName, Constants.propertyAccessNodeName,
                     Constants.binaryNodeName, Constants.arrayExprNodeName, Constants.newNodeName ->
-                    stringBuilder.append(makeLocalVar(child, prefix, before)).append(" ");
+                    stringBuilder.append(makeLocalVar(child, prefix, before));
             default -> System.out.println("arrayExpressionToOllir: " + child);
         }
 
@@ -385,6 +392,8 @@ public class Ollir {
             case Constants.binaryNodeName -> result = binaryToOllir(child, prefix, before);
             case Constants.arrayExprNodeName -> result = arrayExpressionToOllir(child, prefix, before);
             case Constants.newNodeName -> result = newToOllir(child, prefix, "t" + nextTempVariable + typeToOllir, before);
+            case Constants.literalNodeName -> result = literalToOllir(child, "");
+            case Constants.terminalNodeName -> result = terminalToOllir(child, "");
         }
 
         before.append(prefix).append("t").append(nextTempVariable).append(typeToOllir)

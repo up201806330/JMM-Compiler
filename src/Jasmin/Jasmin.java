@@ -59,6 +59,41 @@ public class Jasmin {
 
         switch (instruction.getInstType()){
             case ASSIGN -> {
+                AssignInstruction assignInstruction = (AssignInstruction) instruction;
+                Operand dest = (Operand) assignInstruction.getDest();
+                var vreg = varTable.get(dest.getName()).getVirtualReg();
+
+                result.append(ident);
+                switch (dest.getType().getTypeOfElement()){
+                    case INT32, BOOLEAN -> {
+                        result.append(Constants.storeInt);
+                    }
+                    case ARRAYREF -> {
+                        // Hardcoded because all arrays are int[]
+                        before.append(loadLocalVar(vreg)).append("\n");
+//                              .append(pushElementToStack(INDEX HERE, varTable)).append("\n");
+
+                        result.append(Constants.storeArrayElem).append("\n");
+                    }
+                    case OBJECTREF -> {
+                        return (vreg >= 0 && vreg <= 3 ? Constants.storeObjRefSM : Constants.storeObjRef) + vreg;
+                    }
+                    case CLASS -> {
+                        System.out.println("CANT ASSIGN VALUE TO CLASS");
+                    }
+                    case THIS -> {
+                        System.out.println("CANT ASSIGN VALUE TO THIS");
+                    }
+                    case STRING -> {
+                        // TODO Allowed?
+                    }
+                    case VOID -> {
+                        System.out.println("CANT ASSIGN VALUE TO VOID");
+                    }
+                }
+                result.append(vreg);
+
+                before.append(instructionToString(assignInstruction.getRhs(), varTable));
             }
             case CALL -> {
                 CallInstruction callInstruction = (CallInstruction) instruction;
@@ -77,9 +112,10 @@ public class Jasmin {
                     Element secondArg = callInstruction.getSecondArg();
                     if (secondArg != null){
                         var method = varTable.get(((LiteralElement) secondArg).getLiteral());
-                        result.append(ident)
-                              .append(pushElementToStack(secondArg, varTable))
-                              .append("\n");
+                        // Constant pool bish were
+//                        result.append(ident)
+//                              .append(pushElementToStack(secondArg, varTable))
+//                              .append("\n");
                     }
 
                     callInstruction.getListOfOperands().forEach(op ->
@@ -134,7 +170,7 @@ public class Jasmin {
                     }
                 }
                 else {
-                    return Constants.loadLocalVar + varTable.get(operand.getName()).getVirtualReg();
+                    return loadLocalVar(varTable.get(operand.getName()).getVirtualReg());
                 }
 
             }
@@ -145,16 +181,17 @@ public class Jasmin {
                 // TODO
             }
             case OBJECTREF -> {
-                return Constants.loadObjectRef + varTable.get(operand.getName()).getVirtualReg();
+                var vreg = varTable.get(operand.getName()).getVirtualReg();
+                return (vreg >= 0 && vreg <= 3 ? Constants.loadObjectRefSM : Constants.loadObjectRef) + vreg;
             }
             case CLASS -> {
                 return "";
             }
             case THIS -> {
-                return Constants.loadObjectRef + "0";
+                return Constants.loadObjectRefSM + "0";
             }
             case STRING -> {
-                // TODO how
+                // Constant pool bish were
             }
             case VOID -> {
                 System.out.println("Cant push void");
@@ -163,6 +200,10 @@ public class Jasmin {
 
 
         return null;
+    }
+
+    private String loadLocalVar(int vreg){
+        return (vreg >= 0 && vreg <= 3 ? Constants.loadLocalVarSM : Constants.loadLocalVar) + vreg + "\n";
     }
 
     private String fieldToString(Field field) {

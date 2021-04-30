@@ -67,10 +67,17 @@ public class Constants {
     public static final String superAttribute = "super";
 
     // Jasmin instructions
-    public static final String loadObjectRef = "aload_";
-    public static final String loadLocalVar = "iload_";
+    public static final String loadObjectRefSM = "aload_";
+    public static final String loadObjectRef = "aload ";
+    public static final String loadLocalVarSM = "iload_";
+    public static final String loadLocalVar = "iload ";
     public static final String constantMinus1 = "iconst_m1";
     public static final String constant1B = "iconst_";
-    public static final String constant2B = "bipush_";
-    public static final String constant3B = "sipush_";
+    public static final String constant2B = "bipush ";
+    public static final String constant3B = "sipush ";
+
+    public static final String storeInt = "istore_";
+    public static final String storeArrayElem = "iastore";
+    public static final String storeObjRefSM = "astore_";
+    public static final String storeObjRef = "astore ";
 }
