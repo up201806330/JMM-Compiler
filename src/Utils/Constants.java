@@ -67,6 +67,7 @@ public class Constants {
     public static final String superAttribute = "super";
 
     // Jasmin instructions
+    public static final String returnInstr = "ireturn";
     public static final String loadObjectRefSM = "aload_";
     public static final String loadObjectRef = "aload ";
     public static final String loadLocalVarSM = "iload_";

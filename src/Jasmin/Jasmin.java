@@ -104,8 +104,7 @@ public class Jasmin {
                 if (callInstruction.getNumOperands() > 1) {
                     if (!callInstruction.getInvocationType().equals(CallType.invokestatic)){
                         before.append(ident)
-                              .append(pushElementToStack(caller, varTable))
-                              .append("\n");
+                              .append(pushElementToStack(caller, varTable));
                     }
 
                     Element secondArg = callInstruction.getSecondArg();
@@ -113,14 +112,12 @@ public class Jasmin {
                         var method = varTable.get(((LiteralElement) secondArg).getLiteral());
                         // Constant pool bish were
 //                        result.append(ident)
-//                              .append(pushElementToStack(secondArg, varTable))
-//                              .append("\n");
+//                              .append(pushElementToStack(secondArg, varTable));
                     }
 
                     callInstruction.getListOfOperands().forEach(op ->
                         before.append(ident)
                                .append(pushElementToStack(op, varTable))
-                               .append("\n")
                     );
                 }
             }
@@ -129,6 +126,11 @@ public class Jasmin {
             case BRANCH -> {
             }
             case RETURN -> {
+                ReturnInstruction returnInstruction = (ReturnInstruction) instruction;
+                if (returnInstruction.hasReturnValue()){
+                    result.append(pushElementToStack(returnInstruction.getOperand(), varTable));
+                }
+                result.append(Constants.returnInstr).append("\n");
             }
             case PUTFIELD -> {
             }
@@ -153,41 +155,41 @@ public class Jasmin {
             case INT32 -> {
                 if (element.isLiteral()){
                     if (Integer.parseInt(literal.getLiteral()) == -1) {
-                        return Constants.constantMinus1;
+                        return Constants.constantMinus1 + "\n";
                     }
                     else if (Integer.parseInt(literal.getLiteral()) >= 0 && Integer.parseInt(literal.getLiteral()) <= 5){
-                        return Constants.constant1B + literal.getLiteral();
+                        return Constants.constant1B + literal.getLiteral() + "\n";
                     }
                     else if (Integer.parseInt(literal.getLiteral()) >= -128 && Integer.parseInt(literal.getLiteral()) <= 127){
-                        return Constants.constant2B + literal.getLiteral();
+                        return Constants.constant2B + literal.getLiteral() + "\n";
                     }
                     else if (Integer.parseInt(literal.getLiteral()) >= -32768 && Integer.parseInt(literal.getLiteral()) <= 32767){
-                        return Constants.constant3B + literal.getLiteral();
+                        return Constants.constant3B + literal.getLiteral() + "\n";
                     }
                     else {
                         // ldc or ldc_w
                     }
                 }
                 else {
-                    return loadLocalVar(varTable.get(operand.getName()).getVirtualReg());
+                    return loadLocalVar(varTable.get(operand.getName()).getVirtualReg()) + "\n";
                 }
 
             }
             case BOOLEAN -> {
-                return Constants.constant1B + (operand.getName().equals("false") ? 0 : 1);
+                return Constants.constant1B + (operand.getName().equals("false") ? 0 : 1) + "\n";
             }
             case ARRAYREF -> {
                 // TODO
             }
             case OBJECTREF -> {
                 var vreg = varTable.get(operand.getName()).getVirtualReg();
-                return (vreg >= 0 && vreg <= 3 ? Constants.loadObjectRefSM : Constants.loadObjectRef) + vreg;
+                return (vreg >= 0 && vreg <= 3 ? Constants.loadObjectRefSM : Constants.loadObjectRef) + vreg + "\n";
             }
             case CLASS -> {
                 return "";
             }
             case THIS -> {
-                return Constants.loadObjectRefSM + "0";
+                return Constants.loadObjectRefSM + "0" + "\n";
             }
             case STRING -> {
                 // Constant pool bish were
