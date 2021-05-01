@@ -172,8 +172,7 @@ public class Ollir {
                 ifCondition.append(binaryToOllir(child, prefix, before));
             }
             case Constants.notExprNodeName -> {
-                stringBuilder.append(notExpressionToOllir(child, "", before));
-                return stringBuilder.toString();
+                ifCondition.append(notExpressionToOllir(child, prefix, before));
             }
             case Constants.callExprNodeName, Constants.propertyAccessNodeName,
                     Constants.arrayExprNodeName, Constants.newNodeName ->
