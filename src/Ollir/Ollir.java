@@ -43,7 +43,7 @@ public class Ollir {
         classOllir.append(" {");
         // Put everything in order, first fields, then constructor, then methods.
 
-        classOllir.append(fieldsOllir);
+        classOllir.append("\n").append(prefix).append(fieldsOllir);
         classOllir.append("\n").append(prefix).append(ident);
         classOllir.append(OllirCodeUtils.defaultConstructor(ident, node.get(Constants.nameAttribute)));
 
@@ -72,8 +72,8 @@ public class Ollir {
     private String methodDeclarationToOllir(JmmNode node, String prefix) {
         StringBuilder methodOllir = new StringBuilder(prefix);
 
-        methodParameters = new ArrayList<String>();
-        methodVars = new ArrayList<String>();
+        methodParameters = new ArrayList<>();
+        methodVars = new ArrayList<>();
         nextTempVariable = 1;
 
         methodOllir.append(".method public ");
@@ -326,7 +326,7 @@ public class Ollir {
         String varName = (child0.getKind().equals(Constants.arrayExprNodeName) ?
                 child0.getChildren().get(0).get(Constants.valueAttribute) :
                 child0.get(Constants.valueAttribute));
-        boolean isField = !(methodVars.contains(varName) || methodParameters.contains(varName));
+        boolean isField = isField(varName);
 
         if (child1.get(Constants.typeAttribute).equals(Constants.autoType))
             child1.put(Constants.typeAttribute, child0.get(Constants.typeAttribute));
@@ -377,11 +377,15 @@ public class Ollir {
         return stringBuilder.toString();
     }
 
+    private boolean isField(String varName) {
+        return !(methodVars.contains(varName) || methodParameters.contains(varName));
+    }
+
     private String arrayExpressionToOllir(JmmNode node, String prefix, StringBuilder before) {
         StringBuilder stringBuilder = new StringBuilder();
 
         var children = node.getChildren();
-//TODO
+
         var child = children.get(0);
         stringBuilder.append(terminalToOllir(child, "", false)).append("[");
 
@@ -410,7 +414,12 @@ public class Ollir {
             child1.put(Constants.typeAttribute, child0.get(Constants.typeAttribute));
 
         switch (child0.getKind()) {
-            case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(child0, "")).append(" ");
+            case Constants.terminalNodeName -> {
+                if (isField(child0.getOptional(Constants.valueAttribute).orElse("")))
+                    stringBuilder.append(makeLocalVar(child0, prefix, before)).append(" ");
+                else
+                    stringBuilder.append(terminalToOllir(child0, "")).append(" ");
+            }
             case Constants.literalNodeName -> stringBuilder.append(literalToOllir(child0, "")).append(" ");
             case Constants.callExprNodeName, Constants.propertyAccessNodeName, Constants.notExprNodeName,
                     Constants.binaryNodeName, Constants.arrayExprNodeName, Constants.newNodeName ->
@@ -424,7 +433,12 @@ public class Ollir {
                 OllirCodeUtils.typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute))).append(" ");
 
         switch (child1.getKind()) {
-            case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(child1, ""));
+            case Constants.terminalNodeName ->  {
+                if (isField(child1.getOptional(Constants.valueAttribute).orElse("")))
+                    stringBuilder.append(makeLocalVar(child1, prefix, before)).append(" ");
+                else
+                    stringBuilder.append(terminalToOllir(child1, "")).append(" ");
+            }
             case Constants.literalNodeName -> stringBuilder.append(literalToOllir(child1, ""));
             case Constants.callExprNodeName, Constants.propertyAccessNodeName, Constants.notExprNodeName,
                     Constants.binaryNodeName, Constants.arrayExprNodeName, Constants.newNodeName ->
@@ -580,7 +594,7 @@ public class Ollir {
         JmmNode parent = node.getParent();
         String leftName = parent.getChildren().get(0).get(Constants.valueAttribute);
 
-        if (methodVars.contains(varName) || methodParameters.contains(varName)){ // Is local var or parameter
+        if (!isField(varName)){ // Is local var or parameter
             if (varName.equals(Constants.thisAttribute)){
                 stringBuilder.append("$0.").append(Constants.thisAttribute);
                 stringBuilder.append(OllirCodeUtils.typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute)));
@@ -594,10 +608,10 @@ public class Ollir {
         }
         else if (!(parent.getKind().equals(Constants.assignmentNodeName) && // Is class field and isnt the target of a putfield
                 !(methodVars.contains(leftName) || methodParameters.contains(leftName)))) {
+            String type = OllirCodeUtils.typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute));
             stringBuilder.append("getfield(this, ")
-                    .append(varName)
-                    .append(OllirCodeUtils.typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute)))
-                    .append(").V");
+                    .append(varName).append(type)
+                    .append(")").append(type);
             return stringBuilder.toString();
         }
 

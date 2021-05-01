@@ -126,6 +126,9 @@ public class Jasmin {
             case GOTO -> {
             }
             case BRANCH -> {
+                CondBranchInstruction condBranchInstruction = (CondBranchInstruction) instruction;
+                // In progress
+
             }
             case RETURN -> {
                 ReturnInstruction returnInstruction = (ReturnInstruction) instruction;
@@ -139,12 +142,22 @@ public class Jasmin {
             case GETFIELD -> {
             }
             case UNARYOPER -> {
+                // NOT SUPPORTED
             }
             case BINARYOPER -> {
                 BinaryOpInstruction binaryOpInstruction = (BinaryOpInstruction) instruction;
-                result.append(pushElementToStack(binaryOpInstruction.getLeftOperand(), varTable))
-                      .append(pushElementToStack(binaryOpInstruction.getRightOperand(), varTable))
-                      .append(operationToString(binaryOpInstruction.getUnaryOperation()));
+                if (binaryOpInstruction.getUnaryOperation().getOpType().equals(OperationType.NOT) ||
+                    binaryOpInstruction.getUnaryOperation().getOpType().equals(OperationType.NOTB)) {
+                    result.append(pushElementToStack(binaryOpInstruction.getLeftOperand(), varTable))
+                          .append(Constants.constant1B).append(1).append("\n")
+                          .append(operationToString(binaryOpInstruction.getUnaryOperation()));
+
+                }
+                else {
+                    result.append(pushElementToStack(binaryOpInstruction.getLeftOperand(), varTable))
+                          .append(pushElementToStack(binaryOpInstruction.getRightOperand(), varTable))
+                          .append(operationToString(binaryOpInstruction.getUnaryOperation()));
+                }
             }
             case NOPER -> {
                 SingleOpInstruction singleOpInstruction = (SingleOpInstruction) instruction;
@@ -174,7 +187,8 @@ public class Jasmin {
             }
             case LTH, LTHI32 -> {
             }
-            case NOT, NOTB -> {
+            case NOT, NOTB -> { // Since all boolean values have been checked (are always 0 or 1), we can use this method, which is faster than the if approach
+                return Constants.notInt + "\n";
             }
             case SHR, XOR, SHRR, SHL, OR, GTH, EQ, NEQ, LTE, GTE, SHRI32, SHLI32, SHRRI32, XORI32, ORI32, GTHI32, EQI32, NEQI32, LTEI32, GTEI32, ORB -> {
                 // NOT SUPPORTED

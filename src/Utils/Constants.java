@@ -87,5 +87,6 @@ public class Constants {
     public static final String mulInt = "imul";
     public static final String divInt = "idiv";
     public static final String andInt = "iand";
+    public static final String notInt = "ixor";
 
 }
