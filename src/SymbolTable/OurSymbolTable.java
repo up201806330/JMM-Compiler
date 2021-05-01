@@ -15,18 +15,18 @@ public class OurSymbolTable implements SymbolTable {
     SortedMap<OurSymbol, JmmNode> table = new TreeMap<>();
 
     public Optional<Report> put(OurSymbol symbol, JmmNode node) {
-        // Check for repeat variable names inside scope (e.q. boolean a; int a; gives error)
+        // Check for repeat symbols inside scope (e.q. boolean a; int a; gives error)
         for (OurSymbol entry : table.keySet()) {
-            if (entry.isVariable() &&
-                    entry.getName().equals(symbol.getName()) &&
-                    entry.getScope().equals(symbol.getScope()))
+            if (!symbol.isMethod() &&
+                    symbol.getName().equals(entry.getName()) &&
+                    symbol.getScope().equals(entry.getScope()))
                 return Optional.of(
                         new Report(
                                 ReportType.WARNING,
                                 Stage.SEMANTIC,
                                 symbol.getLine(),
                                 symbol.getColumn(),
-                                "Variable '" + symbol.getName() + "' is already defined in the scope"));
+                                "Variable '" + symbol.getName() + "' is already defined in the scope "));
         }
 
         // Check for repeat symbols

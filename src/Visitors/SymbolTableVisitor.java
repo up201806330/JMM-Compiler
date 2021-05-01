@@ -73,8 +73,9 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
 
     public Boolean dealWithVarDecl(JmmNode node, List<Report> reports) {
         var parentFunction = node.getAncestor(Constants.methodDeclNodeName);
-        List<String> attributes = new ArrayList<>(); attributes.add(Constants.variableAttribute);
+        List<String> attributes = new ArrayList<>();
         if (parentFunction.isEmpty()) attributes.add(Constants.fieldAttribute);
+        else attributes.add(Constants.variableAttribute);
 
         OurSymbol symbol = new OurSymbol(
                 node,
