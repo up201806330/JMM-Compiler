@@ -162,14 +162,14 @@ public class Ollir {
         StringBuilder before = new StringBuilder();
 
         var child = node.getChildren().get(0);
+        System.out.println(child);
 
 
         switch (child.getKind()) {
             case Constants.terminalNodeName -> ifCondition.append(terminalToOllir(child, ""));
             case Constants.literalNodeName -> ifCondition.append(literalToOllir(child, ""));
             case Constants.binaryNodeName -> {
-                stringBuilder.append(binaryToOllir(child, "", before));
-                return stringBuilder.toString();
+                ifCondition.append(binaryToOllir(child, prefix, before));
             }
             case Constants.callExprNodeName, Constants.propertyAccessNodeName,
                     Constants.arrayExprNodeName, Constants.newNodeName ->
@@ -179,7 +179,6 @@ public class Ollir {
 
 
         stringBuilder.append(prefix).append("if (").append(ifCondition).append(") goto Loop;");
-
         return before.append(stringBuilder).toString();
     }
 
