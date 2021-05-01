@@ -76,6 +76,8 @@ public class Constants {
     public static final String constant1B = "iconst_";
     public static final String constant2B = "bipush ";
     public static final String constant3B = "sipush ";
+    public static final String putfield = "putfield ";
+    public static final String getfield = "getfield ";
 
     public static final String storeInt = "istore_";
     public static final String storeArrayElem = "iastore";

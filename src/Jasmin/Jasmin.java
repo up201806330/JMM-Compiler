@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 public class Jasmin {
     private final String ident = "  ";
+    private HashMap<String, Descriptor> varTable;
 
 //    Example of what you can do with the OLLIR class
 //    ollirClass.checkMethodLabels(); // check the use of labels in the OLLIR loaded
@@ -32,7 +33,7 @@ public class Jasmin {
 
     private String methodToString(Method method){
         StringBuilder result = new StringBuilder();
-        var varTable = method.getVarTable();
+        varTable = method.getVarTable();
 
         method.show();
 
@@ -47,35 +48,43 @@ public class Jasmin {
                       .append(ident).append(".limit locals 99").append("\n");
             }
 
-//            method.getInstructions().forEach(x -> result.append(instructionToString(x, varTable)).append("\n"));
-              method.getInstructions().forEach(Instruction::show);
+            method.getInstructions().forEach(x -> result.append(instructionToString(x)).append("\n"));
+//            method.getInstructions().forEach(Instruction::show);
 
         result.append(".end method").append("\n\n");
 
         return result.toString();
     }
 
-    private String instructionToString(Instruction instruction, HashMap<String, Descriptor> varTable) {
+    private String instructionToString(Instruction instruction) {
         StringBuilder before = new StringBuilder();
         StringBuilder result = new StringBuilder();
 
         switch (instruction.getInstType()){
             case ASSIGN -> {
                 AssignInstruction assignInstruction = (AssignInstruction) instruction;
-                Operand dest = (Operand) assignInstruction.getDest();
-                var vreg = varTable.get(dest.getName()).getVirtualReg();
+                var type = assignInstruction.getDest().getType();
+
+                ArrayOperand arrayDest = null;
+                int vreg;
+                if (type.getTypeOfElement().equals(ElementType.ARRAYREF)){
+                    arrayDest = (ArrayOperand) assignInstruction.getDest();
+                    vreg = varTable.get(arrayDest.getName()).getVirtualReg();
+                }
+                else {
+                    vreg = varTable.get(((Operand) assignInstruction.getDest()).getName()).getVirtualReg();
+                }
 
                 result.append(ident);
-                switch (dest.getType().getTypeOfElement()){
+                switch (type.getTypeOfElement()){
                     case INT32, BOOLEAN -> {
                         result.append(Constants.storeInt).append(vreg).append("\n");
                     }
                     case ARRAYREF -> {
-                        // Hardcoded because all arrays are int[]
-                        before.append(loadLocalVar(vreg)).append("\n");
-//                              .append(pushElementToStack(INDEX HERE, varTable)).append("\n");
+                        before.append(loadLocalVar(vreg)).append("\n")
+                              .append(pushElementToStack(arrayDest.getIndexOperands().get(0))).append("\n");
 
-                        result.append(Constants.storeArrayElem).append("\n");
+                        result.append(Constants.storeArrayElem).append("\n"); // Hardcoded because all arrays are int[]
                     }
                     case OBJECTREF -> {
                         result.append(vreg >= 0 && vreg <= 3 ? Constants.storeObjRefSM : Constants.storeObjRef).append(vreg).append("\n");
@@ -94,7 +103,7 @@ public class Jasmin {
                     }
                 }
 
-                before.append(instructionToString(assignInstruction.getRhs(), varTable));
+                before.append(instructionToString(assignInstruction.getRhs()));
             }
             case CALL -> {
                 CallInstruction callInstruction = (CallInstruction) instruction;
@@ -106,7 +115,7 @@ public class Jasmin {
                 if (callInstruction.getNumOperands() > 1) {
                     if (!callInstruction.getInvocationType().equals(CallType.invokestatic)){
                         before.append(ident)
-                              .append(pushElementToStack(caller, varTable));
+                              .append(pushElementToStack(caller));
                     }
 
                     Element secondArg = callInstruction.getSecondArg();
@@ -114,12 +123,12 @@ public class Jasmin {
                         var method = varTable.get(((LiteralElement) secondArg).getLiteral());
                         // Constant pool bish were
 //                        result.append(ident)
-//                              .append(pushElementToStack(secondArg, varTable));
+//                              .append(pushElementToStack(secondArg));
                     }
 
                     callInstruction.getListOfOperands().forEach(op ->
                         before.append(ident)
-                               .append(pushElementToStack(op, varTable))
+                               .append(pushElementToStack(op))
                     );
                 }
             }
@@ -133,13 +142,20 @@ public class Jasmin {
             case RETURN -> {
                 ReturnInstruction returnInstruction = (ReturnInstruction) instruction;
                 if (returnInstruction.hasReturnValue()){
-                    result.append(pushElementToStack(returnInstruction.getOperand(), varTable));
+                    result.append(pushElementToStack(returnInstruction.getOperand()));
                 }
                 result.append(Constants.returnInstr).append("\n");
             }
             case PUTFIELD -> {
+                PutFieldInstruction putFieldInstruction = (PutFieldInstruction) instruction;
+                result.append(Constants.loadObjectRefSM).append(0).append("\n") // Hardcoded since only fields from this class can be accessed
+                      .append(pushElementToStack(putFieldInstruction.getThirdOperand()))
+                      .append(Constants.putfield); // Constant pool bish were
             }
             case GETFIELD -> {
+                GetFieldInstruction getFieldInstruction = (GetFieldInstruction) instruction;
+                result.append(Constants.loadObjectRefSM).append(0).append("\n") // Hardcoded since only fields from this class can be accessed
+                        .append(Constants.getfield); // Constant pool bish were
             }
             case UNARYOPER -> {
                 // NOT SUPPORTED
@@ -148,20 +164,20 @@ public class Jasmin {
                 BinaryOpInstruction binaryOpInstruction = (BinaryOpInstruction) instruction;
                 if (binaryOpInstruction.getUnaryOperation().getOpType().equals(OperationType.NOT) ||
                     binaryOpInstruction.getUnaryOperation().getOpType().equals(OperationType.NOTB)) {
-                    result.append(pushElementToStack(binaryOpInstruction.getLeftOperand(), varTable))
+                    result.append(pushElementToStack(binaryOpInstruction.getLeftOperand()))
                           .append(Constants.constant1B).append(1).append("\n")
                           .append(operationToString(binaryOpInstruction.getUnaryOperation()));
 
                 }
                 else {
-                    result.append(pushElementToStack(binaryOpInstruction.getLeftOperand(), varTable))
-                          .append(pushElementToStack(binaryOpInstruction.getRightOperand(), varTable))
+                    result.append(pushElementToStack(binaryOpInstruction.getLeftOperand()))
+                          .append(pushElementToStack(binaryOpInstruction.getRightOperand()))
                           .append(operationToString(binaryOpInstruction.getUnaryOperation()));
                 }
             }
             case NOPER -> {
                 SingleOpInstruction singleOpInstruction = (SingleOpInstruction) instruction;
-                result.append(pushElementToStack(singleOpInstruction.getSingleOperand(), varTable));
+                result.append(pushElementToStack(singleOpInstruction.getSingleOperand()));
             }
         }
 
@@ -197,9 +213,14 @@ public class Jasmin {
         return null;
     }
 
-    private String pushElementToStack(Element element, HashMap<String, Descriptor> varTable) {
-        Operand operand = (Operand) element;
-        LiteralElement literal = (LiteralElement) element;
+    private String pushElementToStack(Element element) {
+        LiteralElement literal = null;
+        Operand operand = null;
+
+        if (element.getType().getTypeOfElement().equals(ElementType.INT32))
+            literal = (LiteralElement) element;
+        else
+            operand = (Operand) element;
 
         switch (element.getType().getTypeOfElement()){
             case INT32 -> {
@@ -248,7 +269,6 @@ public class Jasmin {
                 System.out.println("Cant push void");
             }
         }
-
 
         return null;
     }
