@@ -34,6 +34,8 @@ public class Jasmin {
         StringBuilder result = new StringBuilder();
         var varTable = method.getVarTable();
 
+        method.show();
+
         result.append(".method ")
             .append(accessModifierToString(method.getMethodAccessModifier()))
             .append(method.isStaticMethod() ? " static " : " ")
@@ -139,12 +141,46 @@ public class Jasmin {
             case UNARYOPER -> {
             }
             case BINARYOPER -> {
+                BinaryOpInstruction binaryOpInstruction = (BinaryOpInstruction) instruction;
+                result.append(pushElementToStack(binaryOpInstruction.getLeftOperand(), varTable))
+                      .append(pushElementToStack(binaryOpInstruction.getRightOperand(), varTable))
+                      .append(operationToString(binaryOpInstruction.getUnaryOperation()));
             }
             case NOPER -> {
+                SingleOpInstruction singleOpInstruction = (SingleOpInstruction) instruction;
+                result.append(pushElementToStack(singleOpInstruction.getSingleOperand(), varTable));
             }
         }
 
         return before.append(result).toString();
+    }
+
+    private String operationToString(Operation operation) {
+        switch (operation.getOpType()){
+            case ADD, ADDI32 -> {
+                return Constants.addInt + "\n";
+            }
+            case SUB, SUBI32 -> {
+                return Constants.subInt + "\n";
+            }
+            case MUL, MULI32 -> {
+                return Constants.mulInt + "\n";
+            }
+            case DIV, DIVI32 -> {
+                return Constants.divInt + "\n";
+            }
+            case AND, ANDI32, ANDB -> {
+                return Constants.andInt + "\n";
+            }
+            case LTH, LTHI32 -> {
+            }
+            case NOT, NOTB -> {
+            }
+            case SHR, XOR, SHRR, SHL, OR, GTH, EQ, NEQ, LTE, GTE, SHRI32, SHLI32, SHRRI32, XORI32, ORI32, GTHI32, EQI32, NEQI32, LTEI32, GTEI32, ORB -> {
+                // NOT SUPPORTED
+            }
+        }
+        return null;
     }
 
     private String pushElementToStack(Element element, HashMap<String, Descriptor> varTable) {
