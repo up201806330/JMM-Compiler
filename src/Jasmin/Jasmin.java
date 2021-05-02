@@ -128,6 +128,9 @@ public class Jasmin {
                                 .append("\n");
                     }
                     case arraylength -> {
+                        before.append(indent)
+                              .append(pushElementToStack(caller));
+                        result.append(callInstruction.getInvocationType()).append("\n");
                     }
                     case ldc -> {
                     }
@@ -140,10 +143,13 @@ public class Jasmin {
                     //       .append(pushElementToStack(secondArg)); // Constant pool bish were
                 }
 
-                callInstruction.getListOfOperands().forEach(op ->
-                    before.append(indent)
-                           .append(pushElementToStack(op))
-                );
+                var operands = callInstruction.getListOfOperands();
+                if (operands != null){
+                    operands.forEach(op ->
+                            before.append(indent)
+                                    .append(pushElementToStack(op))
+                    );
+                }
 
             }
             case GOTO -> {

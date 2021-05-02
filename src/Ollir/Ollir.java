@@ -352,6 +352,8 @@ public class Ollir {
                     right.append(isField ? makeLocalVar(child1, prefix, before) : callExpressionToOllir(child1, prefix, before, false));
             case Constants.arrayExprNodeName ->
                     right.append(isField ? makeLocalVar(child1, prefix, before) : arrayExpressionToOllir(child1, prefix, before));
+            case Constants.propertyAccessNodeName ->
+                    right.append(isField ? makeLocalVar(child1, prefix, before) : propertyAccessToOllir(child1, prefix, before));
             default -> System.out.println("assignementToOllir: " + child1);
         }
 
