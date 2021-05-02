@@ -36,8 +36,7 @@ public class Jasmin {
         StringBuilder result = new StringBuilder();
         varTable = method.getVarTable();
 
-        method.show();
-
+//        method.show();
 
         result.append(".method ")
             .append(accessModifierToJasmin(method.getMethodAccessModifier()))

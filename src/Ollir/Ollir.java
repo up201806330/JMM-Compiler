@@ -184,17 +184,13 @@ public class Ollir {
 
 
         switch (child.getKind()) {
-            case Constants.terminalNodeName -> ifCondition.append(terminalToOllir(child, ""));
-            case Constants.literalNodeName -> ifCondition.append(literalToOllir(child, ""));
-            case Constants.binaryNodeName -> {
-                ifCondition.append(binaryToOllir(child, prefix, before));
-            }
-            case Constants.notExprNodeName -> {
-                ifCondition.append(notExpressionToOllir(child, prefix, before));
-            }
+            case Constants.terminalNodeName -> ifCondition.append(terminalToOllir(child, "")).append(" &&.bool true.bool");
+            case Constants.literalNodeName -> ifCondition.append(literalToOllir(child, "")).append(" &&.bool true.bool");
+            case Constants.binaryNodeName -> ifCondition.append(binaryToOllir(child, prefix, before));
+            case Constants.notExprNodeName -> ifCondition.append(notExpressionToOllir(child, prefix, before));
             case Constants.callExprNodeName, Constants.propertyAccessNodeName,
                     Constants.arrayExprNodeName, Constants.newNodeName ->
-                    ifCondition.append(makeLocalVar(child, prefix, before));
+                    ifCondition.append(makeLocalVar(child, prefix, before)).append(" &&.bool true.bool");
             default -> System.out.println("whileConditionToOllir: " + child);
         }
 
@@ -287,23 +283,17 @@ public class Ollir {
 
         var child = node.getChildren().get(0);
         switch (child.getKind()) {
-            case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(child, ""));
-            case Constants.literalNodeName -> stringBuilder.append(literalToOllir(child, ""));
-            case Constants.binaryNodeName -> {
-                stringBuilder.append(binaryToOllir(child, "", before));
-                return stringBuilder.toString();
-            }
-            case Constants.notExprNodeName -> {
-                stringBuilder.append(notExpressionToOllir(child, "", before));
-                return stringBuilder.toString();
-            }
+            case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(child, "")).append(" &&.bool true.bool");
+            case Constants.literalNodeName -> stringBuilder.append(literalToOllir(child, "")).append(" &&.bool true.bool");
+            case Constants.binaryNodeName -> stringBuilder.append(binaryToOllir(child, "", before));
+            case Constants.notExprNodeName -> stringBuilder.append(notExpressionToOllir(child, "", before));
             case Constants.callExprNodeName, Constants.propertyAccessNodeName,
                     Constants.arrayExprNodeName, Constants.newNodeName ->
-                    stringBuilder.append(makeLocalVar(child, prefix, before));
+                    stringBuilder.append(makeLocalVar(child, prefix, before)).append(" &&.bool true.bool");
             default -> System.out.println("ifConditionToOllir: " + child);
         }
 
-        return stringBuilder.append(" &&.bool true.bool").toString();
+        return stringBuilder.toString();
     }
 
     private String returnToOllir(JmmNode node, String prefix) {
