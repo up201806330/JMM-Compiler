@@ -72,7 +72,17 @@ public class Jasmin {
 
                 switch (type.getTypeOfElement()){
                     case INT32, BOOLEAN -> {
-                        result.append(Constants.storeInt).append(vreg).append("\n");
+                        try { // Left side of assignment can be array indexing
+                            ArrayOperand arrayOperand = (ArrayOperand) assignInstruction.getDest();
+                            before.append(indent)
+                                  .append(pushElementToStack(arrayOperand))
+                                  .append(indent)
+                                  .append(pushElementToStack(arrayOperand.getIndexOperands().get(0))); // TODO Check why there are multiple index operands
+                            result.append(Constants.storeArrayElem).append("\n");
+                        } catch (ClassCastException e){ // Otherwise, is int or boolean
+                            result.append(storeInt(vreg)).append("\n");
+                        }
+
                     }
                     case ARRAYREF -> {
                         result.append(storeArrayRef(vreg)).append("\n");
@@ -98,41 +108,43 @@ public class Jasmin {
             }
             case CALL -> {
                 CallInstruction callInstruction = (CallInstruction) instruction;
-                if (callInstruction.getFirstArg().isLiteral()){
-                    System.out.println("CALLER IS LITERAL");
-                    callInstruction.getFirstArg().show();
-                }
                 Element caller = callInstruction.getFirstArg();
                 String callerName = ((Operand)caller).getName();
-                if (callInstruction.getNumOperands() > 1) {
-                    if (!callInstruction.getInvocationType().equals(CallType.invokestatic) && // Push onto stack calling object
-                        !callerName.equals("array") &&                                        // (except on static calls and constructors)
-                        !callerName.equals(classUnit.getClassName()) &&
-                        !callerName.equals(classUnit.getSuperClass()) &&
-                        !classUnit.getImports().contains(callerName)) {
+
+                switch (callInstruction.getInvocationType()){
+                    case invokevirtual, invokespecial -> {
                         before.append(indent)
-                              .append(pushElementToStack(caller));
+                                .append(pushElementToStack(caller));
                     }
-                    else if (!callInstruction.getInvocationType().equals(CallType.invokestatic)){
+                    case invokeinterface -> {
+                        // NOT SUPPORTED
+                    }
+                    case invokestatic -> {
+                    }
+                    case NEW -> {
                         result.append(((Operand) caller).getName().equals("array") ?
-                                      Constants.newArray :
-                                      Constants.newObj) // Constant pool bish were
-                              .append("\n");
+                                Constants.newArray :
+                                Constants.newObj) // Constant pool bish were
+                                .append("\n");
                     }
-
-                    Element secondArg = callInstruction.getSecondArg();
-                    if (secondArg != null){
-                        var method = varTable.get(((LiteralElement) secondArg).getLiteral());
-                        // Constant pool bish were
-//                        result.append(ident)
-//                              .append(pushElementToStack(secondArg));
+                    case arraylength -> {
                     }
-
-                    callInstruction.getListOfOperands().forEach(op ->
-                        before.append(indent)
-                               .append(pushElementToStack(op))
-                    );
+                    case ldc -> {
+                    }
                 }
+
+                Element secondArg = callInstruction.getSecondArg();
+                if (secondArg != null){
+                    var method = varTable.get(((LiteralElement) secondArg).getLiteral());
+                     result.append(callInstruction.getInvocationType()).append(" ").append("\n");
+                    //       .append(pushElementToStack(secondArg)); // Constant pool bish were
+                }
+
+                callInstruction.getListOfOperands().forEach(op ->
+                    before.append(indent)
+                           .append(pushElementToStack(op))
+                );
+
             }
             case GOTO -> {
             }
@@ -251,8 +263,14 @@ public class Jasmin {
                         // ldc or ldc_w
                     }
                 }
-                else {
-                    return loadLocalVar(varTable.get(operand.getName()).getVirtualReg()) + "\n";
+                else { // Is variable holding int, can still be array index
+                    try {
+                        ArrayOperand arrayOperand = (ArrayOperand) element;
+                        return loadObjVar(varTable.get(arrayOperand.getName()).getVirtualReg()) + "\n";
+                    }
+                    catch (ClassCastException e){
+                        return loadIntVar(varTable.get(operand.getName()).getVirtualReg()) + "\n";
+                    }
                 }
 
             }
@@ -261,7 +279,7 @@ public class Jasmin {
             }
             case ARRAYREF, OBJECTREF -> {
                 var vreg = varTable.get(operand.getName()).getVirtualReg();
-                return (vreg >= 0 && vreg <= 3 ? Constants.loadObjectRefSM : Constants.loadObjectRef) + vreg + "\n";
+                return loadObjVar(vreg) + "\n";
             }
             case CLASS -> {
                 return "";
@@ -280,8 +298,16 @@ public class Jasmin {
         return null;
     }
 
-    private String loadLocalVar(int vreg){
-        return (vreg >= 0 && vreg <= 3 ? Constants.loadLocalVarSM : Constants.loadLocalVar) + vreg;
+    private String loadIntVar(int vreg){
+        return (vreg >= 0 && vreg <= 3 ? Constants.loadIntVarSM : Constants.loadIntVar) + vreg;
+    }
+
+    private String loadObjVar(int vreg){
+        return (vreg >= 0 && vreg <= 3 ? Constants.loadObjectRefSM : Constants.loadObjectRef) + vreg;
+    }
+
+    private String storeInt(int vreg){
+        return (vreg >= 0 && vreg <= 3 ? Constants.storeIntSM : Constants.storeInt) + vreg;
     }
 
     private String storeArrayRef(int vreg){
