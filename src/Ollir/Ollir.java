@@ -519,7 +519,7 @@ public class Ollir {
         String type = OllirCodeUtils.typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute));
 
         var child0 = children.get(0);
-        if (imports.contains(child0.get(Constants.typeAttribute)) || node.getOptional(Constants.staticAttribute).isPresent()) {
+        if (imports.contains(child0.get(Constants.valueAttribute)) || node.getOptional(Constants.staticAttribute).isPresent()) {
             stringBuilder.append("invokestatic(");
             stringBuilder.append(child0.get(Constants.typeAttribute));
         } else {
