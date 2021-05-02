@@ -5,9 +5,8 @@ import java.util.Optional;
 
 public class OllirCodeUtils {
     public static String defaultConstructor(String ident, String className) {
-        String result = ".construct " + className +
-                "().V {\n" + ident + ident +
-                "invokespecial(this, \"<init>\").V;\n" +
+        String result = ".construct " + className + "().V {\n" +
+                ident + ident + "invokespecial(this, \"<init>\").V;\n" +
                 ident + "}\n";
         return result;
     }

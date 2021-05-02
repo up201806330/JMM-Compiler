@@ -54,6 +54,8 @@ public class Jasmin {
             method.getInstructions().forEach(x -> result.append(instructionToString(x)));
 //            method.getInstructions().forEach(Instruction::show);
 
+        if (method.isConstructMethod())
+            result.append(indent).append(Constants.returnVoidInstr).append("\n");
         result.append(".end method").append("\n\n");
 
         return result.toString();
@@ -136,11 +138,10 @@ public class Jasmin {
                     }
                 }
 
-                Element secondArg = callInstruction.getSecondArg();
-                if (secondArg != null){
-                    var method = varTable.get(((LiteralElement) secondArg).getLiteral());
-                     result.append(callInstruction.getInvocationType()).append(" ").append("\n");
-                    //       .append(pushElementToStack(secondArg)); // Constant pool bish were
+                Element method = callInstruction.getSecondArg();
+                if (method != null){
+                     result.append(callInstruction.getInvocationType()).append(" ")
+                           .append(invocationToString(caller, method));
                 }
 
                 var operands = callInstruction.getListOfOperands();
@@ -164,22 +165,36 @@ public class Jasmin {
                 if (returnInstruction.hasReturnValue()){
                     before.append(indent)
                           .append(pushElementToStack(returnInstruction.getOperand()));
+                    result.append(Constants.returnInstr).append("\n");
                 }
-                result.append(Constants.returnInstr).append("\n");
+                else
+                    result.append(Constants.returnVoidInstr).append("\n");
+
             }
             case PUTFIELD -> {
                 PutFieldInstruction putFieldInstruction = (PutFieldInstruction) instruction;
+                Operand secondOperand = (Operand) putFieldInstruction.getSecondOperand();
                 before.append(indent)
                       .append(Constants.loadObjectRefSM).append(0).append("\n") // Hardcoded since only fields from this class can be accessed
                       .append(indent)
                       .append(pushElementToStack(putFieldInstruction.getThirdOperand()));
-                result.append(Constants.putfield).append("\n"); // Constant pool bish were
+
+                result.append(Constants.putfield)
+                      .append(classUnit.getClassName()).append("/")
+                      .append(secondOperand.getName()).append(" ")
+                      .append(typeToString(secondOperand.getType()))
+                      .append("\n");
             }
             case GETFIELD -> {
                 GetFieldInstruction getFieldInstruction = (GetFieldInstruction) instruction;
+                Operand secondOperand = (Operand) getFieldInstruction.getSecondOperand();
                 before.append(indent)
                       .append(Constants.loadObjectRefSM).append(0).append("\n"); // Hardcoded since only fields from this class can be accessed
-                result.append(Constants.getfield).append("\n"); // Constant pool bish were
+                result.append(Constants.getfield)
+                      .append(classUnit.getClassName()).append("/")
+                      .append(secondOperand.getName()).append(" ")
+                      .append(typeToString(secondOperand.getType()))
+                      .append("\n");
             }
             case UNARYOPER -> {
                 // NOT SUPPORTED
@@ -210,6 +225,19 @@ public class Jasmin {
         }
 
         return before.append(result).toString();
+    }
+
+    private String invocationToString(Element caller, Element method) {
+        try{
+            LiteralElement literalMethod = (LiteralElement) method;
+            if (literalMethod.getLiteral().equals("\"<init>\""))
+                return "java/lang/Object/<init>()V\n";
+
+        } catch (ClassCastException ignored){ }
+
+
+
+        return "ERRR\n";
     }
 
     private String operationToString(Operation operation) {

@@ -68,6 +68,7 @@ public class Constants {
 
     // Jasmin instructions
     public static final String returnInstr = "ireturn";
+    public static final String returnVoidInstr = "return";
     public static final String loadObjectRefSM = "aload_";
     public static final String loadObjectRef = "aload ";
     public static final String loadIntVarSM = "iload_";
