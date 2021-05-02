@@ -1,41 +1,38 @@
 import org.specs.comp.ollir.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
 public class Jasmin {
-    private final String indent = "  ";
+    private final String indent = "\t";
     private HashMap<String, Descriptor> varTable;
     private ClassUnit classUnit;
-
-//    Example of what you can do with the OLLIR class
-//    ollirClass.checkMethodLabels(); // check the use of labels in the OLLIR loaded
-//    ollirClass.buildCFGs(); // build the CFG of each method
-//    ollirClass.outputCFGs(); // output to .dot files the CFGs, one per method
-//    ollirClass.buildVarTables(); // build the table of variables for each method
-//    ollirClass.show(); // print to console main information about the input OLLIR
 
     public String getByteCode(ClassUnit classUnit) throws OllirErrorException {
         this.classUnit = classUnit;
 
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(".class ")
-                .append(accessModifierToString(classUnit.getClassAccessModifier())).append(" ")
+                .append(accessModifierToJasmin(classUnit.getClassAccessModifier())).append(" ")
                 .append(classUnit.getClassName()).append("\n");
 
         if (classUnit.getSuperClass() != null)
             stringBuilder.append(".super ").append(classUnit.getSuperClass()).append("\n\n");
+        else
+            stringBuilder.append(".super java/lang/Object").append("\n\n");
 
-        classUnit.getFields().forEach(x -> stringBuilder.append(fieldToString(x)));
+
+        classUnit.getFields().forEach(x -> stringBuilder.append(fieldToJasmin(x)));
         stringBuilder.append("\n");
 
         classUnit.buildVarTables();
-        classUnit.getMethods().forEach(x -> stringBuilder.append(methodToString(x)));
+        classUnit.getMethods().forEach(x -> stringBuilder.append(methodToJasmin(x)));
 
         return stringBuilder.toString();
     }
 
-    private String methodToString(Method method){
+    private String methodToJasmin(Method method){
         StringBuilder result = new StringBuilder();
         varTable = method.getVarTable();
 
@@ -43,20 +40,20 @@ public class Jasmin {
 
 
         result.append(".method ")
-            .append(accessModifierToString(method.getMethodAccessModifier()))
+            .append(accessModifierToJasmin(method.getMethodAccessModifier()))
             .append(method.isStaticMethod() ? " static " : " ")
             .append(method.isConstructMethod() ? "<init>" : method.getMethodName())
             .append("(")
-                .append(method.getParams().stream().map(x -> typeToString(x.getType())).collect(Collectors.joining()))
+                .append(parametersToJasmin(method.getParams()))
             .append(")")
-            .append(typeToString(method.getReturnType())).append("\n");
+            .append(typeToJasmin(method.getReturnType())).append("\n");
 
             if (!method.isConstructMethod()){
                 result.append(indent).append(".limit stack 99").append("\n")   // For checkpoint 2 is allowed
                       .append(indent).append(".limit locals 99").append("\n");
             }
 
-            method.getInstructions().forEach(x -> result.append(instructionToString(x)));
+            method.getInstructions().forEach(x -> result.append(instructionToJasmin(x)));
             // method.getInstructions().forEach(Instruction::show);
 
         if (method.isConstructMethod())
@@ -66,7 +63,11 @@ public class Jasmin {
         return result.toString();
     }
 
-    private String instructionToString(Instruction instruction) {
+    private String parametersToJasmin(ArrayList<Element> parameters) {
+        return parameters.stream().map(x -> typeToJasmin(x.getType())).collect(Collectors.joining());
+    }
+
+    private String instructionToJasmin(Instruction instruction) {
         StringBuilder before = new StringBuilder();
         StringBuilder result = new StringBuilder(indent);
 
@@ -111,27 +112,25 @@ public class Jasmin {
                     }
                 }
 
-                before.append(instructionToString(assignInstruction.getRhs()));
+                before.append(instructionToJasmin(assignInstruction.getRhs()));
             }
             case CALL -> {
                 CallInstruction callInstruction = (CallInstruction) instruction;
                 Element caller = callInstruction.getFirstArg();
-                String callerName = ((Operand)caller).getName();
+                Element method = callInstruction.getSecondArg();
 
                 switch (callInstruction.getInvocationType()){
                     case invokevirtual, invokespecial -> {
                         before.append(indent)
                                 .append(pushElementToStack(caller));
                     }
-                    case invokeinterface -> {
-                        // NOT SUPPORTED
-                    }
                     case invokestatic -> {
                     }
                     case NEW -> {
-                        result.append(((Operand) caller).getName().equals("array") ?
+                        String callerName = ((Operand) caller).getName();
+                        result.append(callerName.equals("array") ?
                                 Constants.newArray :
-                                Constants.newObj) // Constant pool bish were
+                                Constants.newObj + callerName)
                                 .append("\n");
                     }
                     case arraylength -> {
@@ -140,23 +139,25 @@ public class Jasmin {
                         result.append(callInstruction.getInvocationType()).append("\n");
                     }
                     case ldc -> {
+                        // NOT SUPPORTED ? TODO
+                    }
+                    case invokeinterface -> {
+                        // NOT SUPPORTED
                     }
                 }
 
-                Element method = callInstruction.getSecondArg();
+                var parameters = callInstruction.getListOfOperands();
+                if (parameters == null) parameters = new ArrayList<>();
+
                 if (method != null){
                      result.append(callInstruction.getInvocationType()).append(" ")
-                           .append(invocationToString(caller, method));
+                           .append(invocationToJasmin(caller, method, parametersToJasmin(parameters)));
                 }
 
-                var operands = callInstruction.getListOfOperands();
-                if (operands != null){
-                    operands.forEach(op ->
-                            before.append(indent)
-                                    .append(pushElementToStack(op))
-                    );
-                }
-
+                parameters.forEach(op ->
+                        before.append(indent)
+                                .append(pushElementToStack(op))
+                );
             }
             case GOTO -> {
             }
@@ -170,7 +171,7 @@ public class Jasmin {
                 if (returnInstruction.hasReturnValue()){
                     before.append(indent)
                           .append(pushElementToStack(returnInstruction.getOperand()));
-                    result.append(Constants.returnInstr).append("\n");
+                    result.append(returnToJasmin(returnInstruction.getElementType())).append("\n");
                 }
                 else
                     result.append(Constants.returnVoidInstr).append("\n");
@@ -185,10 +186,9 @@ public class Jasmin {
                       .append(pushElementToStack(putFieldInstruction.getThirdOperand()));
 
                 result.append(Constants.putfield)
-                      .append(classUnit.getPackage() != null ? classUnit.getPackage() + "/" : "")
-                      .append(classUnit.getClassName()).append("/")
+                      .append(classPath())
                       .append(secondOperand.getName()).append(" ")
-                      .append(typeToString(secondOperand.getType()))
+                      .append(typeToJasmin(secondOperand.getType()))
                       .append("\n");
             }
             case GETFIELD -> {
@@ -197,14 +197,10 @@ public class Jasmin {
                 before.append(indent)
                       .append(Constants.loadObjectRefSM).append(0).append("\n"); // Hardcoded since only fields from this class can be accessed
                 result.append(Constants.getfield)
-                      .append(classUnit.getPackage() != null ? classUnit.getPackage() + "/" : "")
-                      .append(classUnit.getClassName()).append("/")
+                      .append(classPath())
                       .append(secondOperand.getName()).append(" ")
-                      .append(typeToString(secondOperand.getType()))
+                      .append(typeToJasmin(secondOperand.getType()))
                       .append("\n");
-            }
-            case UNARYOPER -> {
-                // NOT SUPPORTED
             }
             case BINARYOPER -> {
                 BinaryOpInstruction binaryOpInstruction = (BinaryOpInstruction) instruction;
@@ -214,7 +210,7 @@ public class Jasmin {
                           .append(pushElementToStack(binaryOpInstruction.getLeftOperand()))
                           .append(indent)
                           .append(Constants.constant1B).append(1).append("\n");
-                    result.append(operationToString(binaryOpInstruction.getUnaryOperation()));
+                    result.append(operationToJasmin(binaryOpInstruction.getUnaryOperation()));
 
                 }
                 else {
@@ -222,32 +218,85 @@ public class Jasmin {
                           .append(pushElementToStack(binaryOpInstruction.getLeftOperand()))
                           .append(indent)
                           .append(pushElementToStack(binaryOpInstruction.getRightOperand()));
-                    result.append(operationToString(binaryOpInstruction.getUnaryOperation()));
+                    result.append(operationToJasmin(binaryOpInstruction.getUnaryOperation()));
                 }
             }
             case NOPER -> {
                 SingleOpInstruction singleOpInstruction = (SingleOpInstruction) instruction;
                 result.append(pushElementToStack(singleOpInstruction.getSingleOperand()));
             }
+            case UNARYOPER -> {
+                // NOT SUPPORTED
+            }
         }
 
         return before.append(result).toString();
     }
 
-    private String invocationToString(Element caller, Element method) {
-        try{
-            LiteralElement literalMethod = (LiteralElement) method;
-            if (literalMethod.getLiteral().equals("\"<init>\""))
-                return "java/lang/Object/<init>()V\n";
-
-        } catch (ClassCastException ignored){ }
-
-        // TODO
-
-        return "ERRR\n";
+    private String returnToJasmin(ElementType elementType) {
+        if (elementType.equals(ElementType.INT32) || elementType.equals(ElementType.BOOLEAN))
+            return Constants.returnInt;
+        else
+            return Constants.returnObjectRef;
     }
 
-    private String operationToString(Operation operation) {
+    private String classPath() {
+        return classUnit.getClassName() + "/";
+    }
+
+    private String fullClassName(String className){
+        if(className.equals(classUnit.getClassName()) || className.equals(classUnit.getSuperClass()))
+            return className + "/";
+        else
+            return importedClass(className) + "/";
+    }
+
+    private String importedClass(String className){
+        for (String fullName : classUnit.getImports()){
+            if (fullName.substring(fullName.lastIndexOf(".") + 1).trim().equals(className))
+                return fullName.replace(".", "/");
+        }
+        return "ERRRRR";
+    }
+
+    private String invocationToJasmin(Element caller, Element method, String parameters) {
+        LiteralElement literalMethod;
+        ClassType callerType = (ClassType) caller.getType();
+
+        try{
+            literalMethod = (LiteralElement) method;
+        } catch (ClassCastException ignored){
+            System.out.println("Method name isnt literal ????");
+            return "ERRR";
+        }
+        System.out.println(callerType.getName() + " " + literalMethod.getLiteral());
+
+        if (literalMethod.getLiteral().equals("\"<init>\""))
+            return (caller.getType().getTypeOfElement().equals(ElementType.THIS) ?
+                    "java/lang/Object/" : fullClassName(callerType.getName()))
+                    + "<init>()V\n";
+
+        String methodName = literalMethod.getLiteral().replace("\"", "");
+        return fullClassName(callerType.getName()) + methodName
+                + "(" + parameters + ")" + methodType(caller, methodName) + "\n";
+
+    }
+
+    private String methodType(Element caller, String methodName) {
+        if (caller.getType().getTypeOfElement().equals(ElementType.THIS) ||
+            ((ClassType) caller.getType()).getName().equals(classUnit.getClassName())) {
+            for (var method : classUnit.getMethods()){
+                if (method.getMethodName().equals(methodName))
+                    return typeToJasmin(method.getReturnType());
+            }
+            return "V"; //TODO Temporarily is V, should be ERR
+        }
+        else {
+            return "V";
+        }
+    }
+
+    private String operationToJasmin(Operation operation) {
         switch (operation.getOpType()){
             case ADD, ADDI32 -> {
                 return Constants.addInt + "\n";
@@ -301,7 +350,7 @@ public class Jasmin {
                         return Constants.constant3B + literal.getLiteral() + "\n";
                     }
                     else {
-                        // ldc or ldc_w
+                        return Constants.constant4B + literal.getLiteral() + "\n";
                     }
                 }
                 else { // Is variable holding int, can still be array index
@@ -359,28 +408,20 @@ public class Jasmin {
         return (vreg >= 0 && vreg <= 3 ? Constants.storeObjRefSM : Constants.storeObjRef) + vreg;
     }
 
-    private String fieldToString(Field field) {
-        return ".field " + accessModifierToString(field.getFieldAccessModifier()) + " " + field.getFieldName() + " " + typeToString(field.getFieldType()) + "\n";
+    private String fieldToJasmin(Field field) {
+        return ".field " + accessModifierToJasmin(field.getFieldAccessModifier()) + " " + field.getFieldName() + " " + typeToJasmin(field.getFieldType()) + "\n";
     }
 
-    private String typeToString(Type type){
-        switch (type.getTypeOfElement()){
+    private String typeToJasmin(ElementType type){
+        switch (type){
             case INT32 -> {
                 return "I";
             }
             case BOOLEAN -> {
                 return "Z";
             }
-            case ARRAYREF -> {
-                return "[I";
-            }
-            case OBJECTREF -> {
-                return "";
-            }
-            case CLASS -> {
-                return "";
-            }
-            case THIS -> {
+            case ARRAYREF, OBJECTREF, CLASS, THIS -> {
+                // Wont reach here
                 return "";
             }
             case STRING -> {
@@ -395,7 +436,30 @@ public class Jasmin {
         }
     }
 
-    private String accessModifierToString(AccessModifiers classAccessModifier) {
+    private String typeToJasmin(Type type){
+        switch (type.getTypeOfElement()){
+            case INT32, BOOLEAN, STRING, VOID -> {
+                return typeToJasmin(type.getTypeOfElement());
+            }
+            case ARRAYREF -> {
+                ArrayType arrayType = (ArrayType) type;
+                return "[" + typeToJasmin(arrayType.getTypeOfElements());
+            }
+            case OBJECTREF, CLASS -> {
+                ClassType classType = (ClassType) type;
+                type.show();
+                return "L" + classType.getName() + ";";
+            }
+            case THIS -> {
+                return "";
+            }
+            default -> {
+                return "";
+            }
+        }
+    }
+
+    private String accessModifierToJasmin(AccessModifiers classAccessModifier) {
         return String.valueOf(classAccessModifier.equals(AccessModifiers.DEFAULT) ? AccessModifiers.PUBLIC : classAccessModifier).toLowerCase();
     }
 }

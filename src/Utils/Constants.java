@@ -67,7 +67,8 @@ public class Constants {
     public static final String superAttribute = "super";
 
     // Jasmin instructions
-    public static final String returnInstr = "ireturn";
+    public static final String returnInt = "ireturn";
+    public static final String returnObjectRef = "areturn";
     public static final String returnVoidInstr = "return";
     public static final String loadObjectRefSM = "aload_";
     public static final String loadObjectRef = "aload ";
@@ -77,6 +78,7 @@ public class Constants {
     public static final String constant1B = "iconst_";
     public static final String constant2B = "bipush ";
     public static final String constant3B = "sipush ";
+    public static final String constant4B = "ldc ";
     public static final String putfield = "putfield ";
     public static final String getfield = "getfield ";
 
