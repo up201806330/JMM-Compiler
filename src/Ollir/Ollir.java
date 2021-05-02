@@ -15,12 +15,28 @@ public class Ollir {
 
         for (var node: root.getChildren()) {
             switch (node.getKind()) {
-                case Constants.importDeclNodeName -> imports.add(node.get(Constants.nameAttribute));
+                case Constants.importDeclNodeName -> stringBuilder.append(importDeclarationToOllir(node, ""));
                 case Constants.classDeclNodeName -> stringBuilder.append(classDeclarationToOllir(node, ""));
                 default -> System.out.println("getCode: " + node);
             }
         }
 
+        return stringBuilder.toString();
+    }
+
+    private String importDeclarationToOllir(JmmNode node, String prefix) {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (node.getParent().getKind().equals("Program"))
+            stringBuilder.append("import ");
+
+        if (node.getNumChildren() != 0){
+            stringBuilder.append(node.get(Constants.typeAttribute)).append(".");
+            stringBuilder.append(importDeclarationToOllir(node.getChildren().get(0), ""));
+        }
+        else {
+            stringBuilder.append(node.get(Constants.typeAttribute)).append(";\n");
+            imports.add(node.get(Constants.nameAttribute));
+        }
         return stringBuilder.toString();
     }
 

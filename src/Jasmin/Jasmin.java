@@ -1,6 +1,7 @@
 import org.specs.comp.ollir.*;
 
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
 public class Jasmin {
     private final String indent = "  ";
@@ -40,10 +41,14 @@ public class Jasmin {
 
         method.show();
 
+
         result.append(".method ")
             .append(accessModifierToString(method.getMethodAccessModifier()))
             .append(method.isStaticMethod() ? " static " : " ")
-            .append(method.isConstructMethod() ? "<init>" : method.getMethodName()).append("()")
+            .append(method.isConstructMethod() ? "<init>" : method.getMethodName())
+            .append("(")
+                .append(method.getParams().stream().map(x -> typeToString(x.getType())).collect(Collectors.joining()))
+            .append(")")
             .append(typeToString(method.getReturnType())).append("\n");
 
             if (!method.isConstructMethod()){
@@ -52,7 +57,7 @@ public class Jasmin {
             }
 
             method.getInstructions().forEach(x -> result.append(instructionToString(x)));
-//            method.getInstructions().forEach(Instruction::show);
+            // method.getInstructions().forEach(Instruction::show);
 
         if (method.isConstructMethod())
             result.append(indent).append(Constants.returnVoidInstr).append("\n");
@@ -180,6 +185,7 @@ public class Jasmin {
                       .append(pushElementToStack(putFieldInstruction.getThirdOperand()));
 
                 result.append(Constants.putfield)
+                      .append(classUnit.getPackage() != null ? classUnit.getPackage() + "/" : "")
                       .append(classUnit.getClassName()).append("/")
                       .append(secondOperand.getName()).append(" ")
                       .append(typeToString(secondOperand.getType()))
@@ -191,6 +197,7 @@ public class Jasmin {
                 before.append(indent)
                       .append(Constants.loadObjectRefSM).append(0).append("\n"); // Hardcoded since only fields from this class can be accessed
                 result.append(Constants.getfield)
+                      .append(classUnit.getPackage() != null ? classUnit.getPackage() + "/" : "")
                       .append(classUnit.getClassName()).append("/")
                       .append(secondOperand.getName()).append(" ")
                       .append(typeToString(secondOperand.getType()))
@@ -235,7 +242,7 @@ public class Jasmin {
 
         } catch (ClassCastException ignored){ }
 
-
+        // TODO
 
         return "ERRR\n";
     }
