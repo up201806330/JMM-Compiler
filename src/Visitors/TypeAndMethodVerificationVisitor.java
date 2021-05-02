@@ -39,6 +39,9 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
                 node.getAncestor(Constants.methodDeclNodeName).map(ancestorNode -> ancestorNode.get(Constants.nameAttribute)).orElse("this"),
                 node.get(Constants.valueAttribute));
 
+        var methodOpt = node.getAncestor(Constants.methodDeclNodeName);
+        var methodName = (methodOpt.isPresent() ? methodOpt.get().get(Constants.nameAttribute) : "");
+        var methodSymOpt = symbolTable.tryGettingSymbol(Constants.thisAttribute, methodName);
 
         if (variableOpt.isEmpty()){
             reports.add(new Report(
@@ -63,7 +66,18 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
                         Stage.SEMANTIC,
                         Integer.parseInt(node.get(Constants.lineAttribute)),
                         Integer.parseInt(node.get(Constants.columnAttribute)),
-                        "Variable " + node.get(Constants.valueAttribute) + " must be initialized before being used"
+                        "Variable '" + node.get(Constants.valueAttribute) + "' must be initialized before being used"
+                ));
+                node.put(Constants.typeAttribute, Constants.error);
+                node.put(Constants.arrayAttribute, Constants.error);
+            }
+            else if (methodSymOpt.isPresent() && methodSymOpt.get().isStatic() && variable.isField()) {
+                reports.add(new Report(
+                        ReportType.WARNING,
+                        Stage.SEMANTIC,
+                        Integer.parseInt(node.get(Constants.lineAttribute)),
+                        Integer.parseInt(node.get(Constants.columnAttribute)),
+                        "Non-static field '" + node.get(Constants.valueAttribute) + "' cannot be referenced from a static context"
                 ));
                 node.put(Constants.typeAttribute, Constants.error);
                 node.put(Constants.arrayAttribute, Constants.error);

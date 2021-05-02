@@ -151,7 +151,7 @@ public class Jasmin {
 
                 if (method != null){
                      result.append(callInstruction.getInvocationType()).append(" ")
-                           .append(invocationToJasmin(caller, method, parametersToJasmin(parameters)));
+                           .append(invocationToJasmin(caller, method, parametersToJasmin(parameters), callInstruction.getInvocationType().equals(CallType.invokestatic)));
                 }
 
                 parameters.forEach(op ->
@@ -171,7 +171,7 @@ public class Jasmin {
                 if (returnInstruction.hasReturnValue()){
                     before.append(indent)
                           .append(pushElementToStack(returnInstruction.getOperand()));
-                    result.append(returnToJasmin(returnInstruction.getElementType())).append("\n");
+                    result.append(returnToJasmin(returnInstruction.getOperand().getType().getTypeOfElement())).append("\n");
                 }
                 else
                     result.append(Constants.returnVoidInstr).append("\n");
@@ -259,7 +259,7 @@ public class Jasmin {
         return "ERRRRR";
     }
 
-    private String invocationToJasmin(Element caller, Element method, String parameters) {
+    private String invocationToJasmin(Element caller, Element method, String parameters, boolean isStatic) {
         LiteralElement literalMethod;
         ClassType callerType = (ClassType) caller.getType();
 
@@ -269,7 +269,7 @@ public class Jasmin {
             System.out.println("Method name isnt literal ????");
             return "ERRR";
         }
-        System.out.println(callerType.getName() + " " + literalMethod.getLiteral());
+//        System.out.println(callerType.getName() + " " + literalMethod.getLiteral());
 
         if (literalMethod.getLiteral().equals("\"<init>\""))
             return (caller.getType().getTypeOfElement().equals(ElementType.THIS) ?
@@ -277,7 +277,7 @@ public class Jasmin {
                     + "<init>()V\n";
 
         String methodName = literalMethod.getLiteral().replace("\"", "");
-        return fullClassName(callerType.getName()) + methodName
+        return fullClassName(isStatic ? ((Operand) caller).getName() : callerType.getName()) + methodName
                 + "(" + parameters + ")" + methodType(caller, methodName) + "\n";
 
     }
