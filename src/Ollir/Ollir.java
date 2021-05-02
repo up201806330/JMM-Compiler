@@ -592,7 +592,7 @@ public class Ollir {
         StringBuilder stringBuilder = new StringBuilder(prefix);
         String varName = node.get(Constants.valueAttribute);
         JmmNode parent = node.getParent();
-        String leftName = parent.getChildren().get(0).get(Constants.valueAttribute);
+        String leftName = parent.getChildren().get(0).getOptional(Constants.valueAttribute).orElse("");
 
         if (!isField(varName)){ // Is local var or parameter
             if (varName.equals(Constants.thisAttribute)){
@@ -607,7 +607,7 @@ public class Ollir {
             }
         }
         else if (!(parent.getKind().equals(Constants.assignmentNodeName) && // Is class field and isnt the target of a putfield
-                !(methodVars.contains(leftName) || methodParameters.contains(leftName)))) {
+                    isField(leftName))) {
             String type = OllirCodeUtils.typeToOllir(node.get(Constants.typeAttribute), node.getOptional(Constants.arrayAttribute));
             stringBuilder.append("getfield(this, ")
                     .append(varName).append(type)

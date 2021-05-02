@@ -81,8 +81,13 @@ public class Constants {
 
     public static final String storeInt = "istore_";
     public static final String storeArrayElem = "iastore";
+    public static final String storeArrayRef = "astore ";
+    public static final String storeArrayRefSM = "astore_";
     public static final String storeObjRefSM = "astore_";
     public static final String storeObjRef = "astore ";
+
+    public static final String newArray = "newarray int";
+    public static final String newObj = "new ";
 
     public static final String addInt = "iadd";
     public static final String subInt = "isub";
