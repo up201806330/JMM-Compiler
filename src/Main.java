@@ -1,3 +1,4 @@
+import pt.up.fe.comp.TestUtils;
 import pt.up.fe.comp.jmm.JmmParser;
 import pt.up.fe.comp.jmm.JmmParserResult;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
@@ -52,6 +53,9 @@ public class Main implements JmmParser {
 		JmmSemanticsResult semanticsResults = analysis.semanticAnalysis(parserResults);
 
 		showReports(semanticsResults.getReports());
+
+		if (TestUtils.getNumErrors(semanticsResults.getReports()) > 0)
+			return;
 
 		OptimizationStage optimization = new OptimizationStage();
 		OllirResult ollirResult = optimization.toOllir(semanticsResults);

@@ -17,7 +17,11 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import pt.up.fe.comp.TestUtils;
+import pt.up.fe.comp.jmm.ollir.OllirResult;
+import pt.up.fe.comp.jmm.ollir.OllirUtils;
 import pt.up.fe.specs.util.SpecsIo;
+
+import java.util.ArrayList;
 
 public class BackendTest {
 
@@ -39,12 +43,21 @@ public class BackendTest {
         assertEquals("30", output.trim());
     }
 
-//    @Test
-//    public void testOperatorPrecedence() {
-//        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/OperatorPrecedence.jmm"));
-//        TestUtils.noErrors(result.getReports());
-//
-//        var output = result.run();
-//        assertEquals("", output.trim());
-//    }
+    @Test
+    public void testOperatorPrecedence() {
+        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/OperatorPrecedence.jmm"));
+        TestUtils.noErrors(result.getReports());
+
+        var output = result.run();
+        assertEquals(String.valueOf(1 * 3 - 4 / 5 * (2-5)), output.trim());
+    }
+
+    @Test
+    public void testFac() {
+        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/Fac.jmm"));
+        TestUtils.noErrors(result.getReports());
+
+        var output = result.run();
+        assertEquals("3628800", output.trim()); // 10! = 3628800
+    }
 }

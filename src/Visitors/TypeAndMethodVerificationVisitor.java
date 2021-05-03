@@ -45,7 +45,7 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
 
         if (variableOpt.isEmpty()){
             reports.add(new Report(
-                    ReportType.WARNING,
+                    ReportType.ERROR,
                     Stage.SEMANTIC,
                     Integer.parseInt(node.get(Constants.lineAttribute)),
                     Integer.parseInt(node.get(Constants.columnAttribute)),

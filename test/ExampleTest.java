@@ -317,19 +317,19 @@ public class ExampleTest {
         }
     }
 
-    // EXTRAS //
-
     @Test
     public void testUndef() {
         String file = SpecsIo.read("test/fixtures/public/fail/semantic/var_undef.jmm");
         JmmSemanticsResult result = TestUtils.analyse(file);
         try{
-            TestUtils.noErrors(result.getReports());
-            assertEquals(1, TestUtils.getNumReports(result.getReports(), ReportType.WARNING));
+            TestUtils.mustFail(result.getReports());
+            assertEquals(1, TestUtils.getNumErrors(result.getReports()));
         } catch (RuntimeException | AssertionError e) {
-            fail("Expected 1 warning, got " + TestUtils.getNumReports(result.getReports(), ReportType.WARNING));
+            fail("Expected 1 error, got " + TestUtils.getNumErrors(result.getReports()));
         }
     }
+
+    // EXTRAS //
 
     @Test
     public void testNotInit() {
