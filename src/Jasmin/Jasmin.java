@@ -176,11 +176,19 @@ public class Jasmin {
                     case OR, ORB, ORI32, GTH, GTHI32, EQ, EQI32, GTE, GTEI32, LTE, LTEI32, NEQ, NEQI32, NOT, NOTB -> {
                         // NOT SUPPORTED
                     }
-                    case AND, ANDI32, ANDB ->
-                        result.append(pushElementToStack(left))
-                              .append(indent).append(Constants.compEquals).append(target).append("\n")
-                              .append(indent).append(pushElementToStack(right))
-                              .append(indent).append(Constants.compEquals).append(target).append("\n");
+                    case AND, ANDI32, ANDB ->{
+                        String leftElement = pushElementToStack(left);
+                        String rightElement = pushElementToStack(right);
+                        String trueValue = Constants.constant1B + 1 + "\n";
+
+                        if (!trueValue.equals(leftElement))
+                            result.append(leftElement)
+                                  .append(indent).append(Constants.compEquals).append(target).append("\n");
+
+                        if (!trueValue.equals(rightElement))
+                            result.append(indent).append(rightElement)
+                                  .append(indent).append(Constants.compEquals).append(target).append("\n");
+                    }
 
 
                     case LTH, LTHI32 ->
