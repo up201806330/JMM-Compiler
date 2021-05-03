@@ -21,12 +21,30 @@ import pt.up.fe.specs.util.SpecsIo;
 
 public class BackendTest {
 
+    @Test
+    public void testHelloWorld() {
+        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/HelloWorld.jmm"));
+        TestUtils.noErrors(result.getReports());
+
+        var output = result.run();
+        assertEquals("Hello, World!", output.trim());
+    }
+
+    @Test
+    public void testSimple() {
+        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/Simple.jmm"));
+        TestUtils.noErrors(result.getReports());
+
+        var output = result.run();
+        assertEquals("30", output.trim());
+    }
+
 //    @Test
-//    public void testHelloWorld() {
-//        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/HelloWorld.jmm"));
+//    public void testOperatorPrecedence() {
+//        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/OperatorPrecedence.jmm"));
 //        TestUtils.noErrors(result.getReports());
 //
 //        var output = result.run();
-//        assertEquals("Hello, World!", output.trim());
+//        assertEquals("", output.trim());
 //    }
 }

@@ -14,15 +14,16 @@ import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.specs.util.SpecsIo;
 
 public class ExampleTest {
-    // Os testes aqui feitos testam se o programa dá error
+    // Os testes aqui feitos testam se o programa dá error nas análises sintáticas e semânticas
     // e se o número de erros é o correto (número correto de erros foi calculado manualmente).
 
     @Test
     public void testSimple() {
         String file = SpecsIo.read("test/fixtures/public/Simple.jmm");
         JmmParserResult result = TestUtils.parse(file);
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(result);
         try {
-            TestUtils.noErrors(result.getReports());
+            TestUtils.noErrors(semanticsResult.getReports());
             assertTrue(true);
         } catch (RuntimeException e) {
             fail();
@@ -33,8 +34,9 @@ public class ExampleTest {
     public void testFindMaximum() {
         String file = SpecsIo.read("test/fixtures/public/FindMaximum.jmm");
         JmmParserResult result = TestUtils.parse(file);
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(result);
         try {
-            TestUtils.noErrors(result.getReports());
+            TestUtils.noErrors(semanticsResult.getReports());
             assertTrue(true);
         } catch (RuntimeException e) {
             fail();
@@ -45,8 +47,9 @@ public class ExampleTest {
     public void testHelloWorld() {
         String file = SpecsIo.read("test/fixtures/public/HelloWorld.jmm");
         JmmParserResult result = TestUtils.parse(file);
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(result);
         try {
-            TestUtils.noErrors(result.getReports());
+            TestUtils.noErrors(semanticsResult.getReports());
             assertTrue(true);
         } catch (RuntimeException e) {
             fail();
@@ -57,8 +60,9 @@ public class ExampleTest {
     public void testLazySort() {
         String file = SpecsIo.read("test/fixtures/public/Lazysort.jmm");
         JmmParserResult result = TestUtils.parse(file);
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(result);
         try {
-            TestUtils.noErrors(result.getReports());
+            TestUtils.noErrors(semanticsResult.getReports());
             assertTrue(true);
         } catch (RuntimeException e) {
             fail();
@@ -69,8 +73,9 @@ public class ExampleTest {
     public void testLife() {
         String file = SpecsIo.read("test/fixtures/public/Life.jmm");
         JmmParserResult result = TestUtils.parse(file);
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(result);
         try {
-            TestUtils.noErrors(result.getReports());
+            TestUtils.noErrors(semanticsResult.getReports());
             assertTrue(true);
         } catch (RuntimeException e) {
             fail();
@@ -81,8 +86,9 @@ public class ExampleTest {
     public void testMonteCarloPi() {
         String file = SpecsIo.read("test/fixtures/public/MonteCarloPi.jmm");
         JmmParserResult result = TestUtils.parse(file);
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(result);
         try {
-            TestUtils.noErrors(result.getReports());
+            TestUtils.noErrors(semanticsResult.getReports());
             assertTrue(true);
         } catch (RuntimeException e) {
             fail();
@@ -93,8 +99,9 @@ public class ExampleTest {
     public void testQuickSort() {
         String file = SpecsIo.read("test/fixtures/public/QuickSort.jmm");
         JmmParserResult result = TestUtils.parse(file);
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(result);
         try {
-            TestUtils.noErrors(result.getReports());
+            TestUtils.noErrors(semanticsResult.getReports());
             assertTrue(true);
         } catch (RuntimeException e) {
             fail();
@@ -105,8 +112,9 @@ public class ExampleTest {
     public void testTicTacToe() {
         String file = SpecsIo.read("test/fixtures/public/TicTacToe.jmm");
         JmmParserResult result = TestUtils.parse(file);
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(result);
         try {
-            TestUtils.noErrors(result.getReports());
+            TestUtils.noErrors(semanticsResult.getReports());
             assertTrue(true);
         } catch (RuntimeException e) {
             fail();
@@ -117,8 +125,9 @@ public class ExampleTest {
     public void testWhileAndIF() {
         String file = SpecsIo.read("test/fixtures/public/WhileAndIF.jmm");
         JmmParserResult result = TestUtils.parse(file);
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(result);
         try {
-            TestUtils.noErrors(result.getReports());
+            TestUtils.noErrors(semanticsResult.getReports());
             assertTrue(true);
         } catch (RuntimeException e) {
             fail();
@@ -201,8 +210,9 @@ public class ExampleTest {
     public void testOperatorPrecedence() {
         String file = SpecsIo.read("test/fixtures/public/OperatorPrecedence.jmm");
         JmmParserResult result = TestUtils.parse(file);
+        JmmSemanticsResult semanticsResult = TestUtils.analyse(result);
         try {
-            TestUtils.noErrors(result.getReports());
+            TestUtils.noErrors(semanticsResult.getReports());
             assertTrue(true);
         } catch (RuntimeException e) {
             fail();
