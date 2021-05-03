@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 public class Jasmin {
     private final String indent = "\t";
     private HashMap<String, Descriptor> varTable;
+    private HashMap<Instruction, String> methodLabels;
     private ClassUnit classUnit;
 
     public String getByteCode(ClassUnit classUnit) throws OllirErrorException {
@@ -35,8 +36,12 @@ public class Jasmin {
     private String methodToJasmin(Method method){
         StringBuilder result = new StringBuilder();
         varTable = method.getVarTable();
+        methodLabels = new HashMap<>();
+        for (var entry : method.getLabels().entrySet()){
+            methodLabels.put(entry.getValue(), entry.getKey());
+        }
 
-//        method.show();
+        method.show();
 
         result.append(".method ")
             .append(accessModifierToJasmin(method.getMethodAccessModifier()))
@@ -70,6 +75,8 @@ public class Jasmin {
         StringBuilder before = new StringBuilder();
         StringBuilder result = new StringBuilder(indent);
 
+        String label = methodLabels.get(instruction);
+
         switch (instruction.getInstType()){
             case ASSIGN -> {
                 AssignInstruction assignInstruction = (AssignInstruction) instruction;
@@ -91,10 +98,7 @@ public class Jasmin {
                         }
 
                     }
-                    case ARRAYREF -> {
-                        result.append(storeArrayRef(vreg)).append("\n");
-                    }
-                    case OBJECTREF -> {
+                    case ARRAYREF, OBJECTREF -> {
                         result.append(storeObjectRef(vreg)).append("\n");
                     }
                     case CLASS -> {
@@ -159,9 +163,35 @@ public class Jasmin {
                 );
             }
             case GOTO -> {
+                GotoInstruction gotoInstruction = (GotoInstruction) instruction;
+                result.append(Constants.gotoLabel).append(gotoInstruction.getLabel()).append("\n");
             }
             case BRANCH -> {
                 CondBranchInstruction condBranchInstruction = (CondBranchInstruction) instruction;
+                var left = condBranchInstruction.getLeftOperand();
+                var right = condBranchInstruction.getRightOperand();
+                var target = condBranchInstruction.getLabel();
+
+                switch (condBranchInstruction.getCondOperation().getOpType()){
+                    case OR, ORB, ORI32, GTH, GTHI32, EQ, EQI32, GTE, GTEI32, LTE, LTEI32, NEQ, NEQI32, NOT, NOTB -> {
+                        // NOT SUPPORTED
+                    }
+                    case AND, ANDI32, ANDB ->
+                        result.append(pushElementToStack(left))
+                              .append(indent).append(Constants.compEquals).append(target).append("\n")
+                              .append(indent).append(pushElementToStack(right))
+                              .append(indent).append(Constants.compEquals).append(target).append("\n");
+
+
+                    case LTH, LTHI32 ->
+                            result.append(pushElementToStack(left))
+                                  .append(indent).append(pushElementToStack(right))
+                                  .append(indent).append(Constants.compLessThan).append(target).append("\n");
+
+                    case ADD, SUB, MUL, DIV, SHR, SHL, SHRR, XOR, ADDI32, SUBI32, MULI32, DIVI32, SHRI32, SHLI32, SHRRI32, XORI32 -> {
+                        System.out.println("Incompatible operation in condition ; Something wrong in semantic analysis");
+                    }
+                }
                 // In progress
 
             }
@@ -229,7 +259,8 @@ public class Jasmin {
             }
         }
 
-        return before.append(result).toString();
+        return (label != null ? label + ":\n" : "") +
+                before + result;
     }
 
     private String returnToJasmin(ElementType elementType) {
@@ -313,6 +344,7 @@ public class Jasmin {
                 return Constants.andInt + "\n";
             }
             case LTH, LTHI32 -> {
+                // TODO
             }
             case NOT, NOTB -> { // Since all boolean values have been checked (are always 0 or 1), we can use this method, which is faster than the if approach
                 return Constants.notInt + "\n";
@@ -397,10 +429,6 @@ public class Jasmin {
 
     private String storeInt(int vreg){
         return (vreg >= 0 && vreg <= 3 ? Constants.storeIntSM : Constants.storeInt) + vreg;
-    }
-
-    private String storeArrayRef(int vreg){
-        return (vreg >= 0 && vreg <= 3 ? Constants.storeArrayRefSM : Constants.storeArrayRef) + vreg;
     }
 
     private String storeObjectRef(int vreg){

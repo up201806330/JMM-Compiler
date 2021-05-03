@@ -81,12 +81,11 @@ public class Constants {
     public static final String constant4B = "ldc ";
     public static final String putfield = "putfield ";
     public static final String getfield = "getfield ";
+    public static final String gotoLabel = "goto ";
 
     public static final String storeInt = "istore ";
     public static final String storeIntSM = "istore_";
     public static final String storeArrayElem = "iastore";
-    public static final String storeArrayRef = "astore ";
-    public static final String storeArrayRefSM = "astore_";
     public static final String storeObjRef = "astore ";
     public static final String storeObjRefSM = "astore_";
 
@@ -99,5 +98,8 @@ public class Constants {
     public static final String divInt = "idiv";
     public static final String andInt = "iand";
     public static final String notInt = "ixor";
+    public static final String compLessThan = "if_icmplt ";
+    public static final String compEquals = "ifeq ";
+    public static final String compDiff = "ifneq ";
 
 }

@@ -285,8 +285,8 @@ public class Ollir {
         switch (child.getKind()) {
             case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(child, "")).append(" &&.bool true.bool");
             case Constants.literalNodeName -> stringBuilder.append(literalToOllir(child, "")).append(" &&.bool true.bool");
-            case Constants.binaryNodeName -> stringBuilder.append(binaryToOllir(child, "", before));
-            case Constants.notExprNodeName -> stringBuilder.append(notExpressionToOllir(child, "", before));
+            case Constants.binaryNodeName -> stringBuilder.append(binaryToOllir(child, prefix, before));
+            case Constants.notExprNodeName -> stringBuilder.append(notExpressionToOllir(child, prefix, before));
             case Constants.callExprNodeName, Constants.propertyAccessNodeName,
                     Constants.arrayExprNodeName, Constants.newNodeName ->
                     stringBuilder.append(makeLocalVar(child, prefix, before)).append(" &&.bool true.bool");
