@@ -24,4 +24,73 @@ public class OptimizeTest {
         var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/HelloWorld.jmm"));
         TestUtils.noErrors(result.getReports());
     }
+
+    @Test
+    public void testSimple() {
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/Simple.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testOperatorPrecedence() {
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/OperatorPrecedence.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+
+    /*
+    // Não é suposto passar estes testes no checkpoint 2 (mesmo assim, já passa os mais simples)
+    @Test
+    public void testFac() {
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/Fac.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testFindMaximum() {
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/FindMaximum.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testLazySort() {
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/LazySort.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testLife() {
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/Life.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testMonteCarloPi() {
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/MonteCarloPi.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testMyClass() {
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/MyClass.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testQuickSort() {
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/QuickSort.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testTicTacToe() {
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/TicTacToe.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testWhileAndIf() {
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/WhileAndIf.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+    */
 }
