@@ -103,5 +103,6 @@ public class Constants {
     public static final String compLessThan = "if_icmplt ";
     public static final String compFalse = "ifeq ";
     public static final String compTrue = "ifne ";
+    public static final String incrementInt = "iinc ";
 
 }

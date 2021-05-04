@@ -2,6 +2,7 @@ import org.specs.comp.ollir.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Jasmin {
@@ -101,8 +102,10 @@ public class Jasmin {
                 var type = assignInstruction.getDest().getType();
 
                 int vreg = varTable.get(((Operand) assignInstruction.getDest()).getName()).getVirtualReg();
+                Optional<String> varIncrementOpt = checkVarIncrement(assignInstruction);
 
-                before.append(instructionToJasmin(assignInstruction.getRhs()));
+                if (varIncrementOpt.isEmpty())
+                    before.append(instructionToJasmin(assignInstruction.getRhs()));
 
                 switch (type.getTypeOfElement()){
                     case INT32, BOOLEAN -> {
@@ -115,9 +118,11 @@ public class Jasmin {
                             result.append(Constants.storeArrayElem).append("\n");
                             incrementStack(-3);
                         } catch (ClassCastException e){ // Otherwise, is int or boolean
-                            result.append(storeInt(vreg)).append("\n");
+                            if (varIncrementOpt.isEmpty())
+                                result.append(storeInt(vreg)).append("\n");
+                            else
+                                result.append(Constants.incrementInt).append(vreg).append(" ").append(varIncrementOpt.get()).append("\n");
                         }
-
                     }
                     case ARRAYREF, OBJECTREF -> {
                         result.append(storeObjectRef(vreg)).append("\n");
@@ -306,6 +311,34 @@ public class Jasmin {
 
         return (label != null ? label + ":\n" : "") +
                 before + result;
+    }
+
+    private Optional<String> checkVarIncrement(AssignInstruction instruction) {
+        try{
+            var rhs = (BinaryOpInstruction)instruction.getRhs();
+            var opType = rhs.getUnaryOperation().getOpType();
+
+            if ((opType.equals(OperationType.ADD) || opType.equals(OperationType.SUB))){ // Operation must be simple add or sub
+                var dest = (Operand)instruction.getDest();
+                var leftOp = (rhs.getLeftOperand().isLiteral() ? null : ((Operand) rhs.getLeftOperand()));
+                var rightOp = (rhs.getRightOperand().isLiteral() ? null : ((Operand) rhs.getRightOperand()));
+
+                if (leftOp != null &&  dest.getName().equals(leftOp.getName())){
+                    var leftVal = (opType.equals(OperationType.SUB) ? "-" : "") + ((LiteralElement)rhs.getRightOperand()).getLiteral();
+                    if (Integer.parseInt(leftVal) >= -128 && Integer.parseInt(leftVal) <= 127)
+                        return Optional.of(leftVal);
+                }
+                else if (rightOp != null &&  dest.getName().equals(rightOp.getName())){
+                    var rightVal = (opType.equals(OperationType.SUB) ? "-" : "") + ((LiteralElement)rhs.getLeftOperand()).getLiteral();
+                    if (Integer.parseInt(rightVal) >= -128 && Integer.parseInt(rightVal) <= 127)
+                        return Optional.of(rightVal);
+                }
+            }
+            return Optional.empty();
+        }
+        catch (ClassCastException ignored){
+            return Optional.empty();
+        }
     }
 
     private String returnToJasmin(ElementType elementType) {
