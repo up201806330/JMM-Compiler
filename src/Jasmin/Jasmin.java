@@ -24,8 +24,9 @@ public class Jasmin {
         if (vreg + 1 > maxLocalsSize) maxLocalsSize = vreg + 1;
     }
 
-    public String getByteCode(ClassUnit classUnit) throws OllirErrorException {
+    public String getByteCode(ClassUnit classUnit, int dashR, boolean dashO) throws OllirErrorException {
         this.classUnit = classUnit;
+        classUnit.buildVarTables();
 
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(".class ")
@@ -39,15 +40,15 @@ public class Jasmin {
 
 
         classUnit.getFields().forEach(x -> stringBuilder.append(fieldToJasmin(x)));
-        stringBuilder.append("\n");
 
-        classUnit.buildVarTables();
-        classUnit.getMethods().forEach(x -> stringBuilder.append(methodToJasmin(x)));
+        for (Method method : classUnit.getMethods()){
+            stringBuilder.append(methodToJasmin(method, dashR));
+        }
 
         return stringBuilder.toString();
     }
 
-    private String methodToJasmin(Method method){
+    private String methodToJasmin(Method method, int dashR) throws OllirErrorException {
         StringBuilder start = new StringBuilder();
         StringBuilder result = new StringBuilder();
 
@@ -81,6 +82,10 @@ public class Jasmin {
         if (!method.isConstructMethod()){
             start.append(indent).append(".limit stack ").append(maxStackSize).append("\n")
                     .append(indent).append(".limit locals ").append(maxLocalsSize).append("\n");
+        }
+
+        if (maxLocalsSize > dashR){
+            throw new OllirErrorException("Cannot compile code with '" + dashR + "' local variables. Need atleast '" + maxLocalsSize + "'");
         }
 
         return start.append(result).toString();

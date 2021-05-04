@@ -27,14 +27,16 @@ import pt.up.fe.specs.util.SpecsIo;
 
 public class BackendStage implements JasminBackend {
 
-    @Override
-    public JasminResult toJasmin(OllirResult ollirResult) {
+    public JasminResult toJasmin(OllirResult ollirResult, int dashR, boolean dashO){
         ClassUnit ollirClass = ollirResult.getOllirClass();
+
+        if (dashR < 1) dashR = 1;
+        else if (dashR > 99) dashR = 99;
 
         try {
             Jasmin jasmin = new Jasmin();
             // Convert the OLLIR to a String containing the equivalent Jasmin code
-            String jasminCode = jasmin.getByteCode(ollirClass); // Convert node ...
+            String jasminCode = jasmin.getByteCode(ollirClass, dashR, dashO); // Convert node ...
             System.out.println(jasminCode);
 
             // More reports from this stage
@@ -46,7 +48,11 @@ public class BackendStage implements JasminBackend {
             return new JasminResult(ollirClass.getClassName(), null,
                     Arrays.asList(Report.newError(Stage.GENERATION, -1, -1, "Exception during Jasmin generation", e)));
         }
+    }
 
+    @Override
+    public JasminResult toJasmin(OllirResult ollirResult) {
+        return toJasmin(ollirResult, 99, false);
     }
 
 }

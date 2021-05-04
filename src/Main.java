@@ -61,7 +61,32 @@ public class Main implements JmmParser {
 		OllirResult ollirResult = optimization.toOllir(semanticsResults);
 
 		BackendStage backend = new BackendStage();
-		JasminResult jasminResult = backend.toJasmin(ollirResult);
+		JasminResult jasminResult;
+		if (args.length == 2){
+			if (args[1].startsWith("-r"))
+				jasminResult = backend.toJasmin(ollirResult, Integer.parseInt(args[1].substring(args[1].lastIndexOf("=") + 1)), false);
+			else if (args[1].startsWith("-o"))
+				jasminResult = backend.toJasmin(ollirResult, 99, true);
+			else
+				jasminResult = backend.toJasmin(ollirResult);
+		}
+		else if (args.length == 3){
+			int r;
+			boolean o = args[1].startsWith("-o") || args[2].startsWith("-o");
+
+			if (args[1].startsWith("-r"))
+				r = Integer.parseInt(args[1].substring(args[1].lastIndexOf("=") + 1));
+			else if (args[2].startsWith("-r"))
+				r = Integer.parseInt(args[2].substring(args[2].lastIndexOf("=") + 1));
+			else
+				r = 99;
+
+			jasminResult = backend.toJasmin(ollirResult, r, o);
+		}
+		else {
+			jasminResult = backend.toJasmin(ollirResult);
+		}
+
 
 		System.out.println("vvvv Program results vvvv");
 		jasminResult.run();
