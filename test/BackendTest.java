@@ -34,14 +34,14 @@ public class BackendTest {
         assertEquals("Hello, World!", output.trim());
     }
 
-//    @Test
-//    public void testSimple() {
-//        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/Simple.jmm"));
-//        TestUtils.noErrors(result.getReports());
-//
-//        var output = result.run();
-//        assertEquals("30", output.trim());
-//    }
+    @Test
+    public void testSimple() {
+        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/Simple.jmm"));
+        TestUtils.noErrors(result.getReports());
+
+        var output = result.run();
+        assertEquals("30", output.trim());
+    }
 
     @Test
     public void testOperatorPrecedence() {
@@ -52,12 +52,12 @@ public class BackendTest {
         assertEquals(String.valueOf(1 * 3 - 4 / 5 * (2-5)), output.trim());
     }
 
-//    @Test
-//    public void testFac() {
-//        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/Fac.jmm"));
-//        TestUtils.noErrors(result.getReports());
-//
-//        var output = result.run();
-//        assertEquals("3628800", output.trim()); // 10! = 3628800
-//    }
+    @Test
+    public void testFac() {
+        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/Fac.jmm"));
+        TestUtils.noErrors(result.getReports());
+
+        var output = result.run();
+        assertEquals("3628800", output.trim()); // 10! = 3628800
+    }
 }

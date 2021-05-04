@@ -358,9 +358,7 @@ public class Jasmin {
                 return Constants.subInt + "\n" +
                         indent + Constants.constant2B + 31 + "\n" + // Hardcoded 32 bit right shift
                         indent + Constants.shiftR + "\n" +
-                        indent + Constants.negateInt + "\n" + //;
-                        indent + "dup\n" +
-                        indent + "invokestatic io/println(I)V\n";
+                        indent + Constants.negateInt + "\n";
             }
             case NOT, NOTB -> { // Since all boolean values have been checked (are always 0 or 1), we can use this method, which is faster than the if approach
                 return Constants.notInt + "\n";
@@ -384,14 +382,13 @@ public class Jasmin {
         switch (element.getType().getTypeOfElement()){
             case INT32 -> {
                 if (element.isLiteral()){
-                    if (Integer.parseInt(literal.getLiteral()) == 0){
-                        return Constants.constant1B + 0 + "\n";
-
-                    }
-                    else if (Integer.parseInt(literal.getLiteral()) == -1) {
+                    if (Integer.parseInt(literal.getLiteral()) == -1) {
                         return Constants.constantMinus1 + "\n";
                     }
-                    else if (Integer.parseInt(literal.getLiteral()) >= 0 && Integer.parseInt(literal.getLiteral()) <= 5){
+                    else if (Integer.parseInt(literal.getLiteral()) == 0){
+                        return Constants.constant1B + 0 + "\n";
+                    }
+                    else if (Integer.parseInt(literal.getLiteral()) > 0 && Integer.parseInt(literal.getLiteral()) <= 5){
                         return Constants.constant1B + literal.getLiteral() + "\n";
                     }
                     else if (Integer.parseInt(literal.getLiteral()) >= -128 && Integer.parseInt(literal.getLiteral()) <= 127){
@@ -416,7 +413,12 @@ public class Jasmin {
 
             }
             case BOOLEAN -> {
-                return Constants.constant1B + (operand.getName().equals("false") ? 0 : 1) + "\n";
+                if (operand.getName().equals("false"))
+                    return Constants.constant1B + 0 + "\n";
+                else if (operand.getName().equals("true"))
+                    return Constants.constant1B + 1 + "\n";
+                else
+                    return loadIntVar(varTable.get(operand.getName()).getVirtualReg()) + "\n";
             }
             case ARRAYREF, OBJECTREF -> {
                 var vreg = varTable.get(operand.getName()).getVirtualReg();

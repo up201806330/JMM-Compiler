@@ -102,6 +102,6 @@ public class Constants {
     public static final String negateInt = "ineg";
     public static final String compLessThan = "if_icmplt ";
     public static final String compFalse = "ifeq ";
-    public static final String compTrue = "ifneq ";
+    public static final String compTrue = "ifne ";
 
 }
