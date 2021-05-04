@@ -98,8 +98,10 @@ public class Constants {
     public static final String divInt = "idiv";
     public static final String andInt = "iand";
     public static final String notInt = "ixor";
+    public static final String shiftR = "ishr";
+    public static final String negateInt = "ineg";
     public static final String compLessThan = "if_icmplt ";
-    public static final String compEquals = "ifeq ";
-    public static final String compDiff = "ifneq ";
+    public static final String compFalse = "ifeq ";
+    public static final String compTrue = "ifneq ";
 
 }

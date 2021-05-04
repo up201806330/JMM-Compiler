@@ -183,11 +183,14 @@ public class Jasmin {
 
                         if (!trueValue.equals(leftElement))
                             result.append(leftElement)
-                                  .append(indent).append(Constants.compEquals).append(target).append("\n");
+                                  .append(indent).append(Constants.compTrue).append(target).append("\n");
 
                         if (!trueValue.equals(rightElement))
-                            result.append(indent).append(rightElement)
-                                  .append(indent).append(Constants.compEquals).append(target).append("\n");
+                            result.append(rightElement)
+                                  .append(indent).append(Constants.compTrue).append(target).append("\n");
+
+                        if (trueValue.equals(leftElement) && trueValue.equals(rightElement))
+                            result.append(Constants.gotoLabel).append(target).append("\n");
                     }
 
 
@@ -352,7 +355,12 @@ public class Jasmin {
                 return Constants.andInt + "\n";
             }
             case LTH, LTHI32 -> {
-                // TODO
+                return Constants.subInt + "\n" +
+                        indent + Constants.constant2B + 31 + "\n" + // Hardcoded 32 bit right shift
+                        indent + Constants.shiftR + "\n" +
+                        indent + Constants.negateInt + "\n" + //;
+                        indent + "dup\n" +
+                        indent + "invokestatic io/println(I)V\n";
             }
             case NOT, NOTB -> { // Since all boolean values have been checked (are always 0 or 1), we can use this method, which is faster than the if approach
                 return Constants.notInt + "\n";
@@ -376,7 +384,11 @@ public class Jasmin {
         switch (element.getType().getTypeOfElement()){
             case INT32 -> {
                 if (element.isLiteral()){
-                    if (Integer.parseInt(literal.getLiteral()) == -1) {
+                    if (Integer.parseInt(literal.getLiteral()) == 0){
+                        return Constants.constant1B + 0 + "\n";
+
+                    }
+                    else if (Integer.parseInt(literal.getLiteral()) == -1) {
                         return Constants.constantMinus1 + "\n";
                     }
                     else if (Integer.parseInt(literal.getLiteral()) >= 0 && Integer.parseInt(literal.getLiteral()) <= 5){

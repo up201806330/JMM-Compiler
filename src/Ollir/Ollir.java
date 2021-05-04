@@ -9,7 +9,11 @@ public class Ollir {
     private List<String> methodParameters = new ArrayList<>();
     private List<String> methodVars = new ArrayList<>();
     private List<String> imports = new ArrayList<>();
-    int nextTempVariable = 1;
+
+    int tempVarCounter = 1;
+    int ifCounter = 1;
+    int whileCounter = 1;
+
     public String getCode(JmmNode root) {
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -57,7 +61,6 @@ public class Ollir {
         }
 
         classOllir.append(" {");
-        // Put everything in order, first fields, then constructor, then methods.
 
         classOllir.append("\n").append(prefix).append(fieldsOllir);
         classOllir.append("\n").append(prefix).append(ident);
@@ -90,7 +93,7 @@ public class Ollir {
 
         methodParameters = new ArrayList<>();
         methodVars = new ArrayList<>();
-        nextTempVariable = 1;
+        tempVarCounter = 1;
 
         methodOllir.append(".method public ");
         Optional<String> staticAttribute = node.getOptional(Constants.staticAttribute);
@@ -146,13 +149,13 @@ public class Ollir {
         var children = node.getChildren();
         // nextTempVariable = 1; // We need a better way of doing this
 
-        stringBuilder.append("goto Test;\n");
-        stringBuilder.append(prefix).append("Loop:\n");
+        stringBuilder.append("goto Test_").append(whileCounter).append(";\n");
+        stringBuilder.append(prefix).append("Loop_").append(whileCounter).append(":\n");
         stringBuilder.append(whileBodyToOllir(children.get(1), prefix + ident));
-        stringBuilder.append(prefix).append("Test:\n");
+        stringBuilder.append(prefix).append("Test_").append(whileCounter).append(":\n");
         stringBuilder.append(whileConditionToOllir(children.get(0), prefix + ident)).append("\n");
 
-        return stringBuilder.append(prefix).append("End:\n").toString();
+        return stringBuilder.append(prefix).append("End_").append(whileCounter++).append(":\n").toString();
     }
 
     private String whileBodyToOllir(JmmNode node, String prefix) {
@@ -195,7 +198,7 @@ public class Ollir {
         }
 
 
-        stringBuilder.append(prefix).append("if (").append(ifCondition).append(") goto Loop;");
+        stringBuilder.append(prefix).append("if (").append(ifCondition).append(") goto Loop_").append(whileCounter).append(";");
         return before.append(stringBuilder).toString();
     }
 
@@ -253,13 +256,13 @@ public class Ollir {
 
         stringBuilder.append("if (");
         stringBuilder.append(ifConditionToOllir(children.get(0), prefix, beforeCond));
-        stringBuilder.append(") goto ifbody;\n");
+        stringBuilder.append(") goto ifbody_").append(ifCounter).append(";\n");
         stringBuilder.append(elseStatement);
-        stringBuilder.append(prefix).append(ident).append("goto endif;\n");
-        stringBuilder.append(prefix).append("ifbody:\n");
+        stringBuilder.append(prefix).append(ident).append("goto endif_").append(ifCounter).append(";\n");
+        stringBuilder.append(prefix).append("ifbody_").append(ifCounter).append(":\n");
         stringBuilder.append(beforeStatement);
         stringBuilder.append(ifStatement);
-        stringBuilder.append(prefix).append("endif:\n");
+        stringBuilder.append(prefix).append("endif_").append(ifCounter++).append(":\n");
 
         return beforeCond.append(stringBuilder).toString();
     }
@@ -271,6 +274,17 @@ public class Ollir {
         for (var child: children) {
             switch (child.getKind()) {
                 case Constants.assignmentNodeName -> stringBuilder.append(assignmentToOllir(child, prefix));
+                case Constants.callExprNodeName -> stringBuilder.append(callExpressionToOllir(child, prefix, stringBuilder, true)).append(";\n");
+                case Constants.returnNodeName -> stringBuilder.append(returnToOllir(child, prefix));
+                case Constants.varDeclNodeName -> methodVars.add(child.get(Constants.nameAttribute));
+                case Constants.ifStatementNodeName -> {
+                    stringBuilder.append(ifStatementToOllir(child, prefix));
+                    prefix += ident;
+                }
+                case Constants.whileStatementNodeName -> {
+                    stringBuilder.append(whileStatementToOllir(child, prefix));
+                    prefix += ident;
+                }
                 default -> System.out.println("elseStatementToOllir: " + child);
             }
         }
@@ -466,17 +480,17 @@ public class Ollir {
             case Constants.notExprNodeName -> result = notExpressionToOllir(child, prefix, before);
             case Constants.binaryNodeName -> result = binaryToOllir(child, prefix, before);
             case Constants.arrayExprNodeName -> result = arrayExpressionToOllir(child, prefix, before);
-            case Constants.newNodeName -> result = newToOllir(child, prefix, "t" + nextTempVariable + typeToOllir, before);
+            case Constants.newNodeName -> result = newToOllir(child, prefix, "t" + tempVarCounter + typeToOllir, before);
             case Constants.literalNodeName -> result = literalToOllir(child, "");
             case Constants.terminalNodeName -> result = terminalToOllir(child, "");
         }
 
-        before.append(prefix).append("t").append(nextTempVariable).append(typeToOllir)
+        before.append(prefix).append("t").append(tempVarCounter).append(typeToOllir)
                 .append(" :=").append(typeToOllir).append(" ")
                 .append(result)
                 .append(";\n");
 
-        return "t" + nextTempVariable++ + typeToOllir;
+        return "t" + tempVarCounter++ + typeToOllir;
     }
 
     private String propertyAccessToOllir(JmmNode node, String prefix, StringBuilder before) {
