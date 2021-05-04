@@ -11,14 +11,17 @@ public class Jasmin {
     private HashMap<Instruction, String> methodLabels;
     private ClassUnit classUnit;
 
-    private int maxStackSize = 0;
-    private int currStackSize = 0;
-    private int maxLocalsSize = 99;
-    private int currLocalsSize = 0;
+    private int maxStackSize;
+    private int currStackSize;
+    private int maxLocalsSize;
 
     private void incrementStack(int n){
         currStackSize += n;
         if (currStackSize > maxStackSize) maxStackSize = currStackSize;
+    }
+
+    private void updateMaxLocals(int vreg) {
+        if (vreg + 1 > maxLocalsSize) maxLocalsSize = vreg + 1;
     }
 
     public String getByteCode(ClassUnit classUnit) throws OllirErrorException {
@@ -48,18 +51,15 @@ public class Jasmin {
         StringBuilder start = new StringBuilder();
         StringBuilder result = new StringBuilder();
 
-        System.out.println(method.getMethodName());
-        maxStackSize = 0;
-        currStackSize = 0;
-        maxLocalsSize = 99;
-        currLocalsSize = 0;
-
         varTable = method.getVarTable();
         methodLabels = new HashMap<>();
         for (var entry : method.getLabels().entrySet()){
             methodLabels.put(entry.getValue(), entry.getKey());
         }
 
+        maxStackSize = 0;
+        currStackSize = 0;
+        maxLocalsSize = 1;
 //        method.show();
 
         start.append(".method ")
@@ -102,8 +102,9 @@ public class Jasmin {
                 var type = assignInstruction.getDest().getType();
 
                 int vreg = varTable.get(((Operand) assignInstruction.getDest()).getName()).getVirtualReg();
-                Optional<String> varIncrementOpt = checkVarIncrement(assignInstruction);
+                updateMaxLocals(vreg);
 
+                Optional<String> varIncrementOpt = checkVarIncrement(assignInstruction);
                 if (varIncrementOpt.isEmpty())
                     before.append(instructionToJasmin(assignInstruction.getRhs()));
 
