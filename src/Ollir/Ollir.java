@@ -322,7 +322,7 @@ public class Ollir {
             stringBuilder.append("ret").append(type).append(" ");
             switch (child.getKind()) {
                 case Constants.literalNodeName -> stringBuilder.append(literalToOllir(child, ""));
-                case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(child, ""));
+                case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(child, prefix, before));
                 case Constants.callExprNodeName, Constants.propertyAccessNodeName,
                         Constants.binaryNodeName, Constants.arrayExprNodeName, Constants.newNodeName ->
                         stringBuilder.append(makeLocalVar(child, prefix, before)).append(" ");
@@ -352,8 +352,8 @@ public class Ollir {
             child1.put(Constants.typeAttribute, child0.get(Constants.typeAttribute));
 
         switch (child0.getKind()) {
-            case Constants.terminalNodeName -> left.append(terminalToOllir(child0, ""));
-            case Constants.arrayExprNodeName -> left.append(arrayExpressionToOllir(child0, prefix, before));
+            case Constants.terminalNodeName -> left.append(terminalToOllir(child0, prefix, before));
+            case Constants.arrayExprNodeName -> left.append(makeLocalVar(child0, prefix, before));
             default -> System.out.println("assignementToOllir: " + child0);
         }
 
@@ -409,7 +409,7 @@ public class Ollir {
         var children = node.getChildren();
 
         var child = children.get(0);
-        stringBuilder.append(terminalToOllir(child, "", false)).append("[");
+        stringBuilder.append(terminalToOllir(child, prefix, before, false)).append("[");
 
         child = children.get(1);
         switch (child.getKind()) {
@@ -472,6 +472,10 @@ public class Ollir {
     }
 
     private String makeLocalVar(JmmNode child, String prefix, StringBuilder before) {
+        return makeLocalVar(child, prefix, before, true);
+    }
+
+    private String makeLocalVar(JmmNode child, String prefix, StringBuilder before, boolean withType){
         String typeToOllir = OllirCodeUtils.typeToOllir(child.get(Constants.typeAttribute), child.getOptional(Constants.arrayAttribute));
         String result = "";
         switch (child.getKind()){
@@ -490,7 +494,7 @@ public class Ollir {
                 .append(result)
                 .append(";\n");
 
-        return "t" + tempVarCounter++ + typeToOllir;
+        return "t" + tempVarCounter++ + (withType ? typeToOllir : "");
     }
 
     private String propertyAccessToOllir(JmmNode node, String prefix, StringBuilder before) {
@@ -649,5 +653,16 @@ public class Ollir {
 
     private String terminalToOllir(JmmNode node, String prefix) {
         return terminalToOllir(node, prefix, true);
+    }
+
+    private String terminalToOllir(JmmNode node, String prefix, StringBuilder before) {
+        return terminalToOllir(node, prefix, before, true);
+    }
+
+    private String terminalToOllir(JmmNode node, String prefix, StringBuilder before , boolean withType) {
+        if (isField(node.getOptional(Constants.valueAttribute).orElse("")))
+            return makeLocalVar(node, prefix, before, withType);
+        else
+            return terminalToOllir(node, "", withType);
     }
 }
