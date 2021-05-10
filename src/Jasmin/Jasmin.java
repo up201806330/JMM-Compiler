@@ -18,6 +18,7 @@ public class Jasmin {
     private void incrementStack(int n){
         currStackSize += n;
         if (currStackSize > maxStackSize) maxStackSize = currStackSize;
+        System.out.println(currStackSize);
     }
 
     private void updateMaxLocals(int vreg) {
@@ -63,7 +64,7 @@ public class Jasmin {
         currStackSize = 0;
         maxLocalsSize = 1;
 
-//        method.show();
+        method.show();
 
         start.append(".method ")
             .append(accessModifierToJasmin(method.getMethodAccessModifier()))
@@ -162,9 +163,13 @@ public class Jasmin {
                 Element method = callInstruction.getSecondArg();
 
                 switch (callInstruction.getInvocationType()){
-                    case invokevirtual, invokespecial -> {
+                    case invokevirtual ->
+                            before.append(indent)
+                                    .append(pushElementToStack(caller));
+                    case invokespecial -> {
                         before.append(indent)
                                 .append(pushElementToStack(caller));
+                        incrementStack(-1);
                     }
                     case invokestatic -> {
                         incrementStack(1);
@@ -201,8 +206,8 @@ public class Jasmin {
                 for (var op : parameters){
                     before.append(indent)
                           .append(pushElementToStack(op));
-                    incrementStack(-1);
                 }
+                incrementStack(parameters.size());
             }
             case GOTO -> {
                 GotoInstruction gotoInstruction = (GotoInstruction) instruction;
@@ -241,10 +246,10 @@ public class Jasmin {
 
 
                     case LTH, LTHI32 -> {
-                        incrementStack(-2);
                         result.append(pushElementToStack(left))
                                 .append(indent).append(pushElementToStack(right))
                                 .append(indent).append(Constants.compLessThan).append(target).append("\n");
+                        incrementStack(-2);
                     }
 
                     case ADD, SUB, MUL, DIV, SHR, SHL, SHRR, XOR, ADDI32, SUBI32, MULI32, DIVI32, SHRI32, SHLI32, SHRRI32, XORI32 -> {

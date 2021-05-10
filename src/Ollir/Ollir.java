@@ -236,8 +236,6 @@ public class Ollir {
         StringBuilder ifStatement = new StringBuilder();
         StringBuilder elseStatement = new StringBuilder();
 
-        // Since an else is always necessary I changed if and else order to simplify code.
-
         var children = node.getChildren();
 
         int i = 1;
@@ -245,7 +243,7 @@ public class Ollir {
         while (!child.getKind().equals(Constants.elseStatementNodeName)) {
             switch (child.getKind()) {
                 case Constants.assignmentNodeName -> ifStatement.append(assignmentToOllir(child, prefix + ident));
-                case Constants.callExprNodeName -> ifStatement.append(prefix+ ident).append(callExpressionToOllir(child, prefix + ident, beforeStatement, false)).append(";\n");
+                case Constants.callExprNodeName -> ifStatement.append(callExpressionToOllir(child, prefix + ident, ifStatement, true)).append(";\n");
                 case Constants.ifStatementNodeName -> {
                     ifStatement.append(ifStatementToOllir(child, prefix + ident));
                     prefix += ident;
@@ -417,7 +415,7 @@ public class Ollir {
         var children = node.getChildren();
 
         var child = children.get(0);
-        if (isField(child.get(Constants.valueAttribute)))
+        if (child.getOptional(Constants.valueAttribute).isEmpty() || isField(child.get(Constants.valueAttribute)))
             stringBuilder.append(makeLocalVar(child, prefix, before, false));
         else
             stringBuilder.append(terminalToOllir(child, "", false));
