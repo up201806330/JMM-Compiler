@@ -18,6 +18,7 @@ public class Jasmin {
     private void incrementStack(int n){
         currStackSize += n;
         if (currStackSize > maxStackSize) maxStackSize = currStackSize;
+        System.out.println(currStackSize);
     }
 
     private void updateMaxLocals(int vreg) {
@@ -40,6 +41,7 @@ public class Jasmin {
 
 
         classUnit.getFields().forEach(x -> stringBuilder.append(fieldToJasmin(x)));
+        stringBuilder.append("\n");
 
         for (Method method : classUnit.getMethods()){
             stringBuilder.append(methodToJasmin(method, dashR));
@@ -61,6 +63,7 @@ public class Jasmin {
         maxStackSize = 0;
         currStackSize = 0;
         maxLocalsSize = 1;
+
 //        method.show();
 
         start.append(".method ")
@@ -117,12 +120,19 @@ public class Jasmin {
                     case INT32, BOOLEAN -> {
                         try { // Left side of assignment can be array indexing
                             ArrayOperand arrayOperand = (ArrayOperand) assignInstruction.getDest();
+
+                            // In this case, value of assignment comes after loading of array
+                            StringBuilder temp = before;
+                            before = new StringBuilder();
+
                             before.append(indent)
-                                  .append(pushElementToStack(arrayOperand))
+                                  .append(loadObjVar(vreg)).append("\n")
                                   .append(indent)
-                                  .append(pushElementToStack(arrayOperand.getIndexOperands().get(0))); // TODO Check why there are multiple index operands
+                                  .append(pushElementToStack(arrayOperand.getIndexOperands().get(0))) // TODO Check why there are multiple index operands
+                                  .append(temp);
                             result.append(Constants.storeArrayElem).append("\n");
                             incrementStack(-3);
+
                         } catch (ClassCastException e){ // Otherwise, is int or boolean
                             if (varIncrementOpt.isEmpty())
                                 result.append(storeInt(vreg)).append("\n");
@@ -189,12 +199,11 @@ public class Jasmin {
                            .append(invocationToJasmin(caller, method, parametersToJasmin(parameters), callInstruction.getInvocationType().equals(CallType.invokestatic)));
                 }
 
-                parameters.forEach(op -> {
+                for (var op : parameters){
                     before.append(indent)
                           .append(pushElementToStack(op));
                     incrementStack(-1);
                 }
-                );
             }
             case GOTO -> {
                 GotoInstruction gotoInstruction = (GotoInstruction) instruction;
@@ -258,8 +267,6 @@ public class Jasmin {
 
             }
             case PUTFIELD -> {
-                incrementStack(-2);
-
                 PutFieldInstruction putFieldInstruction = (PutFieldInstruction) instruction;
                 Operand secondOperand = (Operand) putFieldInstruction.getSecondOperand();
                 before.append(indent)
@@ -267,24 +274,29 @@ public class Jasmin {
                       .append(indent)
                       .append(pushElementToStack(putFieldInstruction.getThirdOperand()));
 
+                incrementStack(1);
+
                 result.append(Constants.putfield)
                       .append(classPath())
                       .append(secondOperand.getName()).append(" ")
                       .append(typeToJasmin(secondOperand.getType()))
                       .append("\n");
+
+                incrementStack(-2);
             }
             case GETFIELD -> {
-                incrementStack(-1);
-
                 GetFieldInstruction getFieldInstruction = (GetFieldInstruction) instruction;
                 Operand secondOperand = (Operand) getFieldInstruction.getSecondOperand();
                 before.append(indent)
                       .append(Constants.loadObjectRefSM).append(0).append("\n"); // Hardcoded since only fields from this class can be accessed
+
                 result.append(Constants.getfield)
                       .append(classPath())
                       .append(secondOperand.getName()).append(" ")
                       .append(typeToJasmin(secondOperand.getType()))
                       .append("\n");
+
+                incrementStack(1);
             }
             case BINARYOPER -> {
                 BinaryOpInstruction binaryOpInstruction = (BinaryOpInstruction) instruction;
@@ -367,6 +379,7 @@ public class Jasmin {
     }
 
     private String importedClass(String className){
+        if (className.equals("out")) return "io"; // TODO ??????
         for (String fullName : classUnit.getImports()){
             if (fullName.substring(fullName.lastIndexOf(".") + 1).trim().equals(className))
                 return fullName.replace(".", "/");
@@ -487,7 +500,9 @@ public class Jasmin {
                 else { // Is variable holding int, can still be array index
                     try {
                         ArrayOperand arrayOperand = (ArrayOperand) element;
-                        return loadObjVar(varTable.get(arrayOperand.getName()).getVirtualReg()) + "\n";
+                        return loadObjVar(varTable.get(arrayOperand.getName()).getVirtualReg()) + "\n" + indent +
+                               pushElementToStack(arrayOperand.getIndexOperands().get(0)) +  indent + // TODO Check why there are multiple index operands
+                               Constants.loadArrayElem + "\n";
                     }
                     catch (ClassCastException e){
                         return loadIntVar(varTable.get(operand.getName()).getVirtualReg()) + "\n";

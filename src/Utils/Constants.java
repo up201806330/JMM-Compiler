@@ -27,6 +27,7 @@ public class Constants {
     public static final String whileStatementNodeName = "WhileStatement";
     public static final String whileConditionNodeName = "WhileCondition";
     public static final String returnNodeName = "Return";
+    public static final String printStatement = "PrintStatement";
 
     // Attribute names
     public static final String nameAttribute = "name";
@@ -74,6 +75,7 @@ public class Constants {
     public static final String loadObjectRef = "aload ";
     public static final String loadIntVarSM = "iload_";
     public static final String loadIntVar = "iload ";
+    public static final String loadArrayElem = "iaload";
     public static final String constantMinus1 = "iconst_m1";
     public static final String constant1B = "iconst_";
     public static final String constant2B = "bipush ";

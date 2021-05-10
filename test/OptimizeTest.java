@@ -43,14 +43,14 @@ public class OptimizeTest {
         TestUtils.noErrors(result.getReports());
     }
 
-    /*
+
     // Não é suposto passar estes testes no checkpoint 2 (mesmo assim, já passa os mais simples)
     @Test
     public void testFindMaximum() {
         var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/FindMaximum.jmm"));
         TestUtils.noErrors(result.getReports());
     }
-
+/*
     @Test
     public void testLazySort() {
         var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/LazySort.jmm"));
