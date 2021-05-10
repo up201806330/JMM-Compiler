@@ -428,7 +428,7 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
     }
 
     private Boolean dealWithReservedNames(JmmNode node, List<Report> reports) {
-        Set<String> reservedNames = new HashSet<>(Arrays.asList("ret"));
+        Set<String> reservedNames = new HashSet<>(Arrays.asList("ret", "array"));
         var nodeName = node.getOptional(Constants.nameAttribute);
         var nodeVal = node.getOptional(Constants.valueAttribute);
         if (nodeVal.isEmpty()) {

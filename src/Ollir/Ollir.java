@@ -423,7 +423,9 @@ public class Ollir {
 
         child = children.get(1);
         switch (child.getKind()) {
-            case Constants.literalNodeName, Constants.terminalNodeName,
+            case Constants.terminalNodeName ->
+                    stringBuilder.append(terminalToOllir(child, prefix, before));
+            case Constants.literalNodeName,
                     Constants.callExprNodeName, Constants.propertyAccessNodeName, Constants.notExprNodeName,
                     Constants.binaryNodeName, Constants.arrayExprNodeName, Constants.newNodeName ->
                     stringBuilder.append(makeLocalVar(child, prefix, before));

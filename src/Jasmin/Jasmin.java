@@ -18,7 +18,7 @@ public class Jasmin {
     private void incrementStack(int n){
         currStackSize += n;
         if (currStackSize > maxStackSize) maxStackSize = currStackSize;
-        System.out.println(currStackSize);
+//        System.out.println(currStackSize);
     }
 
     private void updateMaxLocals(int vreg) {

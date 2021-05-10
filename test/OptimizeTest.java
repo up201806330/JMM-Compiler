@@ -51,6 +51,7 @@ public class OptimizeTest {
         TestUtils.noErrors(result.getReports());
     }
 
+    // var _allowedNameL n está a ser aceite pelo parser do ollir smh
 //    @Test
 //    public void testLazySort() {
 //        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/LazySort.jmm"));
@@ -77,23 +78,24 @@ public class OptimizeTest {
 //        TestUtils.noErrors(result.getReports());
 //    }
 
-    /*
-    @Test
-    public void testQuickSort() {
-        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/QuickSort.jmm"));
-        TestUtils.noErrors(result.getReports());
-    }
+    // TODO Broken on our end 'Inconsistent stack height 2 != 0'
+//    @Test
+//    public void testQuickSort() {
+//        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/QuickSort.jmm"));
+//        TestUtils.noErrors(result.getReports());
+//    }
 
-    @Test
-    public void testTicTacToe() {
-        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/TicTacToe.jmm"));
-        TestUtils.noErrors(result.getReports());
-    }
+    // TODO Suspeito que seja na parte da AST, mas está a faltar uma label de else somehow
+//    @Test
+//    public void testTicTacToe() {
+//        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/TicTacToe.jmm"));
+//        TestUtils.noErrors(result.getReports());
+//    }
 
     @Test
     public void testWhileAndIf() {
         var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/WhileAndIf.jmm"));
         TestUtils.noErrors(result.getReports());
     }
-    */
+
 }
