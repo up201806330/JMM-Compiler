@@ -7,7 +7,9 @@ import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp.jmm.report.Stage;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<Report>, Boolean> {
@@ -28,6 +30,7 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
         addVisit(Constants.returnNodeName, this::dealWithReturn);
         addVisit(Constants.propertyAccessNodeName, this::dealWithPropertyAccess);
         addVisit(Constants.methodDeclNodeName, this::dealWithMethDecl);
+        addVisit(Constants.varDeclNodeName, this::dealWithReservedNames);
         setDefaultVisit(TypeAndMethodVerificationVisitor::defaultVisit);
     }
 
@@ -42,6 +45,8 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
         var methodOpt = node.getAncestor(Constants.methodDeclNodeName);
         var methodName = (methodOpt.isPresent() ? methodOpt.get().get(Constants.nameAttribute) : "");
         var methodSymOpt = symbolTable.tryGettingSymbol(Constants.thisAttribute, methodName);
+
+        dealWithReservedNames(node, null);
 
         if (variableOpt.isEmpty()){
             reports.add(new Report(
@@ -421,6 +426,22 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
 
         return defaultVisit(node, reports);
     }
+
+    private Boolean dealWithReservedNames(JmmNode node, List<Report> reports) {
+        Set<String> reservedNames = new HashSet<>(Arrays.asList("ret"));
+        var nodeName = node.getOptional(Constants.nameAttribute);
+        var nodeVal = node.getOptional(Constants.valueAttribute);
+        if (nodeVal.isEmpty()) {
+            if (reservedNames.contains(nodeName.get()))
+                node.put(Constants.nameAttribute, nodeName.get() + "_temp");
+        }
+        else {
+            if (reservedNames.contains(nodeVal.get()))
+                node.put(Constants.valueAttribute, nodeVal.get() + "_temp");
+        }
+        return true;
+    }
+
     /**
      * Checks if array size given in instantiation is int (e.g. new int[true] not allowed)
      * @param node Binary node to get children from

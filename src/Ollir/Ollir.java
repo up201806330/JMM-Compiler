@@ -1,8 +1,6 @@
 import pt.up.fe.comp.jmm.JmmNode;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class Ollir {
     private final String ident = "  ";
@@ -165,11 +163,15 @@ public class Ollir {
         for (var child: node.getChildren()) {
             switch (child.getKind()) {
                 case Constants.assignmentNodeName -> stringBuilder.append(assignmentToOllir(child, prefix));
+                case Constants.callExprNodeName -> stringBuilder.append(prefix).append(callExpressionToOllir(child, prefix, before, false)).append(";\n");
                 case Constants.ifStatementNodeName -> {
-                    stringBuilder.append(ifStatementToOllir(child, prefix));
+                    stringBuilder.append(ifStatementToOllir(child, prefix + ident));
                     prefix += ident;
                 }
-                case Constants.callExprNodeName -> stringBuilder.append(prefix).append(callExpressionToOllir(child, prefix, before, false)).append(";\n");
+                case Constants.whileStatementNodeName -> {
+                    stringBuilder.append(whileStatementToOllir(child, prefix + ident));
+                    prefix += ident;
+                }
                 default -> System.out.println("whileBodyToOllir: " + child);
             }
         }
@@ -183,8 +185,6 @@ public class Ollir {
         StringBuilder before = new StringBuilder();
 
         var child = node.getChildren().get(0);
-        System.out.println(child);
-
 
         switch (child.getKind()) {
             case Constants.terminalNodeName -> ifCondition.append(terminalToOllir(child, "")).append(" &&.bool true.bool");
@@ -246,6 +246,14 @@ public class Ollir {
             switch (child.getKind()) {
                 case Constants.assignmentNodeName -> ifStatement.append(assignmentToOllir(child, prefix + ident));
                 case Constants.callExprNodeName -> ifStatement.append(prefix+ ident).append(callExpressionToOllir(child, prefix + ident, beforeStatement, false)).append(";\n");
+                case Constants.ifStatementNodeName -> {
+                    ifStatement.append(ifStatementToOllir(child, prefix + ident));
+                    prefix += ident;
+                }
+                case Constants.whileStatementNodeName -> {
+                    ifStatement.append(whileStatementToOllir(child, prefix + ident));
+                    prefix += ident;
+                }
                 default -> System.out.println("ifStatementToOllir: " + child);
             }
             i++;
@@ -323,7 +331,7 @@ public class Ollir {
             switch (child.getKind()) {
                 case Constants.literalNodeName -> stringBuilder.append(literalToOllir(child, ""));
                 case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(child, prefix, before));
-                case Constants.callExprNodeName, Constants.propertyAccessNodeName,
+                case Constants.callExprNodeName, Constants.propertyAccessNodeName, Constants.notExprNodeName,
                         Constants.binaryNodeName, Constants.arrayExprNodeName, Constants.newNodeName ->
                         stringBuilder.append(makeLocalVar(child, prefix, before)).append(" ");
                 default -> System.out.println("returnToOllir: " + child);
@@ -511,7 +519,7 @@ public class Ollir {
 
         var child = node.getChildren().get(0);
         switch (child.getKind()) {
-            case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(child, ""));
+            case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(child, prefix, before));
             case Constants.literalNodeName -> stringBuilder.append(literalToOllir(child, ""));
             case Constants.callExprNodeName, Constants.propertyAccessNodeName, Constants.notExprNodeName,
                     Constants.binaryNodeName, Constants.arrayExprNodeName, Constants.newNodeName ->
@@ -545,7 +553,7 @@ public class Ollir {
                 stringBuilder.append("this");
             } else {
                 switch (child0.getKind()) {
-                    case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(child0, ""));
+                    case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(child0, prefix, before));
                     case Constants.literalNodeName -> stringBuilder.append(literalToOllir(child0, ""));
                     case Constants.callExprNodeName, Constants.propertyAccessNodeName, Constants.notExprNodeName,
                             Constants.binaryNodeName, Constants.arrayExprNodeName, Constants.newNodeName ->
@@ -562,7 +570,7 @@ public class Ollir {
             for (var arg : args) {
                 stringBuilder.append(", ");
                 switch (arg.getKind()) {
-                    case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(arg, ""));
+                    case Constants.terminalNodeName -> stringBuilder.append(terminalToOllir(arg, prefix, before));
                     case Constants.literalNodeName -> stringBuilder.append(literalToOllir(arg, ""));
                     case Constants.callExprNodeName, Constants.propertyAccessNodeName, Constants.notExprNodeName,
                             Constants.binaryNodeName, Constants.arrayExprNodeName, Constants.newNodeName ->
@@ -628,7 +636,7 @@ public class Ollir {
         String varName = node.get(Constants.valueAttribute);
         JmmNode parent = node.getParent();
         String leftName = parent.getKind().equals(Constants.assignmentNodeName) ?
-                parent.getChildren().get(0).getOptional(Constants.valueAttribute).orElse("") : "";
+                    parent.getChildren().get(0).getOptional(Constants.valueAttribute).orElse("") : "";
 
         if (!isField(varName)){ // Is local var or parameter
             if (varName.equals(Constants.thisAttribute)){
