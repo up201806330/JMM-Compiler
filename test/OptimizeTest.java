@@ -77,12 +77,11 @@ public class OptimizeTest {
 //        TestUtils.noErrors(result.getReports());
 //    }
 
-    // TODO 'Inconsistent stack height 2 != 0' DUE TO NON VOID FUNCTION RETURN NOT BEING POPPED
-//    @Test
-//    public void testQuickSort() {
-//        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/QuickSort.jmm"));
-//        TestUtils.noErrors(result.getReports());
-//    }
+    @Test
+    public void testQuickSort() {
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/QuickSort.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
 
     // TODO Suspeito que seja na parte da AST, mas está a faltar uma label de else somehow
 //    @Test

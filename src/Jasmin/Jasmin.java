@@ -75,7 +75,7 @@ public class Jasmin {
             .append(")")
             .append(typeToJasmin(method.getReturnType())).append("\n");
 
-            method.getInstructions().forEach(x -> result.append(instructionToJasmin(x)));
+            method.getInstructions().forEach(x -> result.append(instructionToJasmin(x, true)));
             // method.getInstructions().forEach(Instruction::show);
 
         if (method.isConstructMethod())
@@ -98,7 +98,7 @@ public class Jasmin {
         return parameters.stream().map(x -> typeToJasmin(x.getType())).collect(Collectors.joining());
     }
 
-    private String instructionToJasmin(Instruction instruction) {
+    private String instructionToJasmin(Instruction instruction, boolean popReturn) {
         StringBuilder before = new StringBuilder();
         StringBuilder result = new StringBuilder(indent);
 
@@ -114,7 +114,7 @@ public class Jasmin {
 
                 Optional<String> varIncrementOpt = checkVarIncrement(assignInstruction);
                 if (varIncrementOpt.isEmpty())
-                    before.append(instructionToJasmin(assignInstruction.getRhs()));
+                    before.append(instructionToJasmin(assignInstruction.getRhs(), false));
 
                 switch (type.getTypeOfElement()){
                     case INT32, BOOLEAN -> {
@@ -202,6 +202,9 @@ public class Jasmin {
                      result.append(callInstruction.getInvocationType()).append(" ")
                            .append(invocationToJasmin(caller, method, parametersToJasmin(parameters), callInstruction.getInvocationType().equals(CallType.invokestatic)));
                 }
+
+                if (popReturn && !callInstruction.getReturnType().getTypeOfElement().equals(ElementType.VOID))
+                    result.append(indent).append("pop\n");
 
                 for (var op : parameters){
                     before.append(indent)
