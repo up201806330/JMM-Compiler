@@ -57,4 +57,68 @@ public class BackendTest {
         var output = result.run();
         assertEquals("3628800", output.trim()); // 10! = 3628800
     }
+
+    @Test
+    public void testFindMaximum() {
+        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/FindMaximum.jmm"));
+        TestUtils.noErrors(result.getReports());
+
+        var output = result.run();
+        assertEquals("Result: 28", output.trim());
+    }
+
+    // var _allowedNameL n está a ser aceite pelo parser do ollir smh
+//    @Test
+//    public void testLazySort() {
+//        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/LazySort.jmm"));
+//        TestUtils.noErrors(result.getReports());
+//    }
+
+    // Is needing stack size of 105 (may be broken)
+//    @Test
+//    public void testLife() {
+//        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/Life.jmm"));
+//        TestUtils.noErrors(result.getReports());
+//    }
+
+    // TODO 'Unable to pop operand off an empty stack' na main, por causa de invokestatic ioPlus/requestNumber()V
+//    @Test
+//    public void testMonteCarloPi() {
+//        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/MonteCarloPi.jmm"));
+//        TestUtils.noErrors(result.getReports());
+//    }
+
+    // Doesnt have main (isnt supposed to be ran so its fine)
+//    @Test
+//    public void testMyClass() {
+//        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/MyClass.jmm"));
+//        TestUtils.noErrors(result.getReports());
+//    }
+
+    @Test
+    public void testQuickSort() {
+        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/QuickSort.jmm"));
+        TestUtils.noErrors(result.getReports());
+
+        var output = result.run();
+        assertEquals(("1\n2\n3\n4\n5\n6\n7\n8\n9\n10").replaceAll("\\n|\\r\\n", System.getProperty("line.separator")),
+                output.trim());
+    }
+
+    // TODO Suspeito que seja na parte da AST, mas está a faltar uma label de else somehow
+//    @Test
+//    public void testTicTacToe() {
+//        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/TicTacToe.jmm"));
+//        TestUtils.noErrors(result.getReports());
+//    }
+
+    @Test
+    public void testWhileAndIf() {
+        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/WhileAndIf.jmm"));
+        TestUtils.noErrors(result.getReports());
+
+        var output = result.run();
+        assertEquals("10\n10\n10\n10\n10\n10\n10\n10\n10\n10".replaceAll("\\n|\\r\\n", System.getProperty("line.separator")),
+                output.trim());
+    }
 }
