@@ -124,7 +124,6 @@ TOKEN :
     | <MultOp: "*" >
     | <DivOp: "/" >
     | <NotOp: "!" >
-    | <Print: "System.out.println">
 
     | <Identifier: (<Letter> | <DollarSign> | <Underscore> ) (<Letter> | <DollarSign> | <Underscore> | <Digit>)* >
     | <Letter: (<LowerCase> | <UpperCase>) >
@@ -214,7 +213,6 @@ void Statement() #void: {} {
     (<OpenBlock> (Statement())* <CloseBlock> )
     | (<If> <OpenParenthesis> Expression() #IfCondition <CloseParenthesis> Statement() <Else> Statement() #Else) #IfStatement
     | WhileStatement()
-    | (<Print> <OpenParenthesis> Expression() <CloseParenthesis> <Semicolon> ) #PrintStatement
     | (Expression() [Assignment()] <Semicolon>)
 }
 

@@ -41,7 +41,7 @@ public class Jasmin {
 
 
         classUnit.getFields().forEach(x -> stringBuilder.append(fieldToJasmin(x)));
-        stringBuilder.append("\n");
+        if (classUnit.getFields().size() > 0) stringBuilder.append("\n");
 
         for (Method method : classUnit.getMethods()){
             stringBuilder.append(methodToJasmin(method, dashR));
@@ -64,7 +64,7 @@ public class Jasmin {
         currStackSize = 0;
         maxLocalsSize = 1;
 
-        method.show();
+//        method.show();
 
         start.append(".method ")
             .append(accessModifierToJasmin(method.getMethodAccessModifier()))

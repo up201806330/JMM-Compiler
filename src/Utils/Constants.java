@@ -27,7 +27,6 @@ public class Constants {
     public static final String whileStatementNodeName = "WhileStatement";
     public static final String whileConditionNodeName = "WhileCondition";
     public static final String returnNodeName = "Return";
-    public static final String printStatement = "PrintStatement";
 
     // Attribute names
     public static final String nameAttribute = "name";

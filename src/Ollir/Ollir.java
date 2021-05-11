@@ -111,7 +111,7 @@ public class Ollir {
                 case Constants.typeNodeName -> type = child;
                 case Constants.methodParamNodeName -> { parameters.add(child); methodParameters.add(child.get(Constants.nameAttribute)); }
                 case Constants.assignmentNodeName -> insideMethod.append(assignmentToOllir(child, prefix + ident));
-                case Constants.callExprNodeName, Constants.printStatement -> insideMethod.append(callExpressionToOllir(child, prefix + ident, insideMethod, true)).append(";\n");
+                case Constants.callExprNodeName -> insideMethod.append(callExpressionToOllir(child, prefix + ident, insideMethod, true)).append(";\n");
                 case Constants.returnNodeName -> insideMethod.append(returnToOllir(child, prefix + ident));
                 case Constants.varDeclNodeName -> methodVars.add(child.get(Constants.nameAttribute));
                 case Constants.ifStatementNodeName -> {
@@ -538,11 +538,6 @@ public class Ollir {
         var children = node.getChildren();
 
         var child0 = children.get(0);
-
-        // Print Statement special case
-        if (node.getKind().equals(Constants.printStatement)){
-            return (insideMethod ? prefix : "") + "invokestatic(out, \"println\", " + makeLocalVar(child0, prefix, before) + ").V";
-        }
 
         if (imports.contains(child0.get(Constants.valueAttribute)) || node.getOptional(Constants.staticAttribute).isPresent()) {
             stringBuilder.append("invokestatic(");

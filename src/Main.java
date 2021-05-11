@@ -87,9 +87,13 @@ public class Main implements JmmParser {
 			jasminResult = backend.toJasmin(ollirResult);
 		}
 
-
-		System.out.println("vvvv Program results vvvv");
-		jasminResult.run();
+		if (jasminResult.getReports().size() > 0){
+			jasminResult.getReports().forEach(System.out::println);
+		}
+		else {
+			System.out.println("vvvv Program results vvvv");
+			jasminResult.run();
+		}
 	}
 
 	private static void showReports(List<Report> reports){
