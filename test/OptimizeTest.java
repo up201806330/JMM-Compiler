@@ -63,7 +63,7 @@ public class OptimizeTest {
 //        TestUtils.noErrors(result.getReports());
 //    }
 
-    // TODO 'Unable to pop operand off an empty stack' na main, por causa de invokestatic ioPlus/requestNumber()V
+    // Is requesting input from user, so won't be ran here (Also input isnt working ?? idk)
 //    @Test
 //    public void testMonteCarloPi() {
 //        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/MonteCarloPi.jmm"));
@@ -83,7 +83,7 @@ public class OptimizeTest {
         TestUtils.noErrors(result.getReports());
     }
 
-    // TODO Suspeito que seja na parte da AST, mas está a faltar uma label de else somehow
+    // TODO May be because of else ifs, idk
 //    @Test
 //    public void testTicTacToe() {
 //        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/TicTacToe.jmm"));

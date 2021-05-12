@@ -147,13 +147,14 @@ public class Ollir {
         var children = node.getChildren();
         // nextTempVariable = 1; // We need a better way of doing this
 
-        stringBuilder.append("goto Test_").append(whileCounter).append(";\n");
-        stringBuilder.append(prefix).append("Loop_").append(whileCounter).append(":\n");
+        var thisWhile = whileCounter++;
+        stringBuilder.append("goto Test_").append(thisWhile).append(";\n");
+        stringBuilder.append(prefix).append("Loop_").append(thisWhile).append(":\n");
         stringBuilder.append(whileBodyToOllir(children.get(1), prefix + ident));
-        stringBuilder.append(prefix).append("Test_").append(whileCounter).append(":\n");
-        stringBuilder.append(whileConditionToOllir(children.get(0), prefix + ident)).append("\n");
+        stringBuilder.append(prefix).append("Test_").append(thisWhile).append(":\n");
+        stringBuilder.append(whileConditionToOllir(children.get(0), prefix + ident, thisWhile)).append("\n");
 
-        return stringBuilder.append(prefix).append("End_").append(whileCounter++).append(":\n").toString();
+        return stringBuilder.append(prefix).append("End_").append(thisWhile).append(":\n").toString();
     }
 
     private String whileBodyToOllir(JmmNode node, String prefix) {
@@ -179,7 +180,7 @@ public class Ollir {
         return before.append(stringBuilder).toString();
     }
 
-    private String whileConditionToOllir(JmmNode node, String prefix) {
+    private String whileConditionToOllir(JmmNode node, String prefix, int label) {
         StringBuilder stringBuilder = new StringBuilder();
         StringBuilder ifCondition = new StringBuilder();
         StringBuilder before = new StringBuilder();
@@ -198,7 +199,7 @@ public class Ollir {
         }
 
 
-        stringBuilder.append(prefix).append("if (").append(ifCondition).append(") goto Loop_").append(whileCounter).append(";");
+        stringBuilder.append(prefix).append("if (").append(ifCondition).append(") goto Loop_").append(label).append(";");
         return before.append(stringBuilder).toString();
     }
 
@@ -234,7 +235,6 @@ public class Ollir {
         StringBuilder beforeStatement = new StringBuilder();
         StringBuilder beforeCond = new StringBuilder();
         StringBuilder ifStatement = new StringBuilder();
-        StringBuilder elseStatement = new StringBuilder();
 
         var children = node.getChildren();
 
@@ -258,17 +258,17 @@ public class Ollir {
             child = children.get(i);
         }
 
-        elseStatement.append(elseStatementToOllir(child, prefix + ident));
 
+        var thisIf = ifCounter++;
         stringBuilder.append("if (");
         stringBuilder.append(ifConditionToOllir(children.get(0), prefix, beforeCond));
-        stringBuilder.append(") goto ifbody_").append(ifCounter).append(";\n");
-        stringBuilder.append(elseStatement);
-        stringBuilder.append(prefix).append(ident).append("goto endif_").append(ifCounter).append(";\n");
-        stringBuilder.append(prefix).append("ifbody_").append(ifCounter).append(":\n");
+        stringBuilder.append(") goto ifbody_").append(thisIf).append(";\n");
+        stringBuilder.append(elseStatementToOllir(child, prefix + ident));
+        stringBuilder.append(prefix).append(ident).append("goto endif_").append(thisIf).append(";\n");
+        stringBuilder.append(prefix).append("ifbody_").append(thisIf).append(":\n");
         stringBuilder.append(beforeStatement);
         stringBuilder.append(ifStatement);
-        stringBuilder.append(prefix).append("endif_").append(ifCounter++).append(":\n");
+        stringBuilder.append(prefix).append("endif_").append(thisIf).append(":\n");
 
         return beforeCond.append(stringBuilder).toString();
     }

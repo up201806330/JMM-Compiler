@@ -233,16 +233,19 @@ public class Jasmin {
                         String rightElement = pushElementToStack(right);
                         String trueValue = Constants.constant1B + 1 + "\n";
 
+                        boolean needsIndent = false;
                         if (!trueValue.equals(leftElement)) {
                             incrementStack(-1);
                             result.append(leftElement)
-                                    .append(indent).append(Constants.compTrue).append(target).append("\n");
+                                  .append(indent).append(Constants.compTrue).append(target).append("\n");
+                            needsIndent = true;
                         }
 
                         if (!trueValue.equals(rightElement)) {
                             incrementStack(-1);
-                            result.append(rightElement)
-                                    .append(indent).append(Constants.compTrue).append(target).append("\n");
+                            result.append(needsIndent ? indent : "")
+                                  .append(rightElement)
+                                  .append(indent).append(Constants.compTrue).append(target).append("\n");
                         }
 
                         if (trueValue.equals(leftElement) && trueValue.equals(rightElement))
@@ -417,20 +420,6 @@ public class Jasmin {
         return fullClassName(isStatic ? ((Operand) caller).getName() : callerType.getName()) + methodName
                 + "(" + parameters + ")" + typeToJasmin(callType) + "\n";
 
-    }
-
-    private String methodType(Element caller, String methodName) {
-        if (caller.getType().getTypeOfElement().equals(ElementType.THIS) ||
-            ((ClassType) caller.getType()).getName().equals(classUnit.getClassName())) {
-            for (var method : classUnit.getMethods()){
-                if (method.getMethodName().equals(methodName))
-                    return typeToJasmin(method.getReturnType());
-            }
-            return "V"; //TODO Temporarily is V, should be ERR
-        }
-        else {
-            return "V";
-        }
     }
 
     private String operationToJasmin(Operation operation) {
