@@ -1,0 +1,16 @@
+// Not done yet
+// Showcases division by zero checking and constant propagation
+
+import io;
+class Custom{
+	public static void main(String[] args) {
+	    Custom obj;
+	    obj = new Custom();
+        io.println(obj.func(2));
+        io.println(obj.func(0));
+	}
+
+	public int func(int i){
+	    return 10 / i;
+	}
+}

@@ -200,7 +200,9 @@ public class Jasmin {
 
                 if (method != null){
                      result.append(callInstruction.getInvocationType()).append(" ")
-                           .append(invocationToJasmin(caller, method, parametersToJasmin(parameters), callInstruction.getInvocationType().equals(CallType.invokestatic)));
+                           .append(invocationToJasmin(caller, method, callInstruction.getReturnType(),
+                                   parametersToJasmin(parameters),
+                                   callInstruction.getInvocationType().equals(CallType.invokestatic)));
                 }
 
                 if (popReturn && !callInstruction.getReturnType().getTypeOfElement().equals(ElementType.VOID))
@@ -394,7 +396,7 @@ public class Jasmin {
         return "ERRRRR";
     }
 
-    private String invocationToJasmin(Element caller, Element method, String parameters, boolean isStatic) {
+    private String invocationToJasmin(Element caller, Element method, Type callType, String parameters, boolean isStatic) {
         LiteralElement literalMethod;
         ClassType callerType = (ClassType) caller.getType();
 
@@ -413,7 +415,7 @@ public class Jasmin {
 
         String methodName = literalMethod.getLiteral().replace("\"", "");
         return fullClassName(isStatic ? ((Operand) caller).getName() : callerType.getName()) + methodName
-                + "(" + parameters + ")" + methodType(caller, methodName) + "\n";
+                + "(" + parameters + ")" + typeToJasmin(callType) + "\n";
 
     }
 
