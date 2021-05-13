@@ -31,7 +31,7 @@ public class BackendStage implements JasminBackend {
         ClassUnit ollirClass = ollirResult.getOllirClass();
 
         if (dashR < 1) dashR = 1;
-        else if (dashR > 99) dashR = 99;
+        else if (dashR > 120) dashR = 120;
 
         try {
             Jasmin jasmin = new Jasmin();
@@ -52,7 +52,7 @@ public class BackendStage implements JasminBackend {
 
     @Override
     public JasminResult toJasmin(OllirResult ollirResult) {
-        return toJasmin(ollirResult, 99, false);
+        return toJasmin(ollirResult, 120, false);
     }
 
 }

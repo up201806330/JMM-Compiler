@@ -232,11 +232,18 @@ public class Ollir {
 
     private String ifStatementToOllir(JmmNode node, String prefix) {
         StringBuilder stringBuilder = new StringBuilder(prefix);
-        StringBuilder beforeStatement = new StringBuilder();
         StringBuilder beforeCond = new StringBuilder();
         StringBuilder ifStatement = new StringBuilder();
 
         var children = node.getChildren();
+
+        var thisIf = ifCounter++;
+        stringBuilder.append("if (");
+        stringBuilder.append(ifConditionToOllir(children.get(0), prefix, beforeCond));
+        stringBuilder.append(") goto ifbody_").append(thisIf).append(";\n");
+        stringBuilder.append(elseStatementToOllir(children.get(children.size() - 1), prefix + ident));
+        stringBuilder.append(prefix).append(ident).append("goto endif_").append(thisIf).append(";\n");
+        stringBuilder.append(prefix).append("ifbody_").append(thisIf).append(":\n");
 
         int i = 1;
         var child = children.get(1);
@@ -258,15 +265,6 @@ public class Ollir {
             child = children.get(i);
         }
 
-
-        var thisIf = ifCounter++;
-        stringBuilder.append("if (");
-        stringBuilder.append(ifConditionToOllir(children.get(0), prefix, beforeCond));
-        stringBuilder.append(") goto ifbody_").append(thisIf).append(";\n");
-        stringBuilder.append(elseStatementToOllir(child, prefix + ident));
-        stringBuilder.append(prefix).append(ident).append("goto endif_").append(thisIf).append(";\n");
-        stringBuilder.append(prefix).append("ifbody_").append(thisIf).append(":\n");
-        stringBuilder.append(beforeStatement);
         stringBuilder.append(ifStatement);
         stringBuilder.append(prefix).append("endif_").append(thisIf).append(":\n");
 
