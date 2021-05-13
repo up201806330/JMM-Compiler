@@ -6,7 +6,45 @@ import java.util.*;
 
 
 public class ConstantPropagationVisitor extends PostorderJmmVisitor<List<List<JmmNode>>, Boolean> {
-    private HashMap<String, String> constants = new HashMap<>();
+    private class CustomKey {
+        String parentMethod;
+        String varName;
+
+        public CustomKey(String parentMethod, String varName) {
+            this.parentMethod = parentMethod;
+            this.varName = varName;
+        }
+
+        public String getParentMethod() {
+            return parentMethod;
+        }
+
+        public String getVarName() {
+            return varName;
+        }
+
+        @Override
+        public int hashCode() {
+            return parentMethod.hashCode() * varName.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+
+            CustomKey other = (CustomKey)obj;
+            if (!getParentMethod().equals(other.getParentMethod()))
+                return false;
+            else return getVarName().equals(other.getVarName());
+        }
+    }
+
+    private HashMap<CustomKey, String> constants = new HashMap<>();
 
     public ConstantPropagationVisitor() {
         addVisit(Constants.assignmentNodeName, this::updateConstants);
@@ -15,15 +53,27 @@ public class ConstantPropagationVisitor extends PostorderJmmVisitor<List<List<Jm
     }
 
     private Boolean updateConstants(JmmNode node, List<List<JmmNode>> nodesToRemove) {
-        // Ver se já existe no map, se sim substitui
-        // Só mete o valor se for um literal
         var left = node.getChildren().get(0);
         var right = node.getChildren().get(1);
 
-        if (right.getKind().equals(Constants.literalNodeName)){
-            constants.put(left.get(Constants.valueAttribute), right.get(Constants.valueAttribute));
+        var parentMethod = node.getAncestor(Constants.methodDeclNodeName);
+        var customKey= new CustomKey((
+                parentMethod.isPresent() ? parentMethod.get().get(Constants.nameAttribute) : "Global"),
+                left.getOptional(Constants.valueAttribute).orElse(""));
+
+        // Can't do optimization if value is being looped through or is being assigned inside if
+        if (node.getAncestor(Constants.whileStatementNodeName).isPresent() ||
+            node.getAncestor(Constants.ifStatementNodeName).isPresent()) {
+            constants.remove(customKey);
+            return defaultVisit(node, nodesToRemove);
         }
-        else constants.remove(left.getOptional(Constants.valueAttribute).orElse(""));
+
+        if (right.getKind().equals(Constants.literalNodeName)){
+            constants.put(
+                    customKey,
+                    right.get(Constants.valueAttribute));
+        }
+        else constants.remove(customKey);
 
         return defaultVisit(node, nodesToRemove);
     }
@@ -34,8 +84,14 @@ public class ConstantPropagationVisitor extends PostorderJmmVisitor<List<List<Jm
                 && parent.getChildren().get(0).equals(node))
             return defaultVisit(node, nodesToRemove);
 
-        var constant = constants.get(node.get(Constants.valueAttribute));
+        var parentMethod = node.getAncestor(Constants.methodDeclNodeName);
+        var customKey= new CustomKey((
+                parentMethod.isPresent() ? parentMethod.get().get(Constants.nameAttribute) : "Global"),
+                node.getOptional(Constants.valueAttribute).orElse(""));
+
+        var constant = constants.get(customKey);
         if (constant != null){
+            System.out.println("Replacing " + constant);
             // Find this nodes index in parent
             var index = 0;
             for (var child : parent.getChildren()){
@@ -65,7 +121,7 @@ public class ConstantPropagationVisitor extends PostorderJmmVisitor<List<List<Jm
                 var nodeTriple = it.next();
                 if (child.equals(nodeTriple.get(0))){
                     var index = nodeTriple.get(0).removeChild(nodeTriple.get(1));
-                    nodeTriple.get(0).add(nodeTriple.get(2), 1); // TODO Replace with 'index' when update is done
+                    nodeTriple.get(0).add(nodeTriple.get(2), index);
                     it.remove();
                     break; // or return
                 }

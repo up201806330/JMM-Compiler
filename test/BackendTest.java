@@ -74,19 +74,19 @@ public class BackendTest {
 //        TestUtils.noErrors(result.getReports());
 //    }
 
-    // Is needing stack size of 105 (may be broken)
-//    @Test
-//    public void testLife() {
-//        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/Life.jmm"));
-//        TestUtils.noErrors(result.getReports());
-//    }
+    // TODO Waits for input how do we test?
+    @Test
+    public void testLife() {
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/Life.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
 
-    // TODO 'Unable to pop operand off an empty stack' na main, por causa de invokestatic ioPlus/requestNumber()V
-//    @Test
-//    public void testMonteCarloPi() {
-//        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/MonteCarloPi.jmm"));
-//        TestUtils.noErrors(result.getReports());
-//    }
+    // TODO Still broken I think
+    @Test
+    public void testMonteCarloPi() {
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/MonteCarloPi.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
 
     // Doesnt have main (isnt supposed to be ran so its fine)
 //    @Test
@@ -105,7 +105,7 @@ public class BackendTest {
                 output.trim());
     }
 
-    // TODO Suspeito que seja na parte da AST, mas está a faltar uma label de else somehow
+    // TODO Still broken I think
 //    @Test
 //    public void testTicTacToe() {
 //        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/TicTacToe.jmm"));
