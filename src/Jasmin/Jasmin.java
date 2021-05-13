@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 public class Jasmin {
     private final String indent = "\t";
     private HashMap<String, Descriptor> varTable;
-    private HashMap<Instruction, String> methodLabels;
     private ClassUnit classUnit;
 
     private int maxStackSize;
@@ -55,10 +54,6 @@ public class Jasmin {
         StringBuilder result = new StringBuilder();
 
         varTable = method.getVarTable();
-        methodLabels = new HashMap<>();
-        for (var entry : method.getLabels().entrySet()){
-            methodLabels.put(entry.getValue(), entry.getKey());
-        }
 
         maxStackSize = 0;
         currStackSize = 0;
@@ -75,7 +70,7 @@ public class Jasmin {
             .append(")")
             .append(typeToJasmin(method.getReturnType())).append("\n");
 
-            method.getInstructions().forEach(x -> result.append(instructionToJasmin(x, true)));
+            method.getInstructions().forEach(instruction -> result.append(instructionToJasmin(method, instruction, true)));
             // method.getInstructions().forEach(Instruction::show);
 
         if (method.isConstructMethod())
@@ -98,11 +93,11 @@ public class Jasmin {
         return parameters.stream().map(x -> typeToJasmin(x.getType())).collect(Collectors.joining());
     }
 
-    private String instructionToJasmin(Instruction instruction, boolean popReturn) {
+    private String instructionToJasmin(Method parentMethod, Instruction instruction, boolean popReturn) {
         StringBuilder before = new StringBuilder();
         StringBuilder result = new StringBuilder(indent);
 
-        String label = methodLabels.get(instruction);
+        var labels = parentMethod.getLabels(instruction);
 
         switch (instruction.getInstType()){
             case ASSIGN -> {
@@ -114,7 +109,7 @@ public class Jasmin {
 
                 Optional<String> varIncrementOpt = checkVarIncrement(assignInstruction);
                 if (varIncrementOpt.isEmpty())
-                    before.append(instructionToJasmin(assignInstruction.getRhs(), false));
+                    before.append(instructionToJasmin(parentMethod, assignInstruction.getRhs(), false));
 
                 switch (type.getTypeOfElement()){
                     case INT32, BOOLEAN -> {
@@ -339,8 +334,11 @@ public class Jasmin {
             }
         }
 
-        return (label != null ? label + ":\n" : "") +
-                before + result;
+        StringBuilder labelsStr = new StringBuilder();
+        for(var label : labels)
+            labelsStr.append(label).append(":\n");
+
+        return labelsStr.toString() + before + result;
     }
 
     private Optional<String> checkVarIncrement(AssignInstruction instruction) {

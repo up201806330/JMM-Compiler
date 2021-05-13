@@ -50,7 +50,12 @@ public class Main implements JmmParser {
 		// }
 
 		AnalysisStage analysis = new AnalysisStage();
-		JmmSemanticsResult semanticsResults = analysis.semanticAnalysis(parserResults);
+		JmmSemanticsResult semanticsResults;
+		if ((args.length == 2 && args[1].startsWith("-o")) || (args.length == 3 && (args[1].startsWith("-o") || args[2].startsWith("-o")))){
+			semanticsResults = analysis.semanticAnalysis(parserResults, true);
+		}
+		else
+			semanticsResults = analysis.semanticAnalysis(parserResults);
 
 		showReports(semanticsResults.getReports());
 
