@@ -52,14 +52,13 @@ public class AnalysisStage implements JmmAnalysis {
             var constantPropagationVisitor = new ConstantPropagationVisitor();
             List<List<JmmNode>> nodesToDeleteAndAdd = new ArrayList<>();
             constantPropagationVisitor.visit(node, nodesToDeleteAndAdd);
-            while(nodesToDeleteAndAdd.size() != 0){
-                constantPropagationVisitor.tryDeleting(node, nodesToDeleteAndAdd);
-            }
+            var assignmentsToRemove = new HashSet<>(constantPropagationVisitor.tryDeleting(node, nodesToDeleteAndAdd));
+            assignmentsToRemove.forEach(JmmNode::delete);
         }
 
         //System.out.println("Dump tree after semantic verifications");
         var anotherVisitor = new OurVisitor();
-        System.out.println(anotherVisitor.visit(node, ""));
+        //System.out.println(anotherVisitor.visit(node, ""));
 
         return new JmmSemanticsResult(parserResult, symbolTable, reports);
     }

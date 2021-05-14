@@ -3,10 +3,11 @@ import pt.up.fe.comp.jmm.ast.JmmNodeImpl;
 import pt.up.fe.comp.jmm.ast.PostorderJmmVisitor;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class ConstantPropagationVisitor extends PostorderJmmVisitor<List<List<JmmNode>>, Boolean> {
-    private class CustomKey {
+    public class CustomKey {
         String parentMethod;
         String varName;
 
@@ -42,9 +43,14 @@ public class ConstantPropagationVisitor extends PostorderJmmVisitor<List<List<Jm
                 return false;
             else return getVarName().equals(other.getVarName());
         }
+
+        @Override
+        public String toString() {
+            return "(" + parentMethod + ") " + varName;
+        }
     }
 
-    private HashMap<CustomKey, String> constants = new HashMap<>();
+    public HashMap<CustomKey, String> constants = new HashMap<>();
 
     public ConstantPropagationVisitor() {
         addVisit(Constants.assignmentNodeName, this::updateConstants);
@@ -53,19 +59,14 @@ public class ConstantPropagationVisitor extends PostorderJmmVisitor<List<List<Jm
     }
 
     private Boolean updateConstants(JmmNode node, List<List<JmmNode>> nodesToRemove) {
-        var left = node.getChildren().get(0);
         var right = node.getChildren().get(1);
 
-        var parentMethod = node.getAncestor(Constants.methodDeclNodeName);
-        var customKey= new CustomKey((
-                parentMethod.isPresent() ? parentMethod.get().get(Constants.nameAttribute) : "Global"),
-                left.getOptional(Constants.valueAttribute).orElse(""));
+        var customKey = customKeyFromAssignment(node);
 
         // Can't do optimization if value is being looped through or is being assigned inside if
         if (node.getAncestor(Constants.whileStatementNodeName).isPresent() ||
             node.getAncestor(Constants.ifStatementNodeName).isPresent()) {
             constants.remove(customKey);
-            return defaultVisit(node, nodesToRemove);
         }
 
         if (right.getKind().equals(Constants.literalNodeName)){
@@ -73,31 +74,24 @@ public class ConstantPropagationVisitor extends PostorderJmmVisitor<List<List<Jm
                     customKey,
                     right.get(Constants.valueAttribute));
         }
-        else constants.remove(customKey);
+        else { // Variable is being assigned something else than a constant, thus can't be completely propagated
+            constants.remove(customKey);
+        }
 
         return defaultVisit(node, nodesToRemove);
     }
 
     private Boolean propagateConstants(JmmNode node, List<List<JmmNode>> nodesToRemove){
         var parent = node.getParent();
-        if (parent.getKind().equals(Constants.assignmentNodeName) // If node is left part of assignment, wont propagate anything
-                && parent.getChildren().get(0).equals(node))
+        if ((parent.getKind().equals(Constants.assignmentNodeName) ||   // If node is left part of assignment,
+                parent.getKind().equals(Constants.callExprNodeName)) && // Or left part of method call, won't propagate anything
+                parent.getChildren().get(0).equals(node))
             return defaultVisit(node, nodesToRemove);
 
-        var parentMethod = node.getAncestor(Constants.methodDeclNodeName);
-        var customKey= new CustomKey((
-                parentMethod.isPresent() ? parentMethod.get().get(Constants.nameAttribute) : "Global"),
-                node.getOptional(Constants.valueAttribute).orElse(""));
+        var customKey= customKeyFromTerminal(node);
 
         var constant = constants.get(customKey);
         if (constant != null){
-            System.out.println("Replacing " + constant);
-            // Find this nodes index in parent
-            var index = 0;
-            for (var child : parent.getChildren()){
-                if (child.equals(node)) break;
-                index++;
-            }
 
             // Replace node with terminal with that value and type
             var newNode = new JmmNodeImpl(Constants.literalNodeName);
@@ -114,19 +108,49 @@ public class ConstantPropagationVisitor extends PostorderJmmVisitor<List<List<Jm
         return true;
     }
 
-    public void tryDeleting(JmmNode root, List<List<JmmNode>> nodesToDeleteAndAdd) {
-        for (var child : root.getChildren()){
-            var it = nodesToDeleteAndAdd.iterator();
-            while(it.hasNext()){
-                var nodeTriple = it.next();
-                if (child.equals(nodeTriple.get(0))){
-                    var index = nodeTriple.get(0).removeChild(nodeTriple.get(1));
-                    nodeTriple.get(0).add(nodeTriple.get(2), index);
-                    it.remove();
-                    break; // or return
+    private CustomKey customKeyFromTerminal(JmmNode node){
+        var parentMethod = node.getAncestor(Constants.methodDeclNodeName);
+        return new CustomKey((
+                parentMethod.isPresent() ? parentMethod.get().get(Constants.nameAttribute) : "Global"),
+                node.getOptional(Constants.valueAttribute).orElse(""));
+    }
+
+    private CustomKey customKeyFromAssignment(JmmNode node){
+        var left = node.getChildren().get(0);
+        var parentMethod = node.getAncestor(Constants.methodDeclNodeName);
+        return new CustomKey((
+                parentMethod.isPresent() ? parentMethod.get().get(Constants.nameAttribute) : "Global"),
+                left.getOptional(Constants.valueAttribute).orElse(""));
+    }
+
+    public Set<JmmNode> tryDeleting(JmmNode root, List<List<JmmNode>> nodesToDeleteAndAdd) {
+        Set<JmmNode> result = new HashSet<>();
+
+        var astIterator = root.getChildren().listIterator();
+        while (astIterator.hasNext()){
+            var node = astIterator.next();
+            result.addAll(tryDeleting(node, nodesToDeleteAndAdd));
+
+            var tripletIterator = nodesToDeleteAndAdd.iterator();
+            while(tripletIterator.hasNext()){
+                var nodeTriplet = tripletIterator.next();
+
+                // If node wasn't blacklisted, must remove its assignment
+                if (node.getKind().equals(Constants.assignmentNodeName)){
+                    var customKey = customKeyFromAssignment(node);
+                    if (constants.containsKey(customKey)) {
+                        result.add(node);
+                    }
+                }
+                if (node.equals(nodeTriplet.get(0))){
+                    var index = node.removeChild(nodeTriplet.get(1));
+                    node.add(nodeTriplet.get(2), index);
+                    tripletIterator.remove();
+                    break;
                 }
             }
-            tryDeleting(child, nodesToDeleteAndAdd);
         }
+
+        return result;
     }
 }
