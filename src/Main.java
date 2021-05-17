@@ -9,6 +9,7 @@ import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.specs.util.SpecsIo;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 import java.io.StringReader;
@@ -94,6 +95,7 @@ public class Main implements JmmParser {
 		else {
 			System.out.println("vvvv Program results vvvv");
 			jasminResult.run();
+//			jasminResult.compile(new File("Compiled"));
 		}
 	}
 

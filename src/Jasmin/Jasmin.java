@@ -200,8 +200,10 @@ public class Jasmin {
                                    callInstruction.getInvocationType().equals(CallType.invokestatic)));
                 }
 
-                if (popReturn && !callInstruction.getReturnType().getTypeOfElement().equals(ElementType.VOID))
+                if (popReturn && !callInstruction.getReturnType().getTypeOfElement().equals(ElementType.VOID)) {
+                    incrementStack(-1);
                     result.append(indent).append("pop\n");
+                }
 
                 for (var op : parameters){
                     before.append(indent)
@@ -463,8 +465,7 @@ public class Jasmin {
                 incrementStack(-1);
                 return Constants.subInt + "\n" +
                         indent + Constants.constant2B + 31 + "\n" + // Hardcoded 32 bit right shift
-                        indent + Constants.shiftR + "\n" +
-                        indent + Constants.negateInt + "\n";
+                        indent + Constants.shiftR + "\n";
             }
             case NOT, NOTB -> { // Since all boolean values have been checked (are always 0 or 1), we can use this method, which is faster than the if approach
                 incrementStack(-1);

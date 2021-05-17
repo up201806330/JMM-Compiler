@@ -376,9 +376,10 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
         else if (returningType.equals(Constants.error)){
             return defaultVisit(node, reports);
         }
-        else if (!returningType.equals(parentOpt.get().get("type"))){
+        else if (!returningType.equals(parentOpt.get().get(Constants.typeAttribute))){
             if (returningType.equals(Constants.autoType)){
-                node.getChildren().get(0).put(Constants.typeAttribute, parentOpt.get().get("type"));
+                node.getChildren().get(0).put(Constants.typeAttribute, parentOpt.get().get(Constants.typeAttribute));
+                node.getChildren().get(0).put(Constants.arrayAttribute, parentOpt.get().getOptional(Constants.arrayAttribute).orElse("false"));
             }
             else {
                 reports.add(new Report(

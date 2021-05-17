@@ -49,7 +49,7 @@ public class AnalysisStage implements JmmAnalysis {
 
         //System.out.println("Dump tree after semantic verifications");
         var anotherVisitor = new OurVisitor();
-        //System.out.println(anotherVisitor.visit(node, ""));
+        System.out.println(anotherVisitor.visit(node, ""));
 
         return new JmmSemanticsResult(parserResult, symbolTable, reports);
     }

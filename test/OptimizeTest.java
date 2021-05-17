@@ -56,14 +56,14 @@ public class OptimizeTest {
 //        TestUtils.noErrors(result.getReports());
 //    }
 
-    // Is needing stack size of 105 (may be broken)
+    // Is requesting input from user, so won't be ran here
 //    @Test
 //    public void testLife() {
 //        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/Life.jmm"));
 //        TestUtils.noErrors(result.getReports());
 //    }
 
-    // Is requesting input from user, so won't be ran here (Also input isnt working ?? idk)
+    // Is requesting input from user, so won't be ran here
 //    @Test
 //    public void testMonteCarloPi() {
 //        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/MonteCarloPi.jmm"));

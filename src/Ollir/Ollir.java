@@ -92,6 +92,8 @@ public class Ollir {
         methodParameters = new ArrayList<>();
         methodVars = new ArrayList<>();
         tempVarCounter = 1;
+        ifCounter = 1;
+        whileCounter = 1;
 
         methodOllir.append(".method public ");
         Optional<String> staticAttribute = node.getOptional(Constants.staticAttribute);
@@ -352,8 +354,10 @@ public class Ollir {
                 child0.get(Constants.valueAttribute));
         boolean isField = isField(varName);
 
-        if (child1.get(Constants.typeAttribute).equals(Constants.autoType))
+        if (child1.get(Constants.typeAttribute).equals(Constants.autoType)) {
             child1.put(Constants.typeAttribute, child0.get(Constants.typeAttribute));
+            child1.put(Constants.arrayAttribute, child0.getOptional(Constants.arrayAttribute).orElse("false"));
+        }
 
         switch (child0.getKind()) {
             case Constants.terminalNodeName -> left.append(terminalToOllir(child0, ""));
