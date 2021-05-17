@@ -50,20 +50,16 @@ public class Main implements JmmParser {
 		// }
 
 		AnalysisStage analysis = new AnalysisStage();
-		JmmSemanticsResult semanticsResults;
-		if ((args.length == 2 && args[1].startsWith("-o")) || (args.length == 3 && (args[1].startsWith("-o") || args[2].startsWith("-o")))){
-			semanticsResults = analysis.semanticAnalysis(parserResults, true);
-		}
-		else
-			semanticsResults = analysis.semanticAnalysis(parserResults);
+		JmmSemanticsResult semanticsResults = analysis.semanticAnalysis(parserResults);
 
 		showReports(semanticsResults.getReports());
-
 		if (TestUtils.getNumErrors(semanticsResults.getReports()) > 0)
 			return;
 
 		OptimizationStage optimization = new OptimizationStage();
-		OllirResult ollirResult = optimization.toOllir(semanticsResults);
+		OllirResult ollirResult = optimization.toOllir(semanticsResults,
+				(args.length == 2 && args[1].startsWith("-o")) ||
+						(args.length == 3 && (args[1].startsWith("-o") || args[2].startsWith("-o"))));
 
 		BackendStage backend = new BackendStage();
 		JasminResult jasminResult;

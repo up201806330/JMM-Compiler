@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import pt.up.fe.comp.jmm.JmmNode;
@@ -39,8 +40,26 @@ public class OptimizationStage implements JmmOptimization {
     }
 
     @Override
+    public OllirResult toOllir(JmmSemanticsResult semanticsResult, boolean optimize) {
+        if (optimize) return toOllir(optimize(semanticsResult));
+        else return toOllir(semanticsResult);
+    }
+
+    @Override
     public JmmSemanticsResult optimize(JmmSemanticsResult semanticsResult) {
-        // THIS IS JUST FOR CHECKPOINT 3
+
+        // dashO
+        //System.out.println("Constant propagation...");
+        var node = semanticsResult.getRootNode();
+        var constantPropagationVisitor = new ConstantPropagationVisitor();
+        List<List<JmmNode>> nodesToDeleteAndAdd = new ArrayList<>();
+        constantPropagationVisitor.visit(node, nodesToDeleteAndAdd);
+        var assignmentsToRemove = new HashSet<>(constantPropagationVisitor.tryDeleting(node, nodesToDeleteAndAdd));
+        assignmentsToRemove.forEach(JmmNode::delete);
+
+        var anotherVisitor = new OurVisitor();
+        System.out.println(anotherVisitor.visit(node, ""));
+
         return semanticsResult;
     }
 

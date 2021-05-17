@@ -12,7 +12,7 @@ import pt.up.fe.comp.jmm.report.Stage;
 
 public class AnalysisStage implements JmmAnalysis {
 
-    public JmmSemanticsResult semanticAnalysis(JmmParserResult parserResult, boolean dashO){
+    public JmmSemanticsResult semanticAnalysis(JmmParserResult parserResult){
 
         if (TestUtils.getNumReports(parserResult.getReports(), ReportType.ERROR) > 0) {
             var errorReport = new Report(ReportType.ERROR, Stage.SEMANTIC, -1,
@@ -47,25 +47,11 @@ public class AnalysisStage implements JmmAnalysis {
         var typeVerificationVisitor = new TypeAndMethodVerificationVisitor(symbolTable);
         typeVerificationVisitor.visit(node, reports);
 
-        if (dashO){
-            //System.out.println("Constant propagation...");
-            var constantPropagationVisitor = new ConstantPropagationVisitor();
-            List<List<JmmNode>> nodesToDeleteAndAdd = new ArrayList<>();
-            constantPropagationVisitor.visit(node, nodesToDeleteAndAdd);
-            var assignmentsToRemove = new HashSet<>(constantPropagationVisitor.tryDeleting(node, nodesToDeleteAndAdd));
-            assignmentsToRemove.forEach(JmmNode::delete);
-        }
-
         //System.out.println("Dump tree after semantic verifications");
         var anotherVisitor = new OurVisitor();
         //System.out.println(anotherVisitor.visit(node, ""));
 
         return new JmmSemanticsResult(parserResult, symbolTable, reports);
-    }
-
-    @Override
-    public JmmSemanticsResult semanticAnalysis(JmmParserResult parserResult) {
-        return semanticAnalysis(parserResult, false);
     }
 
 }

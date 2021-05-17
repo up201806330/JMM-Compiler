@@ -3,7 +3,6 @@ import pt.up.fe.comp.jmm.ast.JmmNodeImpl;
 import pt.up.fe.comp.jmm.ast.PostorderJmmVisitor;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 public class ConstantPropagationVisitor extends PostorderJmmVisitor<List<List<JmmNode>>, Boolean> {
@@ -53,12 +52,12 @@ public class ConstantPropagationVisitor extends PostorderJmmVisitor<List<List<Jm
     public HashMap<CustomKey, String> constants = new HashMap<>();
 
     public ConstantPropagationVisitor() {
-        addVisit(Constants.assignmentNodeName, this::updateConstants);
-        addVisit(Constants.terminalNodeName, this::propagateConstants);
+        addVisit(Constants.assignmentNodeName, this::updateConstantsInAssignments);
+        addVisit(Constants.terminalNodeName, this::propagateConstantsInTerminals);
         setDefaultVisit(ConstantPropagationVisitor::defaultVisit);
     }
 
-    private Boolean updateConstants(JmmNode node, List<List<JmmNode>> nodesToRemove) {
+    private Boolean updateConstantsInAssignments(JmmNode node, List<List<JmmNode>> nodesToRemove) {
         var right = node.getChildren().get(1);
 
         var customKey = customKeyFromAssignment(node);
@@ -81,7 +80,7 @@ public class ConstantPropagationVisitor extends PostorderJmmVisitor<List<List<Jm
         return defaultVisit(node, nodesToRemove);
     }
 
-    private Boolean propagateConstants(JmmNode node, List<List<JmmNode>> nodesToRemove){
+    private Boolean propagateConstantsInTerminals(JmmNode node, List<List<JmmNode>> nodesToRemove){
         var parent = node.getParent();
         if ((parent.getKind().equals(Constants.assignmentNodeName) ||   // If node is left part of assignment,
                 parent.getKind().equals(Constants.callExprNodeName)) && // Or left part of method call, won't propagate anything
@@ -146,7 +145,6 @@ public class ConstantPropagationVisitor extends PostorderJmmVisitor<List<List<Jm
                     var index = node.removeChild(nodeTriplet.get(1));
                     node.add(nodeTriplet.get(2), index);
                     tripletIterator.remove();
-                    break;
                 }
             }
         }
