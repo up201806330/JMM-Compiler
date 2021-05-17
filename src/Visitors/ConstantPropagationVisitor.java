@@ -66,6 +66,7 @@ public class ConstantPropagationVisitor extends PostorderJmmVisitor<List<List<Jm
         if (node.getAncestor(Constants.whileStatementNodeName).isPresent() ||
             node.getAncestor(Constants.ifStatementNodeName).isPresent()) {
             constants.remove(customKey);
+            return defaultVisit(node, nodesToRemove);
         }
 
         if (right.getKind().equals(Constants.literalNodeName)){

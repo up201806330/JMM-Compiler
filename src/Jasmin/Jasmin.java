@@ -219,14 +219,17 @@ public class Jasmin {
                 var right = condBranchInstruction.getRightOperand();
                 var target = condBranchInstruction.getLabel();
 
+                String trueValue = Constants.constant1B + 1 + "\n";
+                String falseValue = Constants.constant1B + 0 + "\n";
                 switch (condBranchInstruction.getCondOperation().getOpType()){
-                    case OR, ORB, ORI32, GTH, GTHI32, EQ, EQI32, GTE, GTEI32, LTE, LTEI32, NEQ, NEQI32, NOT, NOTB -> {
+                    case OR, ORB, ORI32, GTH, GTHI32, EQ, EQI32, GTE, GTEI32, LTE, LTEI32, NEQ, NEQI32 -> {
+                        System.out.println("Branch: " + condBranchInstruction.getCondOperation().getOpType());
                         // NOT SUPPORTED
                     }
+
                     case AND, ANDI32, ANDB ->{
                         String leftElement = pushElementToStack(left);
                         String rightElement = pushElementToStack(right);
-                        String trueValue = Constants.constant1B + 1 + "\n";
 
                         boolean needsIndent = false;
                         if (!trueValue.equals(leftElement)) {
@@ -247,12 +250,26 @@ public class Jasmin {
                             result.append(Constants.gotoLabel).append(target).append("\n");
                     }
 
-
                     case LTH, LTHI32 -> {
                         result.append(pushElementToStack(left))
                                 .append(indent).append(pushElementToStack(right))
                                 .append(indent).append(Constants.compLessThan).append(target).append("\n");
                         incrementStack(-2);
+                    }
+
+                    case NOT, NOTB -> {
+                        String element = pushElementToStack(left);
+
+                        if (falseValue.equals(element))
+                            result.append(Constants.gotoLabel).append(target).append("\n");
+                        else if (trueValue.equals(element))
+                            break;
+                        else {
+                            incrementStack(-1);
+                            result.append(element)
+                                  .append(indent).append(Constants.compFalse).append(target).append("\n");
+                        }
+
                     }
 
                     case ADD, SUB, MUL, DIV, SHR, SHL, SHRR, XOR, ADDI32, SUBI32, MULI32, DIVI32, SHRI32, SHLI32, SHRRI32, XORI32 -> {
