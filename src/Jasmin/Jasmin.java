@@ -263,7 +263,7 @@ public class Jasmin {
                         if (falseValue.equals(element))
                             result.append(Constants.gotoLabel).append(target).append("\n");
                         else if (trueValue.equals(element))
-                            break;
+                            result.deleteCharAt(0); // Clears the indent, since result will be empty
                         else {
                             incrementStack(-1);
                             result.append(element)
