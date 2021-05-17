@@ -232,16 +232,28 @@ public class Jasmin {
                     case AND, ANDI32, ANDB ->{
                         String leftElement = pushElementToStack(left);
                         String rightElement = pushElementToStack(right);
+                        boolean leftIsTRUE = trueValue.equals(leftElement);
+                        boolean rightIsTRUE = trueValue.equals(rightElement);
 
                         boolean needsIndent = false;
-                        if (!trueValue.equals(leftElement)) {
+                        if (!leftIsTRUE) {
                             incrementStack(-1);
-                            result.append(leftElement)
-                                  .append(indent).append(Constants.compTrue).append(target).append("\n");
+                            result.append(leftElement).append(indent);
+
+                            if (rightIsTRUE) // If right element won't be compared, this one decides if it goes to ifbody or not
+                                result.append(Constants.compTrue).append(target);
+                            else             // Else, if this one is false, can jump directly to the elsebody or End
+                                result.append(Constants.compFalse)
+                                        .append(target.startsWith("Loop") ?
+                                                "End" + target.substring(target.lastIndexOf("_")) :
+                                                target.startsWith("ifbody") ?
+                                                "elsebody" + target.substring(target.lastIndexOf("_")) : "ERROR");
+
+                            result.append("\n");
                             needsIndent = true;
                         }
 
-                        if (!trueValue.equals(rightElement)) {
+                        if (!rightIsTRUE) {
                             incrementStack(-1);
                             result.append(needsIndent ? indent : "")
                                   .append(rightElement)
