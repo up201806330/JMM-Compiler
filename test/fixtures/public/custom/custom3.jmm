@@ -1,0 +1,29 @@
+// Showcases dead code removal from branches
+
+import io;
+class Custom{
+	public static void main(String[] args) {
+	    // && condition has false, ifbody is never reached
+        if (true && false){
+            io.println(1);
+        }
+        else {
+            io.println(0);
+        }
+
+        // < condition can be evaluated to true, elsebody is never reached
+        if (10 < 100){
+            io.println(1);
+        }
+        else {
+            io.println(0);
+        }
+
+        // while condition is false, Loop and Test are never reached
+        while(false){
+            io.println(0);
+        }
+
+	}
+
+}

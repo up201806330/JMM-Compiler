@@ -74,14 +74,14 @@ public class BackendTest {
 //        TestUtils.noErrors(result.getReports());
 //    }
 
-    // TODO Waits for input how do we test?
+    // Is requesting input from user, so won't be ran here
 //    @Test
 //    public void testLife() {
 //        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/Life.jmm"));
 //        TestUtils.noErrors(result.getReports());
 //    }
 
-    // TODO Still broken I think
+    // Is requesting input from user, so won't be ran here
 //    @Test
 //    public void testMonteCarloPi() {
 //        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/MonteCarloPi.jmm"));
@@ -105,7 +105,7 @@ public class BackendTest {
                 output.trim());
     }
 
-    // TODO Still broken I think
+    // Is requesting input from user, so won't be ran here
 //    @Test
 //    public void testTicTacToe() {
 //        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/TicTacToe.jmm"));
