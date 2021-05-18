@@ -2,6 +2,7 @@ import org.specs.comp.ollir.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -13,6 +14,8 @@ public class Jasmin {
     private int maxStackSize;
     private int currStackSize;
     private int maxLocalsSize;
+
+    List<String> deadTags = new ArrayList<>();
 
     private void incrementStack(int n){
         currStackSize += n;
@@ -58,6 +61,7 @@ public class Jasmin {
         maxStackSize = 0;
         currStackSize = 0;
         maxLocalsSize = 1;
+        deadTags = new ArrayList<>();
 
 //        method.show();
 
@@ -72,6 +76,22 @@ public class Jasmin {
 
             method.getInstructions().forEach(instruction -> result.append(instructionToJasmin(method, instruction, true)));
             // method.getInstructions().forEach(Instruction::show);
+
+        for (var deadTag : deadTags){
+            var nextTag = deadTag.startsWith("ifbody") ? "endif" :
+                                 deadTag.startsWith("elsebody") ? "ifbody" :
+                                 deadTag.startsWith("Loop") ? "End" : "ERROR";
+            nextTag += deadTag.substring(deadTag.lastIndexOf("_"));
+
+            System.out.println(deadTag + " " + nextTag);
+
+            if (deadTag.startsWith("ifbody")){
+                result.delete(result.indexOf("goto " + nextTag) - 1, result.indexOf(nextTag, result.indexOf(nextTag) + 1));
+            }
+            else
+                result.delete(result.indexOf(deadTag) - 1,
+                    result.indexOf(nextTag));
+        }
 
         if (method.isConstructMethod())
             result.append(indent).append(Constants.returnVoidInstr).append("\n");
@@ -235,19 +255,34 @@ public class Jasmin {
                         boolean leftIsTRUE = trueValue.equals(leftElement);
                         boolean rightIsTRUE = trueValue.equals(rightElement);
 
+                        var loopCond = target.startsWith("Loop");
+                        var ifCond = target.startsWith("ifbody");
+
+                        // If either is false, will ignore ifbody without any jumps
+                        if (falseValue.equals(leftElement) || falseValue.equals(rightElement)) {
+                            deadTags.add(target); // ifbody or Loop
+                            result.deleteCharAt(0);
+                            break;
+                        }
+                        else if (leftIsTRUE && rightIsTRUE) { // Both are true, elsebody is dead code (doesnt apply to loops)
+                            if (ifCond)
+                                deadTags.add("elsebody" + target.substring(target.lastIndexOf("_")));
+                        }
+
                         boolean needsIndent = false;
                         if (!leftIsTRUE) {
                             incrementStack(-1);
                             result.append(leftElement).append(indent);
 
-                            if (rightIsTRUE) // If right element won't be compared, this one decides if it goes to ifbody or not
+                            if (rightIsTRUE) { // If right element won't be compared, this comparison decides if it goes to ifbody or elsebody
                                 result.append(Constants.compTrue).append(target);
-                            else             // Else, if this one is false, can jump directly to the elsebody or End
+                            }
+                            else { // Else, must compare
                                 result.append(Constants.compFalse)
-                                        .append(target.startsWith("Loop") ?
-                                                "End" + target.substring(target.lastIndexOf("_")) :
-                                                target.startsWith("ifbody") ?
-                                                "elsebody" + target.substring(target.lastIndexOf("_")) : "ERROR");
+                                        .append(loopCond ? "End" :
+                                                ifCond ? "elsebody" : "ERROR")
+                                        .append(target.substring(target.lastIndexOf("_")));
+                            }
 
                             result.append("\n");
                             needsIndent = true;
@@ -259,12 +294,22 @@ public class Jasmin {
                                   .append(rightElement)
                                   .append(indent).append(Constants.compTrue).append(target).append("\n");
                         }
-
-                        if (trueValue.equals(leftElement) && trueValue.equals(rightElement))
-                            result.append(Constants.gotoLabel).append(target).append("\n");
                     }
 
                     case LTH, LTHI32 -> {
+                        if (left.isLiteral() && right.isLiteral()){
+                            var leftLiteral = Integer.parseInt(((LiteralElement) left).getLiteral());
+                            var rightLiteral = Integer.parseInt(((LiteralElement) right).getLiteral());
+
+                            if (leftLiteral < rightLiteral && target.startsWith("ifbody"))
+                                deadTags.add("elsebody" + target.substring(target.lastIndexOf("_")));
+                            else {
+                                result.deleteCharAt(0);
+                                deadTags.add(target);
+                            }
+                            break;
+                        }
+
                         result.append(pushElementToStack(left))
                                 .append(indent).append(pushElementToStack(right))
                                 .append(indent).append(Constants.compLessThan).append(target).append("\n");
@@ -274,16 +319,18 @@ public class Jasmin {
                     case NOT, NOTB -> {
                         String element = pushElementToStack(left);
 
-                        if (falseValue.equals(element))
-                            result.append(Constants.gotoLabel).append(target).append("\n");
-                        else if (trueValue.equals(element))
-                            result.deleteCharAt(0); // Clears the indent, since result will be empty
+                        if (falseValue.equals(element)) {
+                            deadTags.add("elsebody" + target.substring(target.lastIndexOf("_")));
+                        }
+                        else if (trueValue.equals(element)) {
+                            result.deleteCharAt(0);
+                            deadTags.add(target);
+                        }
                         else {
                             incrementStack(-1);
                             result.append(element)
                                   .append(indent).append(Constants.compFalse).append(target).append("\n");
                         }
-
                     }
 
                     case ADD, SUB, MUL, DIV, SHR, SHL, SHRR, XOR, ADDI32, SUBI32, MULI32, DIVI32, SHRI32, SHLI32, SHRRI32, XORI32 -> {

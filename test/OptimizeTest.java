@@ -83,7 +83,7 @@ public class OptimizeTest {
         TestUtils.noErrors(result.getReports());
     }
 
-    // TODO May be because of else ifs, idk
+    // Is requesting input from user, so won't be ran here
 //    @Test
 //    public void testTicTacToe() {
 //        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/TicTacToe.jmm"));
