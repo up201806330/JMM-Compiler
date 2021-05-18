@@ -114,11 +114,18 @@ public class BackendTest {
 
     @Test
     public void testWhileAndIf() {
-        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/WhileAndIf.jmm"));
+        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/WhileAndIF.jmm"));
         TestUtils.noErrors(result.getReports());
 
         var output = result.run();
         assertEquals("10\n10\n10\n10\n10\n10\n10\n10\n10\n10".replaceAll("\\n|\\r\\n", System.getProperty("line.separator")),
                 output.trim());
     }
+
+    // Is requesting input from user, so won't be ran here
+//    @Test
+//    public void testPrime() {
+//        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/custom/Prime.jmm"));
+//        TestUtils.noErrors(result.getReports());
+//    }
 }
