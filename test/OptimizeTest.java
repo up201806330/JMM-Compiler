@@ -92,7 +92,7 @@ public class OptimizeTest {
 
     @Test
     public void testWhileAndIf() {
-        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/WhileAndIf.jmm"));
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/WhileAndIF.jmm"));
         TestUtils.noErrors(result.getReports());
     }
 
