@@ -1,4 +1,9 @@
 // Shows all prime numbers between 1 and n
+/*
+Tested functionalities:
+    - Whiles and ifs with complex conditions
+    - Imported functions
+*/
 import io;
 
 class Prime {

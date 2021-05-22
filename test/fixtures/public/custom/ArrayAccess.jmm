@@ -1,0 +1,62 @@
+/*
+Test made to test array access.
+Tested functionalities:
+    - Array access with functions and operations inside
+    - Function overload
+*/
+
+import io;
+class ArrayAccess {
+    public static void main(String[] args) {
+        ArrayAccess c;
+        c = new ArrayAccess();
+        int[] array;
+        array = new int[10];
+        array[0] = 0;
+        array[1] = 1;
+        array[2] = 2;
+        array[3] = 3;
+        array[4] = 4;
+        array[5] = 5;
+        array[6] = 6;
+        array[7] = 7;
+        array[8] = 8;
+        array[9] = 9;
+
+        io.println(array[this.mod(this.getNumber(this.getNumber(),this.getNumber(5), this.getNumber(3)) * this.getNumber(2, 4), 10)]);
+    }
+
+    public static int pow(int a, int b) {
+        int result;
+        result = 1;
+        while (0 < b) {
+            result = result * a;
+            b = b - 1;
+        }
+        return result;
+    }
+
+    public static int getNumber() {
+        return 1;
+    }
+
+    public static int getNumber(int a) {
+        return a;
+    }
+
+    public static int getNumber(int a, int b) {
+        return this.pow(a, b);
+    }
+
+    public static int getNumber(int a, int b, int c) {
+        return a * b - c;
+    }
+
+	// Calculates a % b
+	public static int mod(int a, int b) {
+        while (b < a + 1) {
+            a = a - b;
+        }
+        return a;
+	}
+}

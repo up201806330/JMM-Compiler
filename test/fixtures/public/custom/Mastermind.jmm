@@ -6,6 +6,12 @@ After guessing, there will appear, in order, the numbers -1, 0 or 1.
 -1 means the number at that position is not in result.
 0 means the number at that position is in the result but in another position.
 1 means the number is at the right position.
+
+
+Tested functionalities:
+    - Imported functions
+    - Complex conditions and returns
+    - Multiple array access
 */
 
 import io;
