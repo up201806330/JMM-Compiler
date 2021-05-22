@@ -9,6 +9,7 @@ After guessing, there will appear, in order, the numbers -1, 0 or 1.
 */
 
 import io;
+import MasterMindAux;
 class MasterMind
 {
     int[] result;
@@ -23,6 +24,7 @@ class MasterMind
         int n;
         int i;
         i = 0;
+        MasterMindAux.printGetResult();
         while(i < 4) {
             n = io.read();
             result[i] = n;
@@ -39,11 +41,16 @@ class MasterMind
         while(plays < 10) {
             playerTry = this.play();
             if(this.checkVictory(playerTry)) {
-                plays = 10;
+                plays = 11;
+                MasterMindAux.printWon();
             } else {
                 this.printPlay(playerTry);
             }
             plays = plays + 1;
+        }
+        if (this.equals(plays, 10)) {
+            MasterMindAux.printLost();
+        } else {
         }
         return plays;
     }
@@ -54,9 +61,10 @@ class MasterMind
         int negative;
         negative = 0 - 1;
         i = 0;
+        io.println();
         while(i < 4) {
             if (this.equals(playerTry[i], result[i])) {
-                io.print(1);
+                io.println(1);
             } else {
                 j = 0;
                 while(j < 4) {
@@ -67,9 +75,9 @@ class MasterMind
                     j = j + 1;
                 }
                 if (this.equals(j, 4)) {
-                    io.print(negative);
+                    io.println(negative);
                 } else {
-                    io.print(0);
+                    io.println(0);
                 }
             }
             i = i + 1;
@@ -111,6 +119,7 @@ class MasterMind
         i = 0;
         int n;
         playerTry = new int[4];
+        MasterMindAux.printGetGuess();
         while(i < 4) {
             n = io.read();
             playerTry[i] = n;
