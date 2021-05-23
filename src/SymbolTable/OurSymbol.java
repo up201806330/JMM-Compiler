@@ -14,29 +14,29 @@ public class OurSymbol extends Symbol implements Comparable<OurSymbol> {
 
     public OurSymbol(JmmNode node, HashSet<String> attributes, OurScope scope) {
         super(new Type(
-                        node.getOptional(Constants.typeAttribute).orElse(Constants.voidType),
-                        Boolean.parseBoolean(node.getOptional(Constants.arrayAttribute).orElse("false"))
+                        node.getOptional(Consts.typeAttribute).orElse(Consts.voidType),
+                        Boolean.parseBoolean(node.getOptional(Consts.arrayAttribute).orElse("false"))
                 ),
-                node.get(Constants.nameAttribute));
+                node.get(Consts.nameAttribute));
         this.attributes = attributes;
         this.scope = scope;
-        this.line = Integer.parseInt(node.get(Constants.lineAttribute));
-        this.column = Integer.parseInt(node.get(Constants.columnAttribute));
+        this.line = Integer.parseInt(node.get(Consts.lineAttribute));
+        this.column = Integer.parseInt(node.get(Consts.columnAttribute));
     }
 
     public void insertParameterTypes(List<Type> parameterTypes){
-        if (!attributes.contains(Constants.methodAttribute)) return;
+        if (!attributes.contains(Consts.methodAttribute)) return;
 
         this.parameterTypes.addAll(parameterTypes);
     }
 
-    public boolean isImport() { return attributes.contains(Constants.importAttribute); }
-    public boolean isClass() { return attributes.contains(Constants.classAttribute); }
-    public boolean isField() { return attributes.contains(Constants.fieldAttribute); }
-    public boolean isMethod() { return attributes.contains(Constants.methodAttribute); }
-    public boolean isParameter() { return attributes.contains(Constants.parameterAttribute); }
-    public boolean isVariable() { return attributes.contains(Constants.variableAttribute); }
-    public boolean isStatic() { return attributes.contains(Constants.staticAttribute); }
+    public boolean isImport() { return attributes.contains(Consts.importAttribute); }
+    public boolean isClass() { return attributes.contains(Consts.classAttribute); }
+    public boolean isField() { return attributes.contains(Consts.fieldAttribute); }
+    public boolean isMethod() { return attributes.contains(Consts.methodAttribute); }
+    public boolean isParameter() { return attributes.contains(Consts.parameterAttribute); }
+    public boolean isVariable() { return attributes.contains(Consts.variableAttribute); }
+    public boolean isStatic() { return attributes.contains(Consts.staticAttribute); }
 
     public void setInitialized(){
         initialized = true;

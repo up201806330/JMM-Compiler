@@ -18,12 +18,12 @@ public class NodeUtils {
      */
     public static Optional<List<JmmNode>> getChildren(JmmNode node, List<Report> reports) {
         List<JmmNode> result = node.getChildren();
-        if (result.size() != 2 && node.getKind().equals(Constants.binaryNodeName)) {
+        if (result.size() != 2 && node.getKind().equals(Consts.binaryNodeName)) {
             reports.add(new Report(
                     ReportType.WARNING,
                     Stage.SEMANTIC,
-                    Integer.parseInt(node.get(Constants.lineAttribute)),
-                    Integer.parseInt(node.get(Constants.columnAttribute)),
+                    Integer.parseInt(node.get(Consts.lineAttribute)),
+                    Integer.parseInt(node.get(Consts.columnAttribute)),
                     "Binary node doesn't have 2 children. Something is wrong in syntactic phase"
             ));
             return Optional.empty();
@@ -38,7 +38,7 @@ public class NodeUtils {
      * @return A Type object
      */
     public static Type extractTypeFromNode(JmmNode node){
-        return new Type(node.get(Constants.typeAttribute), Boolean.parseBoolean(node.get(Constants.arrayAttribute)));
+        return new Type(node.get(Consts.typeAttribute), Boolean.parseBoolean(node.get(Consts.arrayAttribute)));
     }
 
     /**

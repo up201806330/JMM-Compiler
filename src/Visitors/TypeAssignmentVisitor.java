@@ -8,33 +8,33 @@ public class TypeAssignmentVisitor extends PostorderJmmVisitor<List<Report>, Boo
 
 
     public TypeAssignmentVisitor() {
-        addVisit(Constants.typeNodeName, this::dealWithTypeAffectingParent);
-        addVisit(Constants.terminalNodeName, this::dealWithTypeNotAffectingParent);
-        addVisit(Constants.propertyAccessNodeName, this::dealWithTypeNotAffectingParent);
-        addVisit(Constants.newNodeName, this::dealWithTypeNotAffectingParent);
-        addVisit(Constants.literalNodeName, this::dealWithTypeNotAffectingParent);
-        addVisit(Constants.arrayExprNodeName, this::dealWithArrayExpr);
+        addVisit(Consts.typeNodeName, this::dealWithTypeAffectingParent);
+        addVisit(Consts.terminalNodeName, this::dealWithTypeNotAffectingParent);
+        addVisit(Consts.propertyAccessNodeName, this::dealWithTypeNotAffectingParent);
+        addVisit(Consts.newNodeName, this::dealWithTypeNotAffectingParent);
+        addVisit(Consts.literalNodeName, this::dealWithTypeNotAffectingParent);
+        addVisit(Consts.arrayExprNodeName, this::dealWithArrayExpr);
         setDefaultVisit(TypeAssignmentVisitor::defaultVisit);
     }
 
     private void setType(JmmNode node) {
-        if (node.get(Constants.typeAttribute).equals(Constants.intArrayType)) {
-            node.put(Constants.arrayAttribute, "true");
-            node.put(Constants.typeAttribute, Constants.intType);
+        if (node.get(Consts.typeAttribute).equals(Consts.intArrayType)) {
+            node.put(Consts.arrayAttribute, "true");
+            node.put(Consts.typeAttribute, Consts.intType);
         }
-        else if (node.get(Constants.typeAttribute).equals(Constants.stringArrayType)) {
-            node.put(Constants.arrayAttribute, "true");
-            node.put(Constants.typeAttribute, Constants.stringType);
+        else if (node.get(Consts.typeAttribute).equals(Consts.stringArrayType)) {
+            node.put(Consts.arrayAttribute, "true");
+            node.put(Consts.typeAttribute, Consts.stringType);
         }
         else
-            node.put(Constants.arrayAttribute, "false");
+            node.put(Consts.arrayAttribute, "false");
     }
 
     public Boolean dealWithTypeAffectingParent(JmmNode node, List<Report> reports) {
         setType(node);
 
-        node.getParent().put(Constants.typeAttribute, node.get(Constants.typeAttribute));
-        node.getParent().put(Constants.arrayAttribute, node.get(Constants.arrayAttribute));
+        node.getParent().put(Consts.typeAttribute, node.get(Consts.typeAttribute));
+        node.getParent().put(Consts.arrayAttribute, node.get(Consts.arrayAttribute));
         return defaultVisit(node, reports);
     }
 
@@ -45,8 +45,8 @@ public class TypeAssignmentVisitor extends PostorderJmmVisitor<List<Report>, Boo
     }
 
     private Boolean dealWithArrayExpr(JmmNode node, List<Report> reports){
-        node.put(Constants.typeAttribute, Constants.intType); // Since arrays can only be of ints, this is hardcoded
-        node.put(Constants.arrayAttribute, "false");
+        node.put(Consts.typeAttribute, Consts.intType); // Since arrays can only be of ints, this is hardcoded
+        node.put(Consts.arrayAttribute, "false");
         return defaultVisit(node, reports);
     }
 

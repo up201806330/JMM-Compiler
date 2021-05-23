@@ -80,7 +80,7 @@ public class Jasmin {
         removeDeadCodeTags(result);
 
         if (method.isConstructMethod())
-            result.append(indent).append(Constants.returnVoidInstr).append("\n");
+            result.append(indent).append(Consts.returnVoidInstr).append("\n");
         result.append(".end method").append("\n\n");
 
         if (!method.isConstructMethod()){
@@ -131,14 +131,14 @@ public class Jasmin {
                                   .append(indent)
                                   .append(pushElementToStack(arrayOperand.getIndexOperands().get(0))) // TODO Check why there are multiple index operands
                                   .append(temp);
-                            result.append(Constants.storeArrayElem).append("\n");
+                            result.append(Consts.storeArrayElem).append("\n");
                             incrementStack(-3);
 
                         } catch (ClassCastException e){ // Otherwise, is int or boolean
                             if (varIncrementOpt.isEmpty())
                                 result.append(storeInt(vreg)).append("\n");
                             else
-                                result.append(Constants.incrementInt).append(vreg).append(" ").append(varIncrementOpt.get()).append("\n");
+                                result.append(Consts.incrementInt).append(vreg).append(" ").append(varIncrementOpt.get()).append("\n");
                         }
                     }
                     case ARRAYREF, OBJECTREF -> {
@@ -179,8 +179,8 @@ public class Jasmin {
                         incrementStack(1);
                         String callerName = ((Operand) caller).getName();
                         result.append(callerName.equals("array") ?
-                                Constants.newArray :
-                                Constants.newObj + callerName)
+                                Consts.newArray :
+                                Consts.newObj + callerName)
                                 .append("\n");
                     }
                     case arraylength -> {
@@ -219,7 +219,7 @@ public class Jasmin {
             }
             case GOTO -> {
                 GotoInstruction gotoInstruction = (GotoInstruction) instruction;
-                result.append(Constants.gotoLabel).append(gotoInstruction.getLabel()).append("\n");
+                result.append(Consts.gotoLabel).append(gotoInstruction.getLabel()).append("\n");
             }
             case BRANCH -> {
                 CondBranchInstruction condBranchInstruction = (CondBranchInstruction) instruction;
@@ -227,8 +227,8 @@ public class Jasmin {
                 var right = condBranchInstruction.getRightOperand();
                 var target = condBranchInstruction.getLabel();
 
-                String trueValue = Constants.constant1B + 1 + "\n";
-                String falseValue = Constants.constant1B + 0 + "\n";
+                String trueValue = Consts.constant1B + 1 + "\n";
+                String falseValue = Consts.constant1B + 0 + "\n";
                 switch (condBranchInstruction.getCondOperation().getOpType()){
                     case OR, ORB, ORI32, GTH, GTHI32, EQ, EQI32, GTE, GTEI32, LTE, LTEI32, NEQ, NEQI32 -> {
                         System.out.println("Branch: " + condBranchInstruction.getCondOperation().getOpType());
@@ -262,10 +262,10 @@ public class Jasmin {
                             result.append(leftElement).append(indent);
 
                             if (rightIsTRUE) { // If right element won't be compared, this comparison decides if it goes to ifbody or elsebody
-                                result.append(Constants.compTrue).append(target);
+                                result.append(Consts.compTrue).append(target);
                             }
                             else { // Else, must compare
-                                result.append(Constants.compFalse)
+                                result.append(Consts.compFalse)
                                         .append(loopCond ? "End" :
                                                 ifCond ? "elsebody" : "ERROR")
                                         .append(target.substring(target.lastIndexOf("_")));
@@ -279,7 +279,7 @@ public class Jasmin {
                             incrementStack(-1);
                             result.append(needsIndent ? indent : "")
                                   .append(rightElement)
-                                  .append(indent).append(Constants.compTrue).append(target).append("\n");
+                                  .append(indent).append(Consts.compTrue).append(target).append("\n");
                         }
                     }
 
@@ -301,7 +301,7 @@ public class Jasmin {
 
                         result.append(pushElementToStack(left))
                                 .append(indent).append(pushElementToStack(right))
-                                .append(indent).append(Constants.compLessThan).append(target).append("\n");
+                                .append(indent).append(Consts.compLessThan).append(target).append("\n");
                         incrementStack(-2);
                     }
 
@@ -320,7 +320,7 @@ public class Jasmin {
                         else {
                             incrementStack(-1);
                             result.append(element)
-                                  .append(indent).append(Constants.compFalse).append(target).append("\n");
+                                  .append(indent).append(Consts.compFalse).append(target).append("\n");
                         }
                     }
 
@@ -339,20 +339,20 @@ public class Jasmin {
                     result.append(returnToJasmin(returnInstruction.getOperand().getType().getTypeOfElement())).append("\n");
                 }
                 else
-                    result.append(Constants.returnVoidInstr).append("\n");
+                    result.append(Consts.returnVoidInstr).append("\n");
 
             }
             case PUTFIELD -> {
                 PutFieldInstruction putFieldInstruction = (PutFieldInstruction) instruction;
                 Operand secondOperand = (Operand) putFieldInstruction.getSecondOperand();
                 before.append(indent)
-                      .append(Constants.loadObjectRefSM).append(0).append("\n") // Hardcoded since only fields from this class can be accessed
+                      .append(Consts.loadObjectRefSM).append(0).append("\n") // Hardcoded since only fields from this class can be accessed
                       .append(indent)
                       .append(pushElementToStack(putFieldInstruction.getThirdOperand()));
 
                 incrementStack(1);
 
-                result.append(Constants.putfield)
+                result.append(Consts.putfield)
                       .append(classPath())
                       .append(secondOperand.getName()).append(" ")
                       .append(typeToJasmin(secondOperand.getType()))
@@ -364,9 +364,9 @@ public class Jasmin {
                 GetFieldInstruction getFieldInstruction = (GetFieldInstruction) instruction;
                 Operand secondOperand = (Operand) getFieldInstruction.getSecondOperand();
                 before.append(indent)
-                      .append(Constants.loadObjectRefSM).append(0).append("\n"); // Hardcoded since only fields from this class can be accessed
+                      .append(Consts.loadObjectRefSM).append(0).append("\n"); // Hardcoded since only fields from this class can be accessed
 
-                result.append(Constants.getfield)
+                result.append(Consts.getfield)
                       .append(classPath())
                       .append(secondOperand.getName()).append(" ")
                       .append(typeToJasmin(secondOperand.getType()))
@@ -382,7 +382,7 @@ public class Jasmin {
                     before.append(indent)
                           .append(pushElementToStack(binaryOpInstruction.getLeftOperand()))
                           .append(indent)
-                          .append(Constants.constant1B).append(1).append("\n");
+                          .append(Consts.constant1B).append(1).append("\n");
                     result.append(operationToJasmin(binaryOpInstruction.getUnaryOperation()));
 
                 }
@@ -441,9 +441,9 @@ public class Jasmin {
     private String returnToJasmin(ElementType elementType) {
         incrementStack(-1);
         if (elementType.equals(ElementType.INT32) || elementType.equals(ElementType.BOOLEAN))
-            return Constants.returnInt;
+            return Consts.returnInt;
         else
-            return Constants.returnObjectRef;
+            return Consts.returnObjectRef;
     }
 
     private String classPath() {
@@ -493,33 +493,33 @@ public class Jasmin {
         switch (operation.getOpType()){
             case ADD, ADDI32 -> {
                 incrementStack(-1);
-                return Constants.addInt + "\n";
+                return Consts.addInt + "\n";
             }
             case SUB, SUBI32 -> {
                 incrementStack(-1);
-                return Constants.subInt + "\n";
+                return Consts.subInt + "\n";
             }
             case MUL, MULI32 -> {
                 incrementStack(-1);
-                return Constants.mulInt + "\n";
+                return Consts.mulInt + "\n";
             }
             case DIV, DIVI32 -> {
                 incrementStack(-1);
-                return Constants.divInt + "\n";
+                return Consts.divInt + "\n";
             }
             case AND, ANDI32, ANDB -> {
                 incrementStack(-1);
-                return Constants.andInt + "\n";
+                return Consts.andInt + "\n";
             }
             case LTH, LTHI32 -> {
                 incrementStack(-1);
-                return Constants.subInt + "\n" +
-                        indent + Constants.constant2B + 31 + "\n" + // Hardcoded 32 bit right shift
-                        indent + Constants.shiftR + "\n";
+                return Consts.subInt + "\n" +
+                        indent + Consts.constant2B + 31 + "\n" + // Hardcoded 32 bit right shift
+                        indent + Consts.shiftR + "\n";
             }
             case NOT, NOTB -> { // Since all boolean values have been checked (are always 0 or 1), we can use this method, which is faster than the if approach
                 incrementStack(-1);
-                return Constants.notInt + "\n";
+                return Consts.notInt + "\n";
             }
             case SHR, XOR, SHRR, SHL, OR, GTH, EQ, NEQ, LTE, GTE, SHRI32, SHLI32, SHRRI32, XORI32, ORI32, GTHI32, EQI32, NEQI32, LTEI32, GTEI32, ORB -> {
                 // NOT SUPPORTED
@@ -543,22 +543,22 @@ public class Jasmin {
                     incrementStack(1);
 
                     if (Integer.parseInt(literal.getLiteral()) == -1) {
-                        return Constants.constantMinus1 + "\n";
+                        return Consts.constantMinus1 + "\n";
                     }
                     else if (Integer.parseInt(literal.getLiteral()) == 0){
-                        return Constants.constant1B + 0 + "\n";
+                        return Consts.constant1B + 0 + "\n";
                     }
                     else if (Integer.parseInt(literal.getLiteral()) > 0 && Integer.parseInt(literal.getLiteral()) <= 5){
-                        return Constants.constant1B + literal.getLiteral() + "\n";
+                        return Consts.constant1B + literal.getLiteral() + "\n";
                     }
                     else if (Integer.parseInt(literal.getLiteral()) >= -128 && Integer.parseInt(literal.getLiteral()) <= 127){
-                        return Constants.constant2B + literal.getLiteral() + "\n";
+                        return Consts.constant2B + literal.getLiteral() + "\n";
                     }
                     else if (Integer.parseInt(literal.getLiteral()) >= -32768 && Integer.parseInt(literal.getLiteral()) <= 32767){
-                        return Constants.constant3B + literal.getLiteral() + "\n";
+                        return Consts.constant3B + literal.getLiteral() + "\n";
                     }
                     else {
-                        return Constants.constant4B + literal.getLiteral() + "\n";
+                        return Consts.constant4B + literal.getLiteral() + "\n";
                     }
                 }
                 else { // Is variable holding int, can still be array index
@@ -566,7 +566,7 @@ public class Jasmin {
                         ArrayOperand arrayOperand = (ArrayOperand) element;
                         return loadObjVar(varTable.get(arrayOperand.getName()).getVirtualReg()) + "\n" + indent +
                                pushElementToStack(arrayOperand.getIndexOperands().get(0)) +  indent + // TODO Check why there are multiple index operands
-                               Constants.loadArrayElem + "\n";
+                               Consts.loadArrayElem + "\n";
                     }
                     catch (ClassCastException e){
                         return loadIntVar(varTable.get(operand.getName()).getVirtualReg()) + "\n";
@@ -577,11 +577,11 @@ public class Jasmin {
             case BOOLEAN -> {
                 if (operand.getName().equals("false")) {
                     incrementStack(1);
-                    return Constants.constant1B + 0 + "\n";
+                    return Consts.constant1B + 0 + "\n";
                 }
                 else if (operand.getName().equals("true")) {
                     incrementStack(1);
-                    return Constants.constant1B + 1 + "\n";
+                    return Consts.constant1B + 1 + "\n";
                 }
                 else
                     return loadIntVar(varTable.get(operand.getName()).getVirtualReg()) + "\n";
@@ -595,7 +595,7 @@ public class Jasmin {
             }
             case THIS -> {
                 incrementStack(1);
-                return Constants.loadObjectRefSM + "0" + "\n";
+                return Consts.loadObjectRefSM + "0" + "\n";
             }
             case STRING -> {
                 return "";
@@ -632,22 +632,22 @@ public class Jasmin {
 
     private String loadIntVar(int vreg){
         incrementStack(1);
-        return (vreg >= 0 && vreg <= 3 ? Constants.loadIntVarSM : Constants.loadIntVar) + vreg;
+        return (vreg >= 0 && vreg <= 3 ? Consts.loadIntVarSM : Consts.loadIntVar) + vreg;
     }
 
     private String loadObjVar(int vreg){
         incrementStack(1);
-        return (vreg >= 0 && vreg <= 3 ? Constants.loadObjectRefSM : Constants.loadObjectRef) + vreg;
+        return (vreg >= 0 && vreg <= 3 ? Consts.loadObjectRefSM : Consts.loadObjectRef) + vreg;
     }
 
     private String storeInt(int vreg){
         incrementStack(-1);
-        return (vreg >= 0 && vreg <= 3 ? Constants.storeIntSM : Constants.storeInt) + vreg;
+        return (vreg >= 0 && vreg <= 3 ? Consts.storeIntSM : Consts.storeInt) + vreg;
     }
 
     private String storeObjectRef(int vreg){
         incrementStack(-1);
-        return (vreg >= 0 && vreg <= 3 ? Constants.storeObjRefSM : Constants.storeObjRef) + vreg;
+        return (vreg >= 0 && vreg <= 3 ? Consts.storeObjRefSM : Consts.storeObjRef) + vreg;
     }
 
     private String fieldToJasmin(Field field) {

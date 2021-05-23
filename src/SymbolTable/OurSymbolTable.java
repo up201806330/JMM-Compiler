@@ -56,12 +56,12 @@ public class OurSymbolTable implements SymbolTable {
     }
 
     public Optional<OurSymbol> tryGettingSymbol(String methodName, String value){
-        if (value.equals(Constants.thisAttribute)){
-            return tryGettingSymbol(Constants.thisAttribute, getClassName());
+        if (value.equals(Consts.thisAttribute)){
+            return tryGettingSymbol(Consts.thisAttribute, getClassName());
         }
 
         // If methodName is provided (!= 'this'), search for definition inside that method's scope
-        if (!methodName.equals(Constants.thisAttribute)){
+        if (!methodName.equals(Consts.thisAttribute)){
             for (OurSymbol entry : table.keySet()) {
                 if (entry.getScope().getName().equals(methodName) &&
                         entry.getName().equals(value)) return Optional.of(entry);

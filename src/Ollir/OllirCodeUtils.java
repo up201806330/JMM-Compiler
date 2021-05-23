@@ -34,7 +34,7 @@ public class OllirCodeUtils {
                     paramsOllir.append(", ");
                 }
             }
-        } else if (functionName.equals(Constants.mainMethod)){
+        } else if (functionName.equals(Consts.mainMethod)){
             paramsOllir.append("args.array.String");
         }
 
@@ -44,10 +44,10 @@ public class OllirCodeUtils {
     public static String methodParameterToOllir(JmmNode node, String prefix) {
         StringBuilder stringBuilder = new StringBuilder(prefix);
 
-        stringBuilder.append(node.get(Constants.nameAttribute));
+        stringBuilder.append(node.get(Consts.nameAttribute));
 
-        Optional<String> type = node.getOptional(Constants.typeAttribute);
-        Optional<String> isArray = node.getOptional(Constants.arrayAttribute);
+        Optional<String> type = node.getOptional(Consts.typeAttribute);
+        Optional<String> isArray = node.getOptional(Consts.arrayAttribute);
 
         if (type.isPresent() && isArray.isPresent()) stringBuilder.append(OllirCodeUtils.typeToOllir(type.get(), isArray));
 

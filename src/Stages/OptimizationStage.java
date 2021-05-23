@@ -53,9 +53,13 @@ public class OptimizationStage implements JmmOptimization {
         var node = semanticsResult.getRootNode();
         var constantPropagationVisitor = new ConstantPropagationVisitor();
         List<List<JmmNode>> nodesToDeleteAndAdd = new ArrayList<>();
-        constantPropagationVisitor.visit(node, nodesToDeleteAndAdd);
-        var assignmentsToRemove = new HashSet<>(constantPropagationVisitor.tryDeleting(node, nodesToDeleteAndAdd));
-        assignmentsToRemove.forEach(JmmNode::delete);
+
+        do {
+            constantPropagationVisitor.atLeastOneChange = false;
+            constantPropagationVisitor.visit(node, nodesToDeleteAndAdd);
+            var assignmentsToRemove = new HashSet<>(constantPropagationVisitor.tryDeleting(node, nodesToDeleteAndAdd));
+            assignmentsToRemove.forEach(JmmNode::delete);
+        } while(constantPropagationVisitor.atLeastOneChange);
 
         var anotherVisitor = new OurVisitor();
         System.out.println(anotherVisitor.visit(node, ""));

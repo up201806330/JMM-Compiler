@@ -14,38 +14,38 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
     OurSymbolTable getSymbolTable(){ return symbolTable; }
 
     public SymbolTableVisitor() {
-        addVisit(Constants.classDeclNodeName, this::dealWithClassDecl);
-        addVisit(Constants.classInheritNodeName, this::dealWithClassInheritance);
-        addVisit(Constants.importDeclNodeName, this::dealWithImportDecl);
-        addVisit(Constants.varDeclNodeName, this::dealWithVarDecl);
-        addVisit(Constants.methodDeclNodeName, this::dealWithMethodDecl);
-        addVisit(Constants.methodParamNodeName, this::dealWithMethodParameter);
+        addVisit(Consts.classDeclNodeName, this::dealWithClassDecl);
+        addVisit(Consts.classInheritNodeName, this::dealWithClassInheritance);
+        addVisit(Consts.importDeclNodeName, this::dealWithImportDecl);
+        addVisit(Consts.varDeclNodeName, this::dealWithVarDecl);
+        addVisit(Consts.methodDeclNodeName, this::dealWithMethodDecl);
+        addVisit(Consts.methodParamNodeName, this::dealWithMethodParameter);
         setDefaultVisit(SymbolTableVisitor::defaultVisit);
     }
 
     private Boolean dealWithClassDecl(JmmNode node, List<Report> reports){
         OurSymbol symbol = new OurSymbol(
                 node,
-                new HashSet<>(Arrays.asList(Constants.classAttribute)),
+                new HashSet<>(Arrays.asList(Consts.classAttribute)),
                 new OurScope()
         );
         Optional<Report> insertionError = symbolTable.put(symbol, node);
         insertionError.ifPresent(reports::add);
 
-        symbolTable.className = node.get(Constants.nameAttribute);
+        symbolTable.className = node.get(Consts.nameAttribute);
         return defaultVisit(node, reports);
     }
 
     private Boolean dealWithClassInheritance(JmmNode node, List<Report> reports){
         OurSymbol symbol = new OurSymbol(
                 node,
-                new HashSet<>(Arrays.asList(Constants.superAttribute, Constants.classAttribute)),
+                new HashSet<>(Arrays.asList(Consts.superAttribute, Consts.classAttribute)),
                 new OurScope()
         );
         Optional<Report> insertionError = symbolTable.put(symbol, node);
         insertionError.ifPresent(reports::add);
 
-        symbolTable.superName = node.get(Constants.typeAttribute);
+        symbolTable.superName = node.get(Consts.typeAttribute);
         return defaultVisit(node, reports);
     }
 
@@ -54,14 +54,14 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
         if (node.getChildren().size() != 0){
                 symbol = new OurSymbol(
                         node.getChildren().get(node.getNumChildren() - 1),
-                        new HashSet<>(Arrays.asList(Constants.importAttribute, Constants.classAttribute)),
+                        new HashSet<>(Arrays.asList(Consts.importAttribute, Consts.classAttribute)),
                         new OurScope()
                 );
         }
         else {
             symbol = new OurSymbol(
                     node,
-                    new HashSet<>(Arrays.asList(Constants.importAttribute, Constants.classAttribute)),
+                    new HashSet<>(Arrays.asList(Consts.importAttribute, Consts.classAttribute)),
                     new OurScope()
             );
         }
@@ -72,10 +72,10 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
     }
 
     public Boolean dealWithVarDecl(JmmNode node, List<Report> reports) {
-        var parentFunction = node.getAncestor(Constants.methodDeclNodeName);
+        var parentFunction = node.getAncestor(Consts.methodDeclNodeName);
         List<String> attributes = new ArrayList<>();
-        if (parentFunction.isEmpty()) attributes.add(Constants.fieldAttribute);
-        else attributes.add(Constants.variableAttribute);
+        if (parentFunction.isEmpty()) attributes.add(Consts.fieldAttribute);
+        else attributes.add(Consts.variableAttribute);
 
         OurSymbol symbol = new OurSymbol(
                 node,
@@ -87,16 +87,16 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
                 )
         );
 
-        if (!Constants.isPrimitiveType(node.get(Constants.typeAttribute)) &&             // Isn't primitive type
-                !symbolTable.getImports().contains(node.get(Constants.typeAttribute)) && // Or of a class that is included
-                !symbolTable.getClassName().equals(node.get(Constants.typeAttribute))) { // Or of this class
+        if (!Consts.isPrimitiveType(node.get(Consts.typeAttribute)) &&             // Isn't primitive type
+                !symbolTable.getImports().contains(node.get(Consts.typeAttribute)) && // Or of a class that is included
+                !symbolTable.getClassName().equals(node.get(Consts.typeAttribute))) { // Or of this class
 
             reports.add(new Report(
                     ReportType.WARNING,
                     Stage.SEMANTIC,
                     symbol.getLine(),
                     symbol.getColumn(),
-                    "Type '" + node.get(Constants.typeAttribute) + "' not found"
+                    "Type '" + node.get(Consts.typeAttribute) + "' not found"
             ));
         }
 
@@ -113,8 +113,8 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
 
     public Boolean dealWithMethodDecl(JmmNode node, List<Report> reports) {
         var attributes = new HashSet<String>();
-        attributes.add(Constants.methodAttribute);
-        if (node.getOptional(Constants.staticAttribute).isPresent()) attributes.add(Constants.staticAttribute);
+        attributes.add(Consts.methodAttribute);
+        if (node.getOptional(Consts.staticAttribute).isPresent()) attributes.add(Consts.staticAttribute);
 
         OurSymbol symbol = new OurSymbol(
                 node,
@@ -131,17 +131,17 @@ public class SymbolTableVisitor extends PreorderJmmVisitor<List<Report>, Boolean
     private List<Type> getParameterTypes(JmmNode node) {
         List<Type> result = new ArrayList<>();
         for (JmmNode child : node.getChildren()){
-            if (child.getKind().equals(Constants.methodParamNodeName))
-                result.add(new Type(child.get(Constants.typeAttribute), Boolean.parseBoolean(child.get(Constants.arrayAttribute))));
+            if (child.getKind().equals(Consts.methodParamNodeName))
+                result.add(new Type(child.get(Consts.typeAttribute), Boolean.parseBoolean(child.get(Consts.arrayAttribute))));
         }
         return result;
     }
 
     public Boolean dealWithMethodParameter(JmmNode node, List<Report> reports){
-        var parentFunction = node.getAncestor(Constants.methodDeclNodeName);
+        var parentFunction = node.getAncestor(Consts.methodDeclNodeName);
         OurSymbol symbol = new OurSymbol(
                 node,
-                new HashSet<>(Arrays.asList(Constants.parameterAttribute)),
+                new HashSet<>(Arrays.asList(Consts.parameterAttribute)),
                 new OurScope(
                         OurScope.ScopeEnum.FunctionParameter,
                         parentFunction.map(jmmNode -> symbolTable.getByValue(jmmNode)).orElse(null)

@@ -1,6 +1,6 @@
 
 
-public class Constants {
+public class Consts {
     public static final String error = "error";
 
     // Node names
