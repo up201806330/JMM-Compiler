@@ -535,7 +535,8 @@ public class Jasmin {
 
         if (literalMethod.getLiteral().equals("\"<init>\""))
             return (caller.getType().getTypeOfElement().equals(ElementType.THIS) ?
-                    "java/lang/Object/" : fullClassName(callerType.getName()))
+                    (classUnit.getSuperClass() != null ?
+                            classUnit.getSuperClass() : "java/lang/Object") + "/" : fullClassName(callerType.getName()))
                     + "<init>()V\n";
 
         String methodName = literalMethod.getLiteral().replace("\"", "");

@@ -67,7 +67,6 @@ public class BackendTest {
         assertEquals("Result: 28", output.trim());
     }
 
-    // var _allowedNameL n está a ser aceite pelo parser do ollir smh
 //    @Test
 //    public void testLazySort() {
 //        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/LazySort.jmm"));
@@ -105,12 +104,11 @@ public class BackendTest {
                 output.trim());
     }
 
-    // Is requesting input from user, so won't be ran here
-//    @Test
-//    public void testTicTacToe() {
-//        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/TicTacToe.jmm"));
-//        TestUtils.noErrors(result.getReports());
-//    }
+    @Test
+    public void testTicTacToe() {
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/TicTacToe.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
 
     @Test
     public void testWhileAndIf() {

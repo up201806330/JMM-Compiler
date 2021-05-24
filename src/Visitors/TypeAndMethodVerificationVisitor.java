@@ -262,6 +262,7 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
         var children = node.getChildren();
         var target = children.get(0);
         var argsList = children.get(1);
+        var args = Arrays.asList(argsList.getChildren().stream().map(NodeUtils::extractTypeFromNode).toArray(Type[]::new));
 
         var targetClassSymbolOpt = symbolTable.tryGettingSymbol(
                 node.getAncestor(Consts.methodDeclNodeName).map(ancestorNode -> ancestorNode.get(Consts.nameAttribute)).orElse("this"),
@@ -277,14 +278,12 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
                 targetClassSymbolOpt.get().getType().getName() :
                 target.get(Consts.valueAttribute);
 
-        var methodTypeOpt = symbolTable.tryGettingSymbolType(
-                targetClass,
-                methodName);
+        var methodTypeOpt = symbolTable.tryGettingMethodType(methodName, args);
 
-        if ( targetClass.equals(Consts.thisAttribute) ||   // If method was called on this context ( e.g. this.Foo() || ThisClass a; a.Foo() )
+        if ( targetClass.equals(Consts.thisAttribute) ||      // If method was called on this context ( e.g. this.Foo() || ThisClass a; a.Foo() )
                 targetClass.equals(symbolTable.className) ){  // Or if it was called on this class' static context (e.g. ThisClass.Foo() )
 
-            if (targetClass.equals(Consts.thisAttribute) && // This cannot be used in a static context
+            if (targetClass.equals(Consts.thisAttribute) &&   // This cannot be used in a static context
                     node.getAncestor(Consts.methodDeclNodeName).get().getOptional("static").isPresent()){
                 reports.add(new Report(
                         ReportType.WARNING,
@@ -309,9 +308,9 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
                 node.put(Consts.typeAttribute, Consts.error);
                 node.put(Consts.arrayAttribute, Consts.error);
             }
-            else if (target.get(Consts.valueAttribute).equals(symbolTable.className) && // If method was called on this class' static context
+            else if (target.get(Consts.valueAttribute).equals(symbolTable.className) &&    // If method was called on this class' static context
                     (methodSymbolOpt.isPresent() && !methodSymbolOpt.get().isStatic()) &&  // but function isn't static (e.g. public void Foo(); ThisClass.Foo() )
-                    (!target.getKind().equals(Consts.newNodeName))){                    // or a new object (e.g. new ThisClass().Foo(); )
+                    (!target.getKind().equals(Consts.newNodeName))){                       // or a new object (e.g. new ThisClass().Foo(); )
 
                 reports.add(new Report(
                         ReportType.WARNING,
@@ -323,12 +322,11 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
                 node.put(Consts.typeAttribute, Consts.error);
                 node.put(Consts.arrayAttribute, Consts.error);
             }
-            else if (symbolTable.superName != null){ // If there is inheritance present, assume method is defined there and assume type is correct
+            else if (symbolTable.superName != null && methodTypeOpt.isEmpty()){ // If there is inheritance present, assume method is defined there and assume type is correct
                 node.put(Consts.typeAttribute, Consts.autoType);
                 node.put(Consts.arrayAttribute, "false");
             }
             else { // If method name was found in this class
-                List<Type> args = Arrays.asList(argsList.getChildren().stream().map(NodeUtils::extractTypeFromNode).toArray(Type[]::new));
                 var method = symbolTable.getMethod(methodName, args, node, reports);
                 if (method.isEmpty()) { // Check if method signature is correct (number and type of parameters)
                     node.put(Consts.typeAttribute, Consts.error);

@@ -17,7 +17,7 @@ public class OurSymbolTable implements SymbolTable {
     public Optional<Report> put(OurSymbol symbol, JmmNode node) {
         // Check for repeat symbols inside scope (e.q. boolean a; int a; gives error)
         for (OurSymbol entry : table.keySet()) {
-            if (!symbol.isMethod() &&
+            if (!symbol.isMethod() && !symbol.isClass() &&
                     symbol.getName().equals(entry.getName()) &&
                     symbol.getScope().equals(entry.getScope()))
                 return Optional.of(
@@ -49,10 +49,34 @@ public class OurSymbolTable implements SymbolTable {
         return null;
     }
 
+    public Optional<Type> tryGettingMethodType(String methodName, List<Type> paremeterTypes){
+        var symbolOpt = tryGettingMethod(methodName, paremeterTypes);
+        if (symbolOpt.isEmpty()) return Optional.empty();
+        else return Optional.of(symbolOpt.get().getType());
+    }
+
     public Optional<Type> tryGettingSymbolType(String methodName, String value){
         var symbolOpt = tryGettingSymbol(methodName, value);
         if (symbolOpt.isEmpty()) return Optional.empty();
         else return Optional.of(symbolOpt.get().getType());
+    }
+
+    public Optional<OurSymbol> tryGettingMethod(String methodName, List<Type> paremeterTypes){
+        List<OurSymbol> methodOverloads = new ArrayList<>();
+        for (OurSymbol entry : table.keySet()) {
+            if (entry.isMethod() && entry.getName().equals(methodName) && entry.getParameterTypes().size() == paremeterTypes.size())
+                methodOverloads.add(entry);
+        }
+
+        if (methodOverloads.size() == 0){
+            return Optional.empty();
+        }
+
+        for (OurSymbol methodOverload : methodOverloads){
+            if (methodOverload.getParameterTypes().equals(paremeterTypes)) return Optional.of(methodOverload);
+        }
+
+        return Optional.empty();
     }
 
     public Optional<OurSymbol> tryGettingSymbol(String methodName, String value){

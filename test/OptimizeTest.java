@@ -49,26 +49,23 @@ public class OptimizeTest {
         TestUtils.noErrors(result.getReports());
     }
 
-    // var _allowedNameL n está a ser aceite pelo parser do ollir smh
-//    @Test
-//    public void testLazySort() {
-//        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/LazySort.jmm"));
-//        TestUtils.noErrors(result.getReports());
-//    }
+    @Test
+    public void testLazySort() {
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/LazySort.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
 
-    // Is requesting input from user, so won't be ran here
-//    @Test
-//    public void testLife() {
-//        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/Life.jmm"));
-//        TestUtils.noErrors(result.getReports());
-//    }
+    @Test
+    public void testLife() {
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/Life.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
 
-    // Is requesting input from user, so won't be ran here
-//    @Test
-//    public void testMonteCarloPi() {
-//        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/MonteCarloPi.jmm"));
-//        TestUtils.noErrors(result.getReports());
-//    }
+    @Test
+    public void testMonteCarloPi() {
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/MonteCarloPi.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
 
     // Doesnt have main (isnt supposed to be ran so its fine)
 //    @Test
@@ -83,12 +80,11 @@ public class OptimizeTest {
         TestUtils.noErrors(result.getReports());
     }
 
-    // Is requesting input from user, so won't be ran here
-//    @Test
-//    public void testTicTacToe() {
-//        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/TicTacToe.jmm"));
-//        TestUtils.noErrors(result.getReports());
-//    }
+    @Test
+    public void testTicTacToe() {
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/TicTacToe.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
 
     @Test
     public void testWhileAndIf() {
