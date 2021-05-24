@@ -105,5 +105,7 @@ public class Consts {
     public static final String compFalse = "ifeq ";
     public static final String compTrue = "ifne ";
     public static final String incrementInt = "iinc ";
+    public static final String shiftRight = "ishr";
+    public static final String shiftLeft = "ishl";
 
 }

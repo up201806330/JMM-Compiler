@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static java.lang.Math.sqrt;
+import static pt.up.fe.specs.util.SpecsBits.log2;
+
 public class Jasmin {
     private final String indent = "\t";
     private HashMap<String, Descriptor> varTable;
@@ -376,8 +379,18 @@ public class Jasmin {
             }
             case BINARYOPER -> {
                 BinaryOpInstruction binaryOpInstruction = (BinaryOpInstruction) instruction;
-                if (binaryOpInstruction.getUnaryOperation().getOpType().equals(OperationType.NOT) ||
-                    binaryOpInstruction.getUnaryOperation().getOpType().equals(OperationType.NOTB)) {
+                var opType = binaryOpInstruction.getUnaryOperation().getOpType();
+
+                int rightLiteral = 0;
+                try {
+                    rightLiteral = Integer.parseInt(((LiteralElement) binaryOpInstruction.getRightOperand()).getLiteral());
+                }
+                catch (ClassCastException ignored){
+                }
+
+                if (opType.equals(OperationType.NOT) ||
+                    opType.equals(OperationType.NOTB)) {
+
                     incrementStack(1);
                     before.append(indent)
                           .append(pushElementToStack(binaryOpInstruction.getLeftOperand()))
@@ -385,6 +398,23 @@ public class Jasmin {
                           .append(Consts.constant1B).append(1).append("\n");
                     result.append(operationToJasmin(binaryOpInstruction.getUnaryOperation()));
 
+                }
+                else if ((opType.equals(OperationType.MUL) || opType.equals(OperationType.MULI32) ||
+                         opType.equals(OperationType.DIV) || opType.equals(OperationType.DIVI32)) &&
+                         // Is being divided or multiplied by a power of 2, can use byte shifts
+                         NodeUtils.isPowerOfTwo(rightLiteral) ){
+
+                    LiteralElement alteredRight = new LiteralElement(
+                            String.valueOf(log2(rightLiteral)),
+                            new Type(ElementType.INT32));
+
+                    before.append(indent)
+                           .append(pushElementToStack(binaryOpInstruction.getLeftOperand()))
+                           .append(indent)
+                           .append(pushElementToStack(alteredRight));
+                    incrementStack(-1);
+                    result.append((opType.equals(OperationType.MUL) || opType.equals(OperationType.MULI32) ?
+                            Consts.shiftLeft : Consts.shiftRight )).append("\n");
                 }
                 else {
                     before.append(indent)

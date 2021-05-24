@@ -58,4 +58,8 @@ public class NodeUtils {
         if (children.size() > 1) result.add(extractTypeFromNode(children.get(1)));
         return Optional.of(result);
     }
+
+    public static boolean isPowerOfTwo(int number){
+        return number > 0 && ((number & (number - 1)) == 0);
+    }
 }
