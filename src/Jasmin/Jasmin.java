@@ -260,6 +260,7 @@ public class Jasmin {
                 var left = condBranchInstruction.getLeftOperand();
                 var right = condBranchInstruction.getRightOperand();
                 var target = condBranchInstruction.getLabel();
+                var targetIndex = target.substring(target.lastIndexOf("_"));
 
                 String trueValue = Consts.constant1B + 1 + "\n";
                 String falseValue = Consts.constant1B + 0 + "\n";
@@ -284,10 +285,12 @@ public class Jasmin {
                             result.deleteCharAt(0);
                             break;
                         }
-                        else if (leftIsTRUE && rightIsTRUE) { // Both are true, elsebody is dead code
+                        else if (leftIsTRUE && rightIsTRUE) { // Both are true, elsebody is dead code and while condition is dead code
                             if (ifCond)
-                                deadTags.add("elsebody" + target.substring(target.lastIndexOf("_")));
-                            else if (loopCond); // TODO Infinite loop
+                                deadTags.add("elsebody" + targetIndex);
+                            else if (loopCond) {
+                                deadTags.add("Test" + targetIndex);
+                            }
                         }
 
                         boolean needsIndent = false;
@@ -301,7 +304,7 @@ public class Jasmin {
                                 result.append(Consts.compFalse)
                                         .append(loopCond ? "End" :
                                                 ifCond ? "elsebody" : "ERROR")
-                                        .append(target.substring(target.lastIndexOf("_")));
+                                        .append(targetIndex);
                             }
 
                             result.append("\n");
@@ -322,8 +325,10 @@ public class Jasmin {
 
                             if (leftLiteral < rightLiteral)
                                 if (target.startsWith("ifbody"))
-                                    deadTags.add("elsebody" + target.substring(target.lastIndexOf("_")));
-                                else if (target.startsWith("Loop")); // TODO Infinite loop
+                                    deadTags.add("elsebody" + targetIndex);
+                                else if (target.startsWith("Loop")) {
+                                    deadTags.add("Test" + targetIndex);
+                                }
                             else {
                                 result.deleteCharAt(0);
                                 deadTags.add(target);
@@ -341,8 +346,10 @@ public class Jasmin {
 
                         if (falseValue.equals(element) ) {
                             if (target.startsWith("ifbody")) // elsebody is never reached
-                                deadTags.add("elsebody" + target.substring(target.lastIndexOf("_")));
-                            else if (target.startsWith("Loop")); // TODO Infinite loop
+                                deadTags.add("elsebody" + targetIndex);
+                            else if (target.startsWith("Loop")) {
+                                deadTags.add("Test" + targetIndex);
+                            }
                         }
                         else if (trueValue.equals(element)) {
                             result.deleteCharAt(0);
@@ -507,7 +514,6 @@ public class Jasmin {
     }
 
     private String importedClass(String className){
-        if (className.equals("out")) return "io"; // TODO ??????
         for (String fullName : classUnit.getImports()){
             if (fullName.substring(fullName.lastIndexOf(".") + 1).trim().equals(className))
                 return fullName.replace(".", "/");
@@ -648,17 +654,28 @@ public class Jasmin {
         for (var deadTag : deadTags){
             var nextTag = deadTag.startsWith("ifbody") ? "endif" :
                     deadTag.startsWith("elsebody") ? "ifbody" :
-                            deadTag.startsWith("Loop") ? "End" : "ERROR";
+                            (deadTag.startsWith("Loop") || deadTag.startsWith("Test")) ? "End" : "ERROR";
             nextTag += deadTag.substring(deadTag.lastIndexOf("_"));
 
             System.out.println(deadTag + " " + nextTag);
 
+            var gotoTestLabel = result.indexOf(Consts.gotoLabel + "Test" + nextTag.substring(nextTag.lastIndexOf("_"))) - 1;
+
             if (deadTag.startsWith("ifbody")){
-                result.delete(result.indexOf("goto " + nextTag) - 1, result.indexOf(nextTag, result.indexOf(nextTag) + 1));
+                result.delete(result.indexOf(Consts.gotoLabel + nextTag) - 1,
+                        result.indexOf(nextTag, result.indexOf(nextTag) + 1));
             }
             else if (deadTag.startsWith("Loop")){
-                result.delete(result.indexOf("goto " + "Test" + nextTag.substring(nextTag.lastIndexOf("_"))) - 1,
+                result.delete(gotoTestLabel,
                         result.indexOf(nextTag) + nextTag.length() + 2);
+            }
+            else if (deadTag.startsWith("Test")){
+                result.delete(gotoTestLabel,
+                        result.indexOf("\n", gotoTestLabel) + 1);
+                result.delete(result.lastIndexOf(deadTag),
+                        result.indexOf(nextTag));
+                result.insert(result.lastIndexOf(nextTag) + deadTag.length() + 1,
+                        indent + Consts.gotoLabel + "Loop" + nextTag.substring(nextTag.lastIndexOf("_")) + "\n");
             }
             else
                 result.delete(result.indexOf(deadTag) - 1,
