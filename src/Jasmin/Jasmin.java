@@ -20,10 +20,11 @@ public class Jasmin {
 
     List<String> deadTags = new ArrayList<>();
 
+    boolean printing = false;
     private void incrementStack(int n){
         currStackSize += n;
         if (currStackSize > maxStackSize) maxStackSize = currStackSize;
-//        System.out.println(currStackSize);
+        if (printing && n != 0) System.out.println(currStackSize);
     }
 
     private void updateMaxLocals(int vreg) {
@@ -56,6 +57,9 @@ public class Jasmin {
     }
 
     private String methodToJasmin(Method method, int dashR) throws OllirErrorException {
+        if (method.getMethodName().equals("getNeighborCoords")) printing = true;
+        else if (printing) printing = false;
+
         StringBuilder start = new StringBuilder();
         StringBuilder result = new StringBuilder();
 
@@ -173,28 +177,27 @@ public class Jasmin {
                     case invokespecial -> {
                         before.append(indent)
                                 .append(pushElementToStack(caller));
-                        incrementStack(-1);
                     }
                     case invokestatic -> {
-                        incrementStack(1);
                     }
                     case NEW -> {
                         incrementStack(1);
                         String callerName = ((Operand) caller).getName();
-                        result.append(callerName.equals("array") ?
-                                Consts.newArray :
-                                Consts.newObj + callerName)
-                                .append("\n");
+                        if (callerName.equals("array")){
+                            incrementStack(-1);
+                            result.append(Consts.newArray);
+                        }
+                        else {
+                            result.append(Consts.newObj).append(callerName);
+                        }
+                        result.append("\n");
                     }
                     case arraylength -> {
                         before.append(indent)
                               .append(pushElementToStack(caller));
                         result.append(callInstruction.getInvocationType()).append("\n");
                     }
-                    case ldc -> {
-                        // NOT SUPPORTED ? TODO
-                    }
-                    case invokeinterface -> {
+                    case ldc, invokeinterface -> {
                         // NOT SUPPORTED
                     }
                 }
@@ -209,16 +212,21 @@ public class Jasmin {
                                    callInstruction.getInvocationType().equals(CallType.invokestatic)));
                 }
 
-                if (popReturn && !callInstruction.getReturnType().getTypeOfElement().equals(ElementType.VOID)) {
-                    incrementStack(-1);
-                    result.append(indent).append("pop\n");
-                }
-
                 for (var op : parameters){
                     before.append(indent)
                           .append(pushElementToStack(op));
                 }
-                incrementStack(parameters.size());
+                incrementStack(-parameters.size() -
+                        (callInstruction.getInvocationType().equals(CallType.invokespecial) ||
+                         callInstruction.getInvocationType().equals(CallType.invokevirtual) ? 1 : 0));
+
+                if (popReturn && !callInstruction.getReturnType().getTypeOfElement().equals(ElementType.VOID)) {
+                    incrementStack(-1);
+                    result.append(indent).append("pop\n");
+                }
+                else if (!popReturn && !callInstruction.getReturnType().getTypeOfElement().equals(ElementType.VOID)){
+                    incrementStack(1);
+                }
             }
             case GOTO -> {
                 GotoInstruction gotoInstruction = (GotoInstruction) instruction;
