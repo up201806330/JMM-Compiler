@@ -21,8 +21,6 @@ public class Jasmin {
 
     List<String> deadTags = new ArrayList<>();
 
-    boolean printing = false;
-
     private void updateMaxLocals(int vreg) {
         if (vreg + 1 > maxLocalsSize) maxLocalsSize = vreg + 1;
     }
@@ -53,9 +51,6 @@ public class Jasmin {
     }
 
     private String methodToJasmin(Method method, int dashR) throws OllirErrorException {
-        if (method.getMethodName().equals("getNeighborCoords")) printing = true;
-        else if (printing) printing = false;
-
         StringBuilder start = new StringBuilder();
         StringBuilder result = new StringBuilder();
 
