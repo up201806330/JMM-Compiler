@@ -52,23 +52,28 @@ public class ConstantPropagationVisitor extends PostorderJmmVisitor<List<List<Jm
     public HashMap<CustomKey, String> constants = new HashMap<>();
     public boolean atLeastOneChange;
 
+    // Stores IfCondition and WhileCondition if their bodies have been checked already;
+    // Only way to counteract postorder visitor
+    private HashMap<JmmNode, Boolean> whileBodiesChecked = new HashMap<>();
+
     public ConstantPropagationVisitor() {
         addVisit(Consts.assignmentNodeName, this::updateConstantsInAssignments);
         addVisit(Consts.terminalNodeName, this::propagateConstantsInTerminals);
         addVisit(Consts.binaryNodeName, this::propagateConstantsInBinaries);
+        addVisit(Consts.whileStatementNodeName, this::doBodyBeforeCondition);
         setDefaultVisit(ConstantPropagationVisitor::defaultVisit);
     }
 
     private Boolean updateConstantsInAssignments(JmmNode node, List<List<JmmNode>> nodesToRemove) {
+//        System.out.println("ASSIGN " + node.get("line"));
         var right = node.getChildren().get(1);
-
         var customKey = customKeyFromAssignment(node);
 
         // Can't do optimization if value is being looped through or is being assigned inside if
         if (node.getAncestor(Consts.whileStatementNodeName).isPresent() ||
             node.getAncestor(Consts.ifStatementNodeName).isPresent()) {
             constants.remove(customKey);
-            return defaultVisit(node, nodesToRemove);
+            return true;
         }
 
         if (right.getKind().equals(Consts.literalNodeName)){
@@ -80,17 +85,30 @@ public class ConstantPropagationVisitor extends PostorderJmmVisitor<List<List<Jm
             constants.remove(customKey);
         }
 
-        return defaultVisit(node, nodesToRemove);
+        return true;
     }
 
     private Boolean propagateConstantsInTerminals(JmmNode node, List<List<JmmNode>> nodesToRemove){
+//        System.out.println("TERMIN " + node.get("line"));
         var parent = node.getParent();
-        if ((parent.getKind().equals(Consts.assignmentNodeName) ||   // If node is left part of assignment,
-                parent.getKind().equals(Consts.callExprNodeName)) && // Or left part of method call, won't propagate anything
-                parent.getChildren().get(0).equals(node))
-            return defaultVisit(node, nodesToRemove);
-
         var customKey= customKeyFromTerminal(node);
+
+        var assignment = node.getAncestor(Consts.assignmentNodeName);
+        if (assignment.isPresent() && // If node is left part of assignment,
+                assignment.get().getChildren().get(0).equals(node)) {
+            constants.remove(customKey);
+            return true;
+        }
+        else if (parent.getKind().equals(Consts.callExprNodeName) && parent.getChildren().get(0).equals(node)){  // Or is left part of call expr
+            constants.remove(customKey);
+            return true;
+        }
+
+        // If terminal is used in a while condition, can only visit if the body has already been visited
+        Optional<JmmNode> cond = node.getAncestor(Consts.whileConditionNodeName);
+        if (cond.isPresent() && !whileBodiesChecked.containsKey(cond.get())) {
+            return true;
+        }
 
         var constant = constants.get(customKey);
         if (constant != null){
@@ -152,13 +170,22 @@ public class ConstantPropagationVisitor extends PostorderJmmVisitor<List<List<Jm
                     break;
             }
             newNode.put(Consts.valueAttribute, value);
+            newNode.put(Consts.typeAttribute, value.equals("true") || value.equals("false") ? Consts.booleanType : Consts.intType);
         }
         else return true;
 
         nodesToRemove.add(new ArrayList<>(Arrays.asList(parent, node, newNode)));
         atLeastOneChange = true;
         
-        return defaultVisit(node, nodesToRemove);
+        return true;
+    }
+
+    private Boolean doBodyBeforeCondition(JmmNode node, List<List<JmmNode>> nodesToRemove) {
+        // When the WhileStatement nodes is being visited, then the body has been visited already
+        whileBodiesChecked.put(node.getChildren().get(0), true);
+        visit(node.getChildren().get(0), nodesToRemove);
+        whileBodiesChecked.remove(node.getChildren().get(0));
+        return true;
     }
 
     private static Boolean defaultVisit(JmmNode node, List<List<JmmNode>> nodesToRemove) {
@@ -201,7 +228,8 @@ public class ConstantPropagationVisitor extends PostorderJmmVisitor<List<List<Jm
                 }
                 if (node.equals(nodeTriplet.get(0))){
                     var index = node.removeChild(nodeTriplet.get(1));
-                    node.add(nodeTriplet.get(2), index);
+                    if (index != -1) node.add(nodeTriplet.get(2), index);
+                    else System.out.println("Tried deleting node that was already deleted: " + nodeTriplet.get(1));
                     tripletIterator.remove();
                 }
             }

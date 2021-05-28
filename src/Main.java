@@ -95,6 +95,7 @@ public class Main implements JmmParser {
 		else {
 			System.out.println("vvvv Program results vvvv");
 			jasminResult.run();
+//			System.out.println("Compiled!");
 //			jasminResult.compile(new File("Compiled"));
 		}
 	}

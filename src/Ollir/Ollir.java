@@ -248,9 +248,8 @@ public class Ollir {
         stringBuilder.append(prefix).append(ident).append("goto endif_").append(thisIf).append(";\n");
         stringBuilder.append(prefix).append("ifbody_").append(thisIf).append(":\n");
 
-        int i = 1;
-        var child = children.get(1);
-        while (!child.getKind().equals(Consts.elseStatementNodeName)) {
+        var bodyChildren = children.get(1).getChildren();
+        for (var child : bodyChildren) {
             switch (child.getKind()) {
                 case Consts.assignmentNodeName -> ifStatement.append(assignmentToOllir(child, prefix + ident));
                 case Consts.callExprNodeName -> ifStatement.append(callExpressionToOllir(child, prefix + ident, ifStatement, true)).append(";\n");
@@ -264,8 +263,6 @@ public class Ollir {
                 }
                 default -> System.out.println("ifStatementToOllir: " + child);
             }
-            i++;
-            child = children.get(i);
         }
 
         stringBuilder.append(ifStatement);

@@ -211,7 +211,7 @@ void Type(): { Token t_type; } {
 
 void Statement() #void: {} {
     (<OpenBlock> (Statement())* <CloseBlock> )
-    | (<If> <OpenParenthesis> Expression() #IfCondition <CloseParenthesis> Statement() <Else> Statement() #Else) #IfStatement
+    | (<If> <OpenParenthesis> Expression() #IfCondition <CloseParenthesis> Statement() #IfBody <Else> Statement() #Else) #IfStatement
     | WhileStatement()
     | (Expression() [Assignment()] <Semicolon>)
 }

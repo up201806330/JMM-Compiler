@@ -20,7 +20,8 @@ class Custom{
 
         io.println(b / a + 34);
 
-        // In loops, any variable changed inside the body can't be propagated, since it will change after every loop
+        // In loops, any variable changed inside the body can't be propagated (be it through the body or the condition), since it will change after every loop
+        a = 0;
         while(a < b * 2){
             a = a + 5;
         }
