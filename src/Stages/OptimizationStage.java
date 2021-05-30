@@ -6,8 +6,10 @@ import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.comp.jmm.ollir.JmmOptimization;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
+import pt.up.fe.comp.jmm.ollir.OllirUtils;
 import pt.up.fe.comp.jmm.report.Report;
-import pt.up.fe.specs.util.SpecsIo;
+import pt.up.fe.comp.jmm.report.ReportType;
+import pt.up.fe.comp.jmm.report.Stage;
 
 /**
  * Copyright 2021 SPeCS.
@@ -23,6 +25,7 @@ import pt.up.fe.specs.util.SpecsIo;
  */
 
 public class OptimizationStage implements JmmOptimization {
+    private int dashR;
 
     @Override
     public OllirResult toOllir(JmmSemanticsResult semanticsResult) {
@@ -37,6 +40,12 @@ public class OptimizationStage implements JmmOptimization {
         System.out.println(ollirCode);
 
         return new OllirResult(semanticsResult, ollirCode, reports);
+    }
+
+    public OllirResult toOllir(JmmSemanticsResult semanticsResult, boolean optimize, int dashR) {
+        this.dashR = dashR;
+        if (optimize) return optimize(toOllir(optimize(semanticsResult)));
+        else return optimize(toOllir(semanticsResult));
     }
 
     @Override
@@ -69,7 +78,14 @@ public class OptimizationStage implements JmmOptimization {
 
     @Override
     public OllirResult optimize(OllirResult ollirResult) {
-        // THIS IS JUST FOR CHECKPOINT 3
+        if (!(new Liveness(dashR).run(ollirResult.getOllirClass()))){
+            ollirResult.getReports().add(new Report(
+                    ReportType.ERROR,
+                    Stage.OPTIMIZATION,
+                    -1, -1,
+                    "Can't generate code with '" + dashR + "' registers"
+            ));
+        }
         return ollirResult;
     }
 

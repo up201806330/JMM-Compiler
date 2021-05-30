@@ -58,36 +58,40 @@ public class Main implements JmmParser {
 			return;
 
 		OptimizationStage optimization = new OptimizationStage();
-		OllirResult ollirResult = optimization.toOllir(semanticsResults,
-				(args.length == 2 && args[1].startsWith("-o")) ||
-						(args.length == 3 && (args[1].startsWith("-o") || args[2].startsWith("-o"))));
-
-		BackendStage backend = new BackendStage();
-		JasminResult jasminResult;
+		OllirResult ollirResult;
 		if (args.length == 2){
 			if (args[1].startsWith("-r"))
-				jasminResult = backend.toJasmin(ollirResult, Integer.parseInt(args[1].substring(args[1].lastIndexOf("=") + 1)), false);
+				ollirResult = optimization.toOllir(semanticsResults, false, Integer.parseInt(args[1].substring(args[1].lastIndexOf("=") + 1)));
 			else if (args[1].startsWith("-o"))
-				jasminResult = backend.toJasmin(ollirResult, 99, true);
+				ollirResult = optimization.toOllir(semanticsResults, true);
 			else
-				jasminResult = backend.toJasmin(ollirResult);
+				ollirResult = optimization.toOllir(semanticsResults);
 		}
 		else if (args.length == 3){
 			int r;
 			boolean o = args[1].startsWith("-o") || args[2].startsWith("-o");
 
-			if (args[1].startsWith("-r"))
+			if (args[1].startsWith("-r")) {
 				r = Integer.parseInt(args[1].substring(args[1].lastIndexOf("=") + 1));
-			else if (args[2].startsWith("-r"))
+				ollirResult = optimization.toOllir(semanticsResults, o, r);
+			}
+			else if (args[2].startsWith("-r")) {
 				r = Integer.parseInt(args[2].substring(args[2].lastIndexOf("=") + 1));
-			else
-				r = 99;
+				ollirResult = optimization.toOllir(semanticsResults, o, r);
+			}
+			else {
+				ollirResult = optimization.toOllir(semanticsResults, o);
+			}
 
-			jasminResult = backend.toJasmin(ollirResult, r, o);
+
 		}
 		else {
-			jasminResult = backend.toJasmin(ollirResult);
+			ollirResult = optimization.toOllir(semanticsResults);
 		}
+
+		BackendStage backend = new BackendStage();
+		JasminResult jasminResult = backend.toJasmin(ollirResult);
+
 
 		if (jasminResult.getReports().size() > 0){
 			jasminResult.getReports().forEach(System.out::println);

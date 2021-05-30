@@ -10,7 +10,6 @@ import pt.up.fe.comp.jmm.jasmin.JasminResult;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.Stage;
-import pt.up.fe.specs.util.SpecsIo;
 
 /**
  * Copyright 2021 SPeCS.
@@ -27,17 +26,15 @@ import pt.up.fe.specs.util.SpecsIo;
 
 public class BackendStage implements JasminBackend {
 
-    public JasminResult toJasmin(OllirResult ollirResult, int dashR, boolean dashO){
+    @Override
+    public JasminResult toJasmin(OllirResult ollirResult) {
         ClassUnit ollirClass = ollirResult.getOllirClass();
-
-        if (dashR < 1) dashR = 1;
-        else if (dashR > 120) dashR = 120;
 
         try {
             Jasmin jasmin = new Jasmin();
             // Convert the OLLIR to a String containing the equivalent Jasmin code
-            String jasminCode = jasmin.getByteCode(ollirClass, dashR, dashO); // Convert node ...
-            System.out.println(jasminCode);
+            String jasminCode = jasmin.getByteCode(ollirClass); // Convert node ...
+            //System.out.println(jasminCode);
 
             // More reports from this stage
             List<Report> reports = new ArrayList<>();
@@ -48,11 +45,6 @@ public class BackendStage implements JasminBackend {
             return new JasminResult(ollirClass.getClassName(), null,
                     Arrays.asList(Report.newError(Stage.GENERATION, -1, -1, "Exception during Jasmin generation", e)));
         }
-    }
-
-    @Override
-    public JasminResult toJasmin(OllirResult ollirResult) {
-        return toJasmin(ollirResult, 120, false);
     }
 
 }

@@ -1,0 +1,30 @@
+// Showcases liveness analysis for -r
+
+import io;
+class Custom{
+	public static void main(String[] args) {
+        int[] A;
+        A = new int[3];
+        A[0] = 1;
+        A[1] = 2;
+        A[2] = 3;
+        io.println(new Custom().func(3, A));
+	}
+
+	public int func(int N, int[] A){
+	    int sum;
+        int i;
+        int t;
+
+        sum = 0;
+        i = 0;
+
+        while(i < N){
+            t = A[i];
+            sum = sum + t;
+            i = i + 1;
+        }
+
+        return sum;
+	}
+}
