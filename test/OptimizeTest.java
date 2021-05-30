@@ -12,6 +12,7 @@
  * specific language governing permissions and limitations under the License. under the License.
  */
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import pt.up.fe.comp.TestUtils;
@@ -50,8 +51,8 @@ public class OptimizeTest {
     }
 
     @Test
-    public void testLazySort() {
-        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/LazySort.jmm"));
+    public void testLazysort() {
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/Lazysort.jmm"));
         TestUtils.noErrors(result.getReports());
     }
 
@@ -106,6 +107,9 @@ public class OptimizeTest {
         var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/Simple.jmm")), false,
                 3);
         TestUtils.noErrors(result.getReports());
+        var fail = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/Simple.jmm")), false,
+                2);
+        TestUtils.mustFail(fail.getReports());
     }
 
     @Test
@@ -113,6 +117,9 @@ public class OptimizeTest {
         var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/OperatorPrecedence.jmm")), false,
                 3);
         TestUtils.noErrors(result.getReports());
+        var fail = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/OperatorPrecedence.jmm")), false,
+                2);
+        TestUtils.mustFail(fail.getReports());
     }
 
     @Test
@@ -127,13 +134,19 @@ public class OptimizeTest {
         var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/FindMaximum.jmm")), false,
                 3);
         TestUtils.noErrors(result.getReports());
+        var fail = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/FindMaximum.jmm")), false,
+                2);
+        TestUtils.mustFail(fail.getReports());
     }
 
     @Test
-    public void testLazySortDashR() {
-        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/LazySort.jmm")), false,
+    public void testLazysortDashR() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/Lazysort.jmm")), false,
                 4);
         TestUtils.noErrors(result.getReports());
+        var fail = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/Lazysort.jmm")), false,
+                3);
+        TestUtils.mustFail(fail.getReports());
     }
 
     @Test
@@ -148,6 +161,9 @@ public class OptimizeTest {
         var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/MonteCarloPi.jmm")), false,
                 4);
         TestUtils.noErrors(result.getReports());
+        var fail = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/MonteCarloPi.jmm")), false,
+                3);
+        TestUtils.mustFail(fail.getReports());
     }
 
     @Test
@@ -155,6 +171,9 @@ public class OptimizeTest {
         var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/QuickSort.jmm")), false,
                 4);
         TestUtils.noErrors(result.getReports());
+        var fail = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/QuickSort.jmm")), false,
+                3);
+        TestUtils.mustFail(fail.getReports());
     }
 
     @Test
@@ -169,6 +188,9 @@ public class OptimizeTest {
         var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/WhileAndIF.jmm")), false,
                 5);
         TestUtils.noErrors(result.getReports());
+        var fail = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/WhileAndIF.jmm")), false,
+                4);
+        TestUtils.mustFail(fail.getReports());
     }
 
     @Test
@@ -202,8 +224,8 @@ public class OptimizeTest {
     }
 
     @Test
-    public void testLazySortDashO() {
-        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/LazySort.jmm")), true);
+    public void testLazysortDashO() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/Lazysort.jmm")), true);
         TestUtils.noErrors(result.getReports());
     }
 
@@ -227,8 +249,7 @@ public class OptimizeTest {
 
     @Test
     public void testTicTacToeDashO() {
-        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/TicTacToe.jmm")), false,
-                7);
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/TicTacToe.jmm")), true);
         TestUtils.noErrors(result.getReports());
     }
 
