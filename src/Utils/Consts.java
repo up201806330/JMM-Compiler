@@ -108,6 +108,8 @@ public class Consts {
     public static final String compLessThan = "if_icmplt ";
     public static final String compFalse = "ifeq ";
     public static final String compTrue = "ifne ";
+    public static final String compLessThanZero = "iflt ";
+    public static final String compGreaterThanZero = "ifgt ";
     public static final String incrementInt = "iinc ";
     public static final String shiftRight = "ishr ";
     public static final String shiftLeft = "ishl ";
@@ -147,6 +149,8 @@ public class Consts {
         put(unsignedShiftRight.trim(), -1);
         put(negateInt.trim(), 0);
         put(compLessThan.trim(), -2);
+        put(compLessThanZero.trim(), -1);
+        put(compGreaterThanZero.trim(), -1);
         put(compFalse.trim(), -1);
         put(compTrue.trim(), -1);
         put(incrementInt.trim(), 0);

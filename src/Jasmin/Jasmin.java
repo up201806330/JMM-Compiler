@@ -46,7 +46,7 @@ public class Jasmin {
         return stringBuilder.toString();
     }
 
-    private String methodToJasmin(Method method) throws OllirErrorException {
+    private String methodToJasmin(Method method) {
         StringBuilder start = new StringBuilder();
         StringBuilder result = new StringBuilder();
 
@@ -265,11 +265,6 @@ public class Jasmin {
                 String trueValue = Consts.constant1B + 1 + "\n";
                 String falseValue = Consts.constant1B + 0 + "\n";
                 switch (condBranchInstruction.getCondOperation().getOpType()){
-                    case OR, ORB, ORI32, GTH, GTHI32, EQ, EQI32, GTE, GTEI32, LTE, LTEI32, NEQ, NEQI32 -> {
-                        System.out.println("Branch: " + condBranchInstruction.getCondOperation().getOpType());
-                        // NOT SUPPORTED
-                    }
-
                     case AND, ANDI32, ANDB ->{
                         String leftElement = pushElementToStack(left);
                         String rightElement = pushElementToStack(right);
@@ -317,7 +312,6 @@ public class Jasmin {
                                   .append(indent).append(Consts.compTrue).append(target).append("\n");
                         }
                     }
-
                     case LTH, LTHI32 -> {
                         if (left.isLiteral() && right.isLiteral()){
                             var leftLiteral = Integer.parseInt(((LiteralElement) left).getLiteral());
@@ -333,14 +327,21 @@ public class Jasmin {
                                 result.deleteCharAt(0);
                                 deadTags.add(target);
                             }
-                            break;
                         }
-
-                        result.append(pushElementToStack(left))
-                                .append(indent).append(pushElementToStack(right))
-                                .append(indent).append(Consts.compLessThan).append(target).append("\n");
+                        else if (left.isLiteral() && ((LiteralElement) left).getLiteral().equals("0")){ // 0 < a -> push a; iflt
+                            result.append(pushElementToStack(right))
+                                  .append(indent).append(Consts.compGreaterThanZero).append(target).append("\n");
+                        }
+                        else if (right.isLiteral() && ((LiteralElement) right).getLiteral().equals("0")){ // a < 0 -> push a; ifgt
+                            result.append(pushElementToStack(left))
+                                    .append(indent).append(Consts.compLessThanZero).append(target).append("\n");
+                        }
+                        else {
+                            result.append(pushElementToStack(left))
+                                    .append(indent).append(pushElementToStack(right))
+                                    .append(indent).append(Consts.compLessThan).append(target).append("\n");
+                        }
                     }
-
                     case NOT, NOTB -> {
                         String element = pushElementToStack(left);
 
@@ -360,13 +361,14 @@ public class Jasmin {
                                   .append(indent).append(Consts.compFalse).append(target).append("\n");
                         }
                     }
-
+                    case OR, ORB, ORI32, GTH, GTHI32, EQ, EQI32, GTE, GTEI32, LTE, LTEI32, NEQ, NEQI32 -> {
+                        System.out.println("Branch: " + condBranchInstruction.getCondOperation().getOpType());
+                        // NOT SUPPORTED
+                    }
                     case ADD, SUB, MUL, DIV, SHR, SHL, SHRR, XOR, ADDI32, SUBI32, MULI32, DIVI32, SHRI32, SHLI32, SHRRI32, XORI32 -> {
-                        System.out.println("Incompatible operation in condition ; Something wrong in semantic analysis");
+                        // Not found in ollir conditions
                     }
                 }
-                // In progress
-
             }
             case RETURN -> {
                 ReturnInstruction returnInstruction = (ReturnInstruction) instruction;
