@@ -128,8 +128,8 @@ public class ConstantPropagationVisitor extends PostorderJmmVisitor<List<List<Jm
 
     private Boolean propagateConstantsInBinaries(JmmNode node, List<List<JmmNode>> nodesToRemove){
         var parent = node.getParent();
-        var left = node.getChildren().get(0); String leftVal = left.get(Consts.valueAttribute);
-        var right = node.getChildren().get(1); String rightVal = right.get(Consts.valueAttribute);
+        var left = node.getChildren().get(0);
+        var right = node.getChildren().get(1);
 
         var newNode = new JmmNodeImpl(Consts.literalNodeName);
         newNode.put(Consts.typeAttribute, left.get(Consts.typeAttribute));
@@ -137,7 +137,10 @@ public class ConstantPropagationVisitor extends PostorderJmmVisitor<List<List<Jm
         
         if (!left.getKind().equals(Consts.literalNodeName) || !right.getKind().equals(Consts.literalNodeName))
             return true;
-        
+
+        String leftVal = left.get(Consts.valueAttribute);
+        String rightVal = right.get(Consts.valueAttribute);
+
         if (left.get(Consts.typeAttribute).equals(Consts.booleanType) &&
                 right.get(Consts.typeAttribute).equals(Consts.booleanType)) {
             if (node.get(Consts.valueAttribute).equals(Consts.andExpression)) {

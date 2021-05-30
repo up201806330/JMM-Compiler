@@ -99,20 +99,21 @@ public class Liveness {
             if (!result) return false;
 
             /*
+            System.out.println(method.getMethodName());
             System.out.println("Colored graph:");
             for (var x : nodeColors.entrySet()){
                 System.out.println(x.getKey() + ": " + x.getValue());
             }
-             */
+            */
 
             updateVarTable(method);
-
-            method.show();
         }
         return true;
     }
 
-    private void buildUseAndDef(Method method, Node node, int nodeId){
+    private void buildUseAndDef(Method method, Node node) {
+        var nodeId = node.getId();
+
         if (node.getNodeType().equals(NodeType.END) || (
                 visited.containsKey(nodeId) && visited.get(nodeId) > 10)) return;
 
@@ -134,7 +135,7 @@ public class Liveness {
                     // Parameters are live the entire scope of the method ; dont appear in use/def
                     addToDef(nodeId, leftSide.getName());
 
-                    buildUseAndDef(method, ((AssignInstruction) instruction).getRhs(), nodeId);
+                    buildUseAndDef(method, ((AssignInstruction) instruction).getRhs());
                 }
                 case CALL -> {
                     var callInstr = (CallInstruction) instruction;
@@ -142,10 +143,13 @@ public class Liveness {
                     if (!callInstr.getFirstArg().getType().getTypeOfElement().equals(ElementType.CLASS)) // Callee isn't class name, is actual variable
                         addToUse(nodeId, ((Operand) callInstr.getFirstArg()).getName());
 
-                    for (var arg : callInstr.getListOfOperands()){
-                        try{
-                            addToUse(nodeId, ((Operand) arg).getName());
-                        } catch (ClassCastException ignored){}
+                    var ops =  callInstr.getListOfOperands();
+                    if (ops != null) {
+                        for (var arg :ops){
+                            try{
+                                addToUse(nodeId, ((Operand) arg).getName());
+                            } catch (ClassCastException ignored){}
+                        }
                     }
                 }
                 case GOTO -> {
@@ -153,18 +157,22 @@ public class Liveness {
                 }
                 case BRANCH -> {
                     var branchInstr = (CondBranchInstruction) instruction;
-                    addToUse(nodeId, ((Operand) branchInstr.getLeftOperand()).getName());
-                    addToUse(nodeId, ((Operand) branchInstr.getRightOperand()).getName());
+                    try {
+                        addToUse(nodeId, ((Operand) branchInstr.getLeftOperand()).getName());
+                        addToUse(nodeId, ((Operand) branchInstr.getRightOperand()).getName());
+                    } catch (ClassCastException ignored) {}
                 }
                 case RETURN -> {
                     var returnInstr = (ReturnInstruction) instruction;
                     try {
                         addToUse(nodeId, ((Operand) returnInstr.getOperand()).getName());
-                    } catch (NullPointerException ignored){}
+                    } catch (NullPointerException | ClassCastException ignored){}
                 }
                 case PUTFIELD -> {
                     var putfieldInstr = (PutFieldInstruction) instruction;
-                    addToUse(nodeId, ((Operand) putfieldInstr.getThirdOperand()).getName());
+                    try {
+                        addToUse(nodeId, ((Operand) putfieldInstr.getThirdOperand()).getName());
+                    } catch (ClassCastException ignored){}
                 }
                 case GETFIELD -> {
                     // Has no effect
@@ -202,9 +210,6 @@ public class Liveness {
 
         if (suc1 != null) buildUseAndDef(method, suc1);
         if (suc2 != null) buildUseAndDef(method, suc2);
-    }
-    private void buildUseAndDef(Method method, Node node) {
-        buildUseAndDef(method, node, node.getId());
     }
     public void buildUseAndDef(Method method){
         buildUseAndDef(method, method.getBeginNode());
@@ -251,13 +256,17 @@ public class Liveness {
     }
 
     private void buildInterferenceGraph() {
+        for (var x : liveRanges.entrySet()){
+            interferenceGraph.put(x.getKey(), new HashSet<>());
+        }
+
         for (var left : liveRanges.entrySet()){
             for (var right : liveRanges.entrySet()){
                 if (left.getKey().equals(right.getKey())) continue;
 
                 // Equivalent to left (INTERSECTION) right != empty
                 if (left.getValue().stream().anyMatch(right.getValue()::contains)) {
-                    var existingEdges = interferenceGraph.putIfAbsent(left.getKey(), new HashSet<>(Arrays.asList(right.getKey())));
+                    var existingEdges = interferenceGraph.get(left.getKey());
                     if (existingEdges != null) existingEdges.add(right.getKey());
                 }
             }

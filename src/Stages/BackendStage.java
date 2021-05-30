@@ -34,7 +34,7 @@ public class BackendStage implements JasminBackend {
             Jasmin jasmin = new Jasmin();
             // Convert the OLLIR to a String containing the equivalent Jasmin code
             String jasminCode = jasmin.getByteCode(ollirClass); // Convert node ...
-            //System.out.println(jasminCode);
+            System.out.println(jasminCode);
 
             // More reports from this stage
             List<Report> reports = new ArrayList<>();

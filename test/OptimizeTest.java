@@ -92,4 +92,149 @@ public class OptimizeTest {
         TestUtils.noErrors(result.getReports());
     }
 
+    // OPTIMIZATIONS //
+
+    @Test
+    public void testHelloWorldDashR() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/HelloWorld.jmm")), false,
+                1);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testSimpleDashR() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/Simple.jmm")), false,
+                3);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testOperatorPrecedenceDashR() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/OperatorPrecedence.jmm")), false,
+                3);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testFacDashR() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/Fac.jmm")), false,
+                1);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testFindMaximumDashR() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/FindMaximum.jmm")), false,
+                3);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testLazySortDashR() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/LazySort.jmm")), false,
+                4);
+        TestUtils.noErrors(result.getReports());
+    }
+
+//    @Test
+//    public void testLifeDashR() { // Is breaking because int and object are being put in same register
+//        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/Life.jmm")), false,
+//                120);
+//        TestUtils.noErrors(result.getReports());
+//    }
+
+    @Test
+    public void testMonteCarloPiDashR() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/MonteCarloPi.jmm")), false,
+                4);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testQuickSortDashR() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/QuickSort.jmm")), false,
+                4);
+        TestUtils.noErrors(result.getReports());
+    }
+
+//    @Test
+//    public void testTicTacToeDashR() { // Is breaking because int and object are being put in same register
+//        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/TicTacToe.jmm")), false,
+//                7);
+//        TestUtils.noErrors(result.getReports());
+//    }
+
+    @Test
+    public void testWhileAndIfDashR() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/WhileAndIF.jmm")), false,
+                5);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testHelloWorldDashO() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/HelloWorld.jmm")), true);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testSimpleDashO() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/Simple.jmm")), true);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testOperatorPrecedenceDashO() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/OperatorPrecedence.jmm")), true);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testFacDashO() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/Fac.jmm")), true);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testFindMaximumDashO() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/FindMaximum.jmm")), true);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testLazySortDashO() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/LazySort.jmm")), true);
+        TestUtils.noErrors(result.getReports());
+    }
+
+//    @Test
+//    public void testLifeDashO() { // Is breaking because int and object are being put in same register
+//        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/Life.jmm")), true);
+//        TestUtils.noErrors(result.getReports());
+//    }
+
+    @Test
+    public void testMonteCarloPiDashO() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/MonteCarloPi.jmm")), true);
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testQuickSortDashO() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/QuickSort.jmm")), true);
+        TestUtils.noErrors(result.getReports());
+    }
+
+//    @Test
+//    public void testTicTacToeDashO() { // Is breaking because int and object are being put in same register
+//        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/TicTacToe.jmm")), false,
+//                7);
+//        TestUtils.noErrors(result.getReports());
+//    }
+
+    @Test
+    public void testWhileAndIfDashO() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/WhileAndIF.jmm")), true);
+        TestUtils.noErrors(result.getReports());
+    }
 }

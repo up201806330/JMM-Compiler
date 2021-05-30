@@ -14,8 +14,6 @@ import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.specs.util.SpecsIo;
 
 public class ExampleTest {
-    // Os testes aqui feitos testam se o programa dá error nas análises sintáticas e semânticas
-    // e se o número de erros é o correto (número correto de erros foi calculado manualmente).
 
     @Test
     public void testSimple() {

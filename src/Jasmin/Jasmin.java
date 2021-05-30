@@ -21,10 +21,6 @@ public class Jasmin {
 
     List<String> deadTags = new ArrayList<>();
 
-    private void updateMaxLocals(int vreg) {
-        if (vreg + 1 > maxLocalsSize) maxLocalsSize = vreg + 1;
-    }
-
     public String getByteCode(ClassUnit classUnit) throws OllirErrorException {
         this.classUnit = classUnit;
         classUnit.buildVarTables();
@@ -56,7 +52,7 @@ public class Jasmin {
 
         varTable = method.getVarTable();
 
-        maxLocalsSize = 1;
+        maxLocalsSize = findLocalsSize(varTable);
         maxStackSize = 0;
         deadTags = new ArrayList<>();
 
@@ -87,6 +83,15 @@ public class Jasmin {
         }
 
         return start.append(result).toString();
+    }
+
+    private int findLocalsSize(HashMap<String, Descriptor> varTable) {
+        int max = 0;
+        for (var x : varTable.entrySet()){
+            var reg = x.getValue().getVirtualReg();
+            if (reg > max) max = reg;
+        }
+        return max + 1;
     }
 
     private void calculateMaxStackSize(String instructions) {
@@ -147,7 +152,6 @@ public class Jasmin {
                 var type = assignInstruction.getDest().getType();
 
                 int vreg = varTable.get(((Operand) assignInstruction.getDest()).getName()).getVirtualReg();
-                updateMaxLocals(vreg);
 
                 Optional<String> varIncrementOpt = checkVarIncrement(assignInstruction);
                 if (varIncrementOpt.isEmpty())

@@ -27,6 +27,12 @@ import pt.up.fe.comp.jmm.report.Stage;
 public class OptimizationStage implements JmmOptimization {
     private int dashR;
 
+    public OllirResult toOllir(JmmSemanticsResult semanticsResult, boolean optimize, int dashR) {
+        this.dashR = dashR;
+        if (optimize) return optimize(toOllir(optimize(semanticsResult)));
+        else return optimize(toOllir(semanticsResult));
+    }
+
     @Override
     public OllirResult toOllir(JmmSemanticsResult semanticsResult) {
 
@@ -40,12 +46,6 @@ public class OptimizationStage implements JmmOptimization {
         System.out.println(ollirCode);
 
         return new OllirResult(semanticsResult, ollirCode, reports);
-    }
-
-    public OllirResult toOllir(JmmSemanticsResult semanticsResult, boolean optimize, int dashR) {
-        this.dashR = dashR;
-        if (optimize) return optimize(toOllir(optimize(semanticsResult)));
-        else return optimize(toOllir(semanticsResult));
     }
 
     @Override
@@ -78,6 +78,7 @@ public class OptimizationStage implements JmmOptimization {
 
     @Override
     public OllirResult optimize(OllirResult ollirResult) {
+        // dashR
         if (!(new Liveness(dashR).run(ollirResult.getOllirClass()))){
             ollirResult.getReports().add(new Report(
                     ReportType.ERROR,
