@@ -17,7 +17,6 @@ public class Jasmin {
     private ClassUnit classUnit;
 
     private int maxStackSize;
-    private int maxLocalsSize;
 
     List<String> deadTags = new ArrayList<>();
 
@@ -52,7 +51,6 @@ public class Jasmin {
 
         varTable = method.getVarTable();
 
-        maxLocalsSize = findLocalsSize(varTable);
         maxStackSize = 0;
         deadTags = new ArrayList<>();
 
@@ -79,7 +77,7 @@ public class Jasmin {
 
         if (!method.isConstructMethod()){
             start.append(indent).append(".limit stack ").append(maxStackSize).append("\n")
-                    .append(indent).append(".limit locals ").append(maxLocalsSize).append("\n");
+                    .append(indent).append(".limit locals ").append(findLocalsSize(varTable)).append("\n");
         }
 
         return start.append(result).toString();

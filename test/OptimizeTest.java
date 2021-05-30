@@ -136,12 +136,12 @@ public class OptimizeTest {
         TestUtils.noErrors(result.getReports());
     }
 
-//    @Test
-//    public void testLifeDashR() { // Is breaking because int and object are being put in same register
-//        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/Life.jmm")), false,
-//                120);
-//        TestUtils.noErrors(result.getReports());
-//    }
+    @Test
+    public void testLifeDashR() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/Life.jmm")), false,
+                8);
+        TestUtils.noErrors(result.getReports());
+    }
 
     @Test
     public void testMonteCarloPiDashR() {
@@ -157,12 +157,12 @@ public class OptimizeTest {
         TestUtils.noErrors(result.getReports());
     }
 
-//    @Test
-//    public void testTicTacToeDashR() { // Is breaking because int and object are being put in same register
-//        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/TicTacToe.jmm")), false,
-//                7);
-//        TestUtils.noErrors(result.getReports());
-//    }
+    @Test
+    public void testTicTacToeDashR() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/TicTacToe.jmm")), false,
+                7);
+        TestUtils.noErrors(result.getReports());
+    }
 
     @Test
     public void testWhileAndIfDashR() {
@@ -207,11 +207,11 @@ public class OptimizeTest {
         TestUtils.noErrors(result.getReports());
     }
 
-//    @Test
-//    public void testLifeDashO() { // Is breaking because int and object are being put in same register
-//        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/Life.jmm")), true);
-//        TestUtils.noErrors(result.getReports());
-//    }
+    @Test
+    public void testLifeDashO() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/Life.jmm")), true);
+        TestUtils.noErrors(result.getReports());
+    }
 
     @Test
     public void testMonteCarloPiDashO() {
@@ -225,12 +225,12 @@ public class OptimizeTest {
         TestUtils.noErrors(result.getReports());
     }
 
-//    @Test
-//    public void testTicTacToeDashO() { // Is breaking because int and object are being put in same register
-//        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/TicTacToe.jmm")), false,
-//                7);
-//        TestUtils.noErrors(result.getReports());
-//    }
+    @Test
+    public void testTicTacToeDashO() {
+        var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/TicTacToe.jmm")), false,
+                7);
+        TestUtils.noErrors(result.getReports());
+    }
 
     @Test
     public void testWhileAndIfDashO() {

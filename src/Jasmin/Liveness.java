@@ -2,7 +2,6 @@ import org.specs.comp.ollir.*;
 import org.specs.comp.ollir.Node;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Liveness {
     private int dashR;
@@ -132,8 +131,14 @@ public class Liveness {
                 case ASSIGN -> {
                     var leftSide = ((Operand) ((AssignInstruction) instruction).getDest());
 
-                    // Parameters are live the entire scope of the method ; dont appear in use/def
-                    addToDef(nodeId, leftSide.getName());
+                    try { // If left side is array access, is added to use and not def
+                        var arrAccess = (ArrayOperand) leftSide;
+                        addToUse(nodeId, leftSide.getName());
+                        if (!arrAccess.getIndexOperands().get(0).isLiteral())
+                            addToUse(nodeId, ((Operand) arrAccess.getIndexOperands().get(0)).getName());
+                    } catch (ClassCastException ignored) {
+                        addToDef(nodeId, leftSide.getName());
+                    }
 
                     buildUseAndDef(method, ((AssignInstruction) instruction).getRhs());
                 }
@@ -344,6 +349,7 @@ public class Liveness {
             }
         }
     }
+
     private void addToUse(int index, String var){
         if (var.equals("this") || params.contains(var))
             return;
