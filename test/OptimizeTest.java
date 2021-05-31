@@ -154,6 +154,9 @@ public class OptimizeTest {
         var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/Life.jmm")), false,
                 8);
         TestUtils.noErrors(result.getReports());
+        var fail = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/Life.jmm")), false,
+                7);
+        TestUtils.mustFail(fail.getReports());
     }
 
     @Test
@@ -181,6 +184,9 @@ public class OptimizeTest {
         var result = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/TicTacToe.jmm")), false,
                 7);
         TestUtils.noErrors(result.getReports());
+        var fail = (new OptimizationStage()).toOllir(TestUtils.analyse(SpecsIo.getResource("fixtures/public/TicTacToe.jmm")), false,
+                6);
+        TestUtils.mustFail(fail.getReports());
     }
 
     @Test
