@@ -2,6 +2,7 @@ import org.specs.comp.ollir.*;
 import org.specs.comp.ollir.Node;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Liveness {
     private int dashR;
@@ -193,7 +194,7 @@ public class Liveness {
                         } catch (ClassCastException ignored2){}
                     }
                 }
-                case  BINARYOPER -> {
+                case BINARYOPER -> {
                     try {
                         var leftOp = (Operand) ((BinaryOpInstruction) instruction).getLeftOperand();
                         addToUse(nodeId, leftOp.getName());

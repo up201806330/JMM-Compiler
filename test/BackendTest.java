@@ -19,6 +19,7 @@ import org.junit.Test;
 
 import pt.up.fe.comp.TestUtils;
 import pt.up.fe.specs.util.SpecsIo;
+import pt.up.fe.specs.util.SpecsStrings;
 
 
 public class BackendTest {
@@ -68,43 +69,21 @@ public class BackendTest {
         assertEquals("Result: 28", output.trim());
     }
 
-    // Is always different, not worth running here
-//    @Test
-//    public void testLazySort() {
-//        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/LazySort.jmm"));
-//        TestUtils.noErrors(result.getReports());
-//    }
+    // Is always different, not worth checking values
+    @Test
+    public void testLazySort() {
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/LazySort.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
 
-    // IS broken idk why
+    // Infinite loop is breaking
 //    @Test
 //    public void testLife() {
 //        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/Life.jmm"));
 //        TestUtils.noErrors(result.getReports());
 //
 //        var output = result.run("1");
-//        assertEquals(("0010000000\n" +
-//                "1010000000\n" +
-//                "0110000000\n" +
-//                "0000000000\n" +
-//                "0000000000\n" +
-//                "0000000000\n" +
-//                "0000000000\n" +
-//                "0000000000\n" +
-//                "0000000000\n" +
-//                "0000000000\n" +
-//                "\n" +
-//                "1\n" +
-//                "1\n" +
-//                "0100000000\n" +
-//                "0011000000\n" +
-//                "0110000000\n" +
-//                "0000000000\n" +
-//                "0000000000\n" +
-//                "0000000000\n" +
-//                "0000000000\n" +
-//                "0000000000\n" +
-//                "0000000000\n" +
-//                "0000000000\n").replaceAll("\\n|\\r\\n", System.getProperty("line.separator")), output.trim());
+//        assertEquals(SpecsStrings.normalizeFileContents("0010000000\n1010000000\n0110000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n\n1\n1\n0100000000\n0011000000\n0110000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n").replaceAll("\\n|\\r\\n", System.getProperty("line.separator")), output.trim());
 //    }
 
     @Test
@@ -116,13 +95,6 @@ public class BackendTest {
         assertTrue(output.equals("Insert number: Result: 314") || output.equals("Insert number: Result: 315"));
     }
 
-    // Doesnt have main (isnt supposed to be ran so its fine)
-//    @Test
-//    public void testMyClass() {
-//        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/MyClass.jmm"));
-//        TestUtils.noErrors(result.getReports());
-//    }
-
     @Test
     public void testQuickSort() {
         var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/QuickSort.jmm"));
@@ -133,13 +105,13 @@ public class BackendTest {
                 output.trim());
     }
 
-    // Gradle is actin up tf
+    // Infinite loop is breaking
 //    @Test
 //    public void testTicTacToe() {
 //        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/TicTacToe.jmm"));
 //        TestUtils.noErrors(result.getReports());
 //
-//        var output = result.run("0\n0");
+//        var output = result.run(SpecsIo.getResource("test/fixtures/public/TicTacToe.input"));
 //        assertEquals(("0|0|0\n" +
 //                        "- - -\n" +
 //                        "0|0|0\n" +
@@ -169,10 +141,22 @@ public class BackendTest {
                 output.trim());
     }
 
-    // Is requesting input from user, so won't be ran here
-//    @Test
-//    public void testPrime() {
-//        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/custom/Prime.jmm"));
-//        TestUtils.noErrors(result.getReports());
-//    }
+    @Test
+    public void testPrime() {
+        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/custom/Prime.jmm"));
+        TestUtils.noErrors(result.getReports());
+
+        var output = result.run("10");
+        assertEquals("2\n3\n5\n7".replaceAll("\\n|\\r\\n", System.getProperty("line.separator")),
+                output.trim());
+    }
+
+    @Test
+    public void testArrayAccess() {
+        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/custom/ArrayAccess.jmm"));
+        TestUtils.noErrors(result.getReports());
+
+        var output = result.run();
+        assertEquals("2", output.trim());
+    }
 }
