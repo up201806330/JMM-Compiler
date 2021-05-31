@@ -43,6 +43,8 @@ public class Main implements JmmParser {
 		JmmParserResult parserResults = temp.parse(fileContents);
 
 		showReports(parserResults.getReports());
+		if (TestUtils.getNumErrors(parserResults.getReports()) > 0)
+			return;
 
 		// Write to JSON
 		// File output = new File("./outputJson.txt");
@@ -91,7 +93,6 @@ public class Main implements JmmParser {
 
 		BackendStage backend = new BackendStage();
 		JasminResult jasminResult = backend.toJasmin(ollirResult);
-
 
 		if (jasminResult.getReports().size() > 0){
 			jasminResult.getReports().forEach(System.out::println);

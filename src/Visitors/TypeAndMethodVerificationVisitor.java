@@ -221,7 +221,7 @@ public class TypeAndMethodVerificationVisitor extends PostorderJmmVisitor<List<R
         var childrenTypes = childrenTypesOpt.get();
         Type operation = childrenTypes.get(0);
 
-        if (!operation.getName().equals(Consts.booleanType)){
+        if (!operation.getName().equals(Consts.booleanType) && !operation.getName().equals(Consts.error) ){
             reports.add(new Report(
                     ReportType.ERROR,
                     Stage.SEMANTIC,
