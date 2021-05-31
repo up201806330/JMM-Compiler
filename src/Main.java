@@ -98,10 +98,10 @@ public class Main implements JmmParser {
 			jasminResult.getReports().forEach(System.out::println);
 		}
 		else {
-			System.out.println("vvvv Program results vvvv");
-			jasminResult.run();
-//			System.out.println("Compiled!");
-//			jasminResult.compile(new File("Compiled"));
+//			System.out.println("vvvv Program results vvvv");
+//			jasminResult.run();
+			System.out.println("Compiled!");
+			SpecsIo.write(new File("../comp2021-7a/" + jasminResult.getClassName() + ".j"), jasminResult.getJasminCode());
 		}
 	}
 
