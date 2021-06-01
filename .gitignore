@@ -9,3 +9,8 @@ gradlew
 gradlew.bat
 outputJson.txt
 Compiled/
+*.class
+*.ollir
+*.j
+*.json
+*.symbols.txt

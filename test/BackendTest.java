@@ -71,8 +71,8 @@ public class BackendTest {
 
     // Is always different, not worth checking values
     @Test
-    public void testLazySort() {
-        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/LazySort.jmm"));
+    public void testLazysort() {
+        var result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/Lazysort.jmm"));
         TestUtils.noErrors(result.getReports());
     }
 
