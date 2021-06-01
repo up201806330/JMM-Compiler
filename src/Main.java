@@ -3,6 +3,7 @@ import pt.up.fe.comp.jmm.JmmParser;
 import pt.up.fe.comp.jmm.JmmParserResult;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.comp.jmm.jasmin.JasminResult;
+import pt.up.fe.comp.jmm.jasmin.JasminUtils;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.ReportType;
@@ -46,11 +47,7 @@ public class Main implements JmmParser {
 		if (TestUtils.getNumErrors(parserResults.getReports()) > 0)
 			return;
 
-		// Write to JSON
-		// File output = new File("./outputJson.txt");
-		// try (PrintWriter out = new PrintWriter(output)) {
-		//     out.println(parserResults.toJson());
-		// }
+		var originalJSON = parserResults.toJson();
 
 		AnalysisStage analysis = new AnalysisStage();
 		JmmSemanticsResult semanticsResults = analysis.semanticAnalysis(parserResults);
@@ -101,7 +98,26 @@ public class Main implements JmmParser {
 //			System.out.println("vvvv Program results vvvv");
 //			jasminResult.run();
 			System.out.println("Compiled!");
-			SpecsIo.write(new File("../comp2021-7a/" + jasminResult.getClassName() + ".j"), jasminResult.getJasminCode());
+
+			// Write original JSON
+			SpecsIo.write(new File("./" + jasminResult.getClassName() + ".json"), originalJSON);
+
+			// Write optimized JSON, if optimizations were applied
+			if ((args.length > 1 && args[1].startsWith("-o")) || (args.length > 2 && args[2].startsWith("-o")))
+				SpecsIo.write(new File("./" + jasminResult.getClassName() + "_Optimized" + ".json"), parserResults.toJson());
+
+			// Write Symbol table
+			SpecsIo.write(new File("./" + jasminResult.getClassName() + ".symbols.txt"), semanticsResults.getSymbolTable().print());
+
+			// Write OLLIR
+			SpecsIo.write(new File("./" + jasminResult.getClassName() + ".ollir"), ollirResult.getOllirCode());
+
+			// Write Jasmin
+			var jasminFile = new File("./" + jasminResult.getClassName() + ".j");
+			SpecsIo.write(jasminFile, jasminResult.getJasminCode());
+
+			// Write .class
+			JasminUtils.assemble(jasminFile, new File("./"));
 		}
 	}
 

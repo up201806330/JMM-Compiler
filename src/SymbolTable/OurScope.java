@@ -21,6 +21,10 @@ public class OurScope {
         this.scope = (scope != null && functionSymbol != null) ? scope : ScopeEnum.Error;
     }
 
+    public OurSymbol getFunctionSymbol() {
+        return functionSymbol;
+    }
+
     public String getName(){
         return functionSymbol != null ? functionSymbol.getName() : "";
     }

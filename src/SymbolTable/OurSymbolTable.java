@@ -7,6 +7,7 @@ import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp.jmm.report.Stage;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class OurSymbolTable implements SymbolTable {
 
@@ -122,7 +123,8 @@ public class OurSymbolTable implements SymbolTable {
         }
 
         for (OurSymbol methodOverload : methodOverloads){
-            if (methodOverload.getParameterTypes().equals(args)) return Optional.of(methodOverload);
+            if (methodOverload.getParameterTypes().equals(args))
+                return Optional.of(methodOverload);
         }
 
         reports.add(new Report(
@@ -141,7 +143,8 @@ public class OurSymbolTable implements SymbolTable {
         List<String> result = new ArrayList<>();
 
         for (OurSymbol entry : table.keySet()) {
-            if (entry.isImport()) result.add(entry.getName());
+            if (entry.isImport())
+                result.add(entry.getName());
         }
         return result;
     }
@@ -160,7 +163,17 @@ public class OurSymbolTable implements SymbolTable {
     public List<Symbol> getFields() {
         List<Symbol> result = new ArrayList<>();
         for (OurSymbol entry : table.keySet()) {
-            if (entry.isField()) result.add(entry);
+            if (entry.isField())
+                result.add(entry);
+        }
+        return result;
+    }
+
+    public List<OurSymbol> getMethodSymbols() {
+        List<OurSymbol> result = new ArrayList<>();
+        for (OurSymbol entry : table.keySet()) {
+            if (entry.isMethod())
+                result.add(entry);
         }
         return result;
     }
@@ -169,7 +182,8 @@ public class OurSymbolTable implements SymbolTable {
     public List<String> getMethods() {
         List<String> result = new ArrayList<>();
         for (OurSymbol entry : table.keySet()) {
-            if (entry.isMethod()) result.add(entry.getName());
+            if (entry.isMethod())
+                result.add(entry.getName());
         }
         return result;
     }
@@ -177,16 +191,36 @@ public class OurSymbolTable implements SymbolTable {
     @Override
     public Type getReturnType(String methodName) {
         for (OurSymbol entry : table.keySet()) {
-            if (entry.isMethod() && entry.getName().equals(methodName)) return entry.getType();
+            if (entry.isMethod() && entry.getName().equals(methodName))
+                return entry.getType();
         }
         return null;
+    }
+
+    public List<Symbol> getParametersBySymbol(OurSymbol methodSymbol) {
+        List<Symbol> result = new ArrayList<>();
+        for (OurSymbol entry : table.keySet()) {
+            if (entry.isParameter() && entry.getScope().getFunctionSymbol().equals(methodSymbol))
+                result.add(entry);
+        }
+        return result;
     }
 
     @Override
     public List<Symbol> getParameters(String methodName) {
         List<Symbol> result = new ArrayList<>();
         for (OurSymbol entry : table.keySet()) {
-            if (entry.isParameter() && entry.getScope().getName().equals(methodName)) result.add(entry);
+            if (entry.isParameter() && entry.getScope().getName().equals(methodName))
+                result.add(entry);
+        }
+        return result;
+    }
+
+    public List<Symbol> getLocalVariablesBySymbol(OurSymbol methodSymbol) {
+        List<Symbol> result = new ArrayList<>();
+        for (OurSymbol entry : table.keySet()) {
+            if (entry.isVariable() && entry.getScope().getFunctionSymbol().equals(methodSymbol))
+                result.add(entry);
         }
         return result;
     }
@@ -195,7 +229,8 @@ public class OurSymbolTable implements SymbolTable {
     public List<Symbol> getLocalVariables(String methodName) {
         List<Symbol> result = new ArrayList<>();
         for (OurSymbol entry : table.keySet()) {
-            if (entry.isVariable() && entry.getScope().getName().equals(methodName)) result.add(entry);
+            if (entry.isVariable() && entry.getScope().getName().equals(methodName))
+                result.add(entry);
         }
         return result;
     }
@@ -218,5 +253,55 @@ public class OurSymbolTable implements SymbolTable {
             result.append(String.format("%-25s%-35s%-70s%-1s%n", row));
         }
         return result.toString();
+    }
+
+    @Override
+    public String print() {
+        var builder = new StringBuilder();
+
+        builder.append("Class: " + getClassName() + "\n");
+        var superClass = getSuper() != null ? getSuper() : "java.lang.Object";
+        builder.append("Super: " + superClass + "\n");
+        builder.append("\nImports:");
+        var imports = getImports();
+
+        if (imports.isEmpty()) {
+            builder.append(" <no imports>\n");
+        } else {
+            builder.append("\n");
+            imports.forEach(fullImport -> builder.append(" - " + fullImport + "\n"));
+        }
+
+        var fields = getFields();
+        builder.append("\nFields:");
+        if (fields.isEmpty()) {
+            builder.append(" <no fields>\n");
+        } else {
+            builder.append("\n");
+            fields.forEach(field -> builder.append(" - " + field.print() + "\n"));
+        }
+
+        var methods = getMethodSymbols();
+        builder.append("\nMethods: " + methods.size() + "\n");
+
+        for (var method : methods) {
+            var returnType = method.getType();
+            var params = getParametersBySymbol(method);
+            builder.append(" - " + returnType.print() + " " + method.getName() + "(");
+            var paramsString = params.stream().map(param -> param != null ? param.print() : "<null param>")
+                    .collect(Collectors.joining(", "));
+            builder.append(paramsString + ")\n");
+
+            var localVars = getLocalVariablesBySymbol(method);
+            if (localVars.size() > 0){
+                builder.append("\t\tLocal Variables: " + localVars.size() + "\n");
+                for (var functionVar : localVars){
+                    builder.append("\t\t - ").append(functionVar.print()).append("\n");
+                }
+            }
+            builder.append("\n");
+        }
+
+        return builder.toString();
     }
 }
