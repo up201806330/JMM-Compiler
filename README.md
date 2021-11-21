@@ -1,14 +1,17 @@
-## GROUP:7a
+## JMM Compiler
 
-
-| Name | Number | Self Assessment | Contribution |
-| ---: | -----: | --------------: | -----------: |
-| Diogo Miguel Ferreira Rodrigues | 201806429 | 20 | 25% |
-| João António Cardoso Vieira e Basto de Sousa | 201806613 | 20 | 25% |
-| Rafael Soares Ribeiro | 201806630 | 20 | 25% |
-| Xavier Ruivo Pisco | 201806134 | 20 | 25% |
-
-### GLOBAL Grade of the project: 20
+- **Project name:** JMM Compiler
+- **Short description:** Compiler that translates **Java--** programs (a Java subset language) into [Java bytecodes](https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html)
+- **Environment:** Gradle, JVM
+- **Tools:** Java, Jasmin, JavaCC
+- **Institution:** [FEUP](https://sigarra.up.pt/feup/en/web_page.Inicial)
+- **Course:** [COMP](https://sigarra.up.pt/feup/en/ucurr_geral.ficha_uc_view?pv_ocorrencia_id=459486) (Compilers)
+- **Project grade:** 19.57/20
+- **Group members:**
+    - [Diogo Miguel Ferreira Rodrigues](https://github.com/dmfsrodrigues) ([up201806429@edu.fe.up.pt](mailto:up201806429@edu.fe.up.pt))
+    - [João António Cardoso Vieira e Basto de Sousa](https://github.com/JoaoASousa) ([up201806613@fe.up.pt](mailto:up201806613@fe.up.pt))
+    - [Rafael Soares Ribeiro](https://github.com/up201806330) ([up201806330@fe.up.pt](mailto:up201806330@fe.up.pt))
+    - [Xavier Ruivo Pisco](https://github.com/Xavier-Pisco) ([up201806134@edu.fe.up.pt](mailto:up201806134@edu.fe.up.pt))
 
 ### SUMMARY:
 A *Java--* mini-compiler that handles generation of *.class* files compatible with *Java*.
